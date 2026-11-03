@@ -1,0 +1,40 @@
+{
+  "name": "nexusstudio",
+  "productName": "NexusStudio",
+  "version": "1.0.0",
+  "description": "A visual web page editor that an AI assistant can use through MCP.",
+  "main": "main/main.js",
+  "author": "NexusStudio",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis --x64 --publish never",
+    "test": "node test/e2e.js && node test/main-smoke.js"
+  },
+  "devDependencies": {
+    "electron": "^37.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.nexusstudio.app",
+    "productName": "NexusStudio",
+    "copyright": "NexusStudio",
+    "directories": { "output": "dist", "buildResources": "build" },
+    "files": ["main/**/*", "renderer/**/*", "build/icon.png", "package.json"],
+    "extraResources": [{ "from": "mcp/stdio-bridge.js", "to": "stdio-bridge.js" }],
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "NexusStudio",
+      "artifactName": "NexusStudio-Setup-${version}.exe"
+    }
+  }
+}

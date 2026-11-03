@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; media-src https: data: blob:; font-src 'self' data:; frame-src nx-preview:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NexusStudio</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <header class="top">
+    <div class="brand"><div class="logo"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></div><span>Nexus<b>Studio</b></span></div>
+    <div class="menus">
+      <div class="menu"><button data-menu="file">File</button><div class="drop" hidden>
+        <button data-act="openProject">Open project… <kbd>Ctrl O</kbd></button>
+        <button data-act="saveProject">Save <kbd>Ctrl S</kbd></button>
+        <button data-act="saveAs">Save as…</button>
+        <button data-act="importFile">Import HTML file…</button>
+        <button data-act="exportHtml">Export HTML…</button>
+        <button data-act="newBlank">New blank page</button>
+        <button data-act="sample">Load sample page</button>
+        <button data-act="importHtml">Import HTML…</button>
+        <button data-act="copyAll">Copy full page HTML</button></div></div>
+      <div class="menu"><button data-menu="edit">Edit</button><div class="drop" hidden>
+        <button data-act="undo">Undo <kbd>Ctrl Z</kbd></button>
+        <button data-act="redo">Redo <kbd>Ctrl Shift Z</kbd></button>
+        <button data-act="dup">Duplicate <kbd>Ctrl D</kbd></button>
+        <button data-act="del">Delete <kbd>Del</kbd></button>
+        <button data-act="up">Move up <kbd>Alt ↑</kbd></button>
+        <button data-act="down">Move down <kbd>Alt ↓</kbd></button></div></div>
+      <div class="menu"><button data-menu="ai">AI</button><div class="drop" hidden>
+        <button data-act="connectAi">Connect an AI assistant…</button></div></div>
+      <div class="menu"><button data-menu="view">View</button><div class="drop" hidden>
+        <button data-act="grid">Toggle dot grid</button>
+        <button data-act="rulers">Toggle position bar</button>
+        <button data-act="zoomReset">Reset zoom to 100%</button></div></div>
+    </div>
+    <div class="sp"></div>
+    <div class="proj"><span style="color:#fbbf24" aria-hidden="true">▤</span><input id="projName" value="nebula-landing-v2" aria-label="Project name" spellcheck="false"><small>/index.html</small><span class="dot" id="saveDot" title="Draft saved in this browser"></span></div>
+    <button class="tbtn" id="aiChip" data-act="connectAi" title="Connect an AI assistant"><span class="aid" id="aiDot"></span>AI</button>
+    <button class="tbtn" id="btnUndo" data-act="undo" title="Undo">↶ Undo</button>
+    <button class="tbtn" id="btnRedo" data-act="redo" title="Redo">↷ Redo</button>
+    <button class="primary" data-act="copyAll">Copy page code</button>
+  </header>
+
+  <div class="work">
+    <aside class="left">
+      <div class="tabs"><button class="on" id="tabEl">Elements</button><button id="tabLy">Layers</button></div>
+      <div id="elPane" class="pane" style="display:flex;flex-direction:column">
+        <div class="search"><input id="elSearch" type="text" placeholder="Search elements…" aria-label="Search elements"></div>
+        <div id="palette" style="flex:1;overflow-y:auto"></div>
+      </div>
+      <div id="lyPane" class="pane" hidden>
+        <div class="lhead"><span>Document tree</span><span style="font:9px var(--mono);text-transform:none;letter-spacing:0" id="nodeCount"></span></div>
+        <div id="layers" style="padding:4px 0"></div>
+      </div>
+    </aside>
+
+    <main class="center">
+      <div class="rulerbar" id="rulerbar">
+        <div id="rpos"></div>
+        <div>Select mode · double-click text to edit · <span id="zoomLab">100%</span></div>
+      </div>
+      <div class="view stage" id="stage">
+        <div class="stage-inner" id="inner">
+          <div class="frame" id="frame">
+            <div class="page" id="page"></div>
+          </div>
+          <div class="sel" id="ov" hidden>
+            <div class="lab" id="ovLab"></div>
+            <div class="sz" id="ovSz"></div>
+            <div class="h" data-dir="e"></div><div class="h" data-dir="s"></div><div class="h" data-dir="se"></div>
+          </div>
+        </div>
+      </div>
+      <div class="view codeview" id="vHtml" hidden>
+        <div class="cbar"><b>index.html</b><span>Body markup built from your design. Edit it, then apply.</span><div class="sp"></div>
+          <button id="htmlCopy">Copy</button><button class="hot" id="htmlApply">Apply changes</button></div>
+        <textarea class="code" id="codeHtml" spellcheck="false" aria-label="HTML code"></textarea>
+      </div>
+      <div class="view codeview" id="vCss" hidden>
+        <div class="cbar"><b>styles.css</b><span>Left is built from the Properties panel. Right is your own extra CSS.</span><div class="sp"></div><button id="cssCopy">Copy all CSS</button></div>
+        <div class="split">
+          <div><h4>Generated</h4><textarea class="code" id="codeCss" readonly spellcheck="false" aria-label="Generated CSS"></textarea></div>
+          <div><h4>Custom CSS</h4><textarea class="code" id="codeCustom" spellcheck="false" aria-label="Custom CSS" placeholder="/* Add your own rules here, for example: */&#10;a:hover { color: #fff; }"></textarea></div>
+        </div>
+      </div>
+      <div class="view codeview" id="vJs" hidden>
+        <div class="cbar"><b>script.js</b><span>Runs in Preview and in the exported page.</span><div class="sp"></div><button id="jsCopy">Copy</button></div>
+        <textarea class="code" id="codeJs" spellcheck="false" aria-label="JavaScript code" placeholder="// Example: document.querySelector('button').addEventListener('click', () => alert('Hi'));"></textarea>
+      </div>
+      <div class="view codeview" id="vPrev" hidden>
+        <div class="cbar"><b>Preview</b><span>Your page running for real, with scripts on.</span><div class="sp"></div><button id="prevReload">Reload</button></div>
+        <iframe class="pv" id="pv" title="Page preview" sandbox="allow-scripts"></iframe>
+      </div>
+    </main>
+
+    <aside class="right">
+      <div class="phead"><div><b>Properties</b><span id="pTitle"></span></div><i></i></div>
+      <div class="tabs"><button id="rtHtml">HTML</button><button class="on" id="rtCss">CSS</button><button id="rtJs">JavaScript</button></div>
+      <div class="pane" id="propBody"></div>
+      <div class="addbar" id="addbar">
+        <div style="position:relative"><div class="search" style="padding:0;border:0"><input id="propSearch" type="text" placeholder="Search CSS properties… (e.g. inset)" aria-label="Search CSS properties" autocomplete="off"></div><div class="dd" id="dd" hidden></div></div>
+        <div class="quick"><span>Quick:</span>
+          <button data-add="inset">+ inset</button><button data-add="inset-block">+ inset-block</button><button data-add="inset-inline">+ inset-inline</button><button data-add="inset-block-start">+ inset-b-start</button></div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="crumbs">
+    <div class="path" id="crumbPath"></div>
+    <div class="views" id="views">
+      <button data-v="canvas" class="on">Canvas</button><button data-v="html">HTML</button><button data-v="css">CSS</button><button data-v="js">JavaScript</button><button data-v="preview">Preview</button>
+    </div>
+    <div style="color:var(--dim)">UTF-8 · Spaces: 2</div>
+  </div>
+
+  <footer class="ctl">
+    <div class="grp2"><span style="color:var(--muted)">Viewport</span>
+      <div class="dim"><input id="vw" type="text" inputmode="numeric" aria-label="Width"><span>W</span></div><span style="color:var(--dim)">×</span>
+      <div class="dim"><input id="vh" type="text" inputmode="numeric" aria-label="Minimum height"><span>H</span></div>
+      <button class="tg" id="rotate">⟳ Rotate</button></div>
+    <div class="dev" id="devs"><button data-w="390">Mobile</button><button data-w="768">Tablet</button><button data-w="880" class="on">Desktop</button></div>
+    <div class="grp2"><span style="color:var(--muted)">Zoom</span><b style="font:500 11px var(--mono)" id="zoomVal">100%</b>
+      <div class="zoom"><button id="zOut" title="Zoom out" aria-label="Zoom out">−</button><button id="zIn" title="Zoom in" aria-label="Zoom in">+</button></div>
+      <button class="tg on" id="tgGrid" title="Toggle dot grid">Grid</button><button class="tg on" id="tgRuler" title="Toggle position bar">Position</button></div>
+  </footer>
+</div>
+
+
+<div id="aiModal" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="aiTitle">
+  <h3 id="aiTitle">Connect an AI assistant</h3>
+  <p class="note" style="margin:0">NexusStudio runs a small server on this computer only. An AI assistant that supports MCP can use it to read your page and change it while you watch. Every AI change can be undone with Ctrl+Z.</p>
+  <div class="aistat"><span class="aid" id="aiDot2"></span><span id="aiStatus"></span><div class="sp"></div><button class="sbtn" id="aiToggle" type="button"></button></div>
+  <h4>Claude Desktop</h4>
+  <p class="note" style="margin:0">Press the blue button, then close Claude Desktop completely and open it again. NexusStudio will start by itself when Claude needs it.</p>
+  <div class="aibtns"><button class="primary" id="aiInstall" type="button">Add to Claude Desktop</button><button class="sbtn" id="aiCopyDesktop" type="button">Copy config instead</button></div>
+  <p class="note" id="aiMsg" style="margin:0" role="status"></p>
+  <h4>Claude Code and other tools</h4>
+  <textarea id="aiCmd" readonly rows="3" spellcheck="false" aria-label="Command"></textarea>
+  <div class="aibtns"><button class="sbtn" id="aiCopyCmd" type="button">Copy command</button><button class="sbtn" id="aiCopyUrl" type="button">Copy address</button><button class="sbtn" id="aiCopyToken" type="button">Copy secret key</button></div>
+  <h4>What the AI can do</h4>
+  <div class="note" id="aiTools"></div>
+  <div class="acts"><button class="sbtn" id="aiClose" type="button">Close</button></div>
+</div></div>
+
+<div id="modal" hidden><div class="box"><h3 id="mTitle"></h3><p class="note" id="mNote" style="margin:0"></p><textarea id="mText" spellcheck="false" aria-label="Code"></textarea><div class="acts"><button class="sbtn" id="mClose">Close</button><button class="primary" id="mOk" hidden>Import</button></div></div></div>
+<div id="toast" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>
