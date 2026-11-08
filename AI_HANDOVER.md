@@ -10,7 +10,7 @@ Phase 2 — Persistent AI handover and tracking workflow.
 
 ## Work Session Status
 
-Phase 2 implementation is under review.
+Phase 2 implementation and recovery verification are complete.
 
 ## Completed
 
@@ -38,7 +38,7 @@ None currently known.
 
 ## Next Action
 
-Finish reviewing the four Phase 2 workflow files, make any required corrections, run the Phase 2 verification checks, then create the Phase 2 checkpoint commit.
+User must personally review/test the completed Phase 2 workflow and explicitly approve it before Phase 2 can be marked Approved.
 
 ## Approval Status
 
