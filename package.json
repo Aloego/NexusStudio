@@ -14,17 +14,38 @@
   },
   "devDependencies": {
     "electron": "^37.0.0",
-    "electron-builder": "^25.1.8"
+    "electron-builder": "^25.1.8",
+    "playwright": "^1.65.0"
   },
   "build": {
     "appId": "com.nexusstudio.app",
     "productName": "NexusStudio",
     "copyright": "NexusStudio",
-    "directories": { "output": "dist", "buildResources": "build" },
-    "files": ["main/**/*", "renderer/**/*", "build/icon.png", "package.json"],
-    "extraResources": [{ "from": "mcp/stdio-bridge.js", "to": "stdio-bridge.js" }],
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main/**/*",
+      "renderer/**/*",
+      "build/icon.png",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "mcp/stdio-bridge.js",
+        "to": "stdio-bridge.js"
+      }
+    ],
     "win": {
-      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
       "icon": "build/icon.ico"
     },
     "nsis": {
@@ -36,5 +57,8 @@
       "shortcutName": "NexusStudio",
       "artifactName": "NexusStudio-Setup-${version}.exe"
     }
+  },
+  "allowScripts": {
+    "electron": true
   }
 }

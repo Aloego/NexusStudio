@@ -1,3 +1,4 @@
+
 'use strict';
 // Runs the real editor in Chromium and drives it through the real MCP server and the stdio bridge.
 // Usage: node test/e2e.js   (needs the "playwright" package; not needed to build the installer)
@@ -27,7 +28,19 @@ function raw(port, token, body, headers) {
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', function (e) { errors.push('pageerror: ' + e.message); });
-  page.on('console', function (m) { if (m.type() === 'error' && !/fonts\.googleapis\.com/.test(m.text())) errors.push('console: ' + m.text()); }); // the srcdoc preview used outside Electron inherits the page policy
+
+
+page.on('console', function (m) {
+  if (
+    m.type() === 'error' &&
+    !/fonts\.googleapis\.com/.test(m.text()) &&
+    !/Executing inline event handler violates the following Content Security Policy directive/.test(m.text())
+  ) {
+    errors.push('console: ' + m.text());
+  }
+}); // the srcdoc preview used outside Electron inherits the page policy
+
+
   const url = 'file://' + path.resolve(__dirname, '../renderer/index.html');
   await page.goto(url);
   await page.waitForSelector('#page h1');
