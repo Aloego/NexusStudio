@@ -5,8 +5,8 @@
 - `Pending` — not started.
 - `In Progress` — currently being worked on.
 - `Blocked` — cannot continue because of a known blocker.
-- `Awaiting User Approval` — implementation/tests are ready, but the user must personally test and approve.
-- `Approved` — explicitly approved by the user.
+- `Awaiting User Approval` — implementation/tests are ready, changes committed and pushed, but the user must personally test and approve.
+- `Approved` — explicitly approved by the user (said `APPROVE`).
 
 ## Phase 1 — Development Workflow Preparation
 

@@ -15,6 +15,7 @@ These instructions apply to every AI agent working on this repository.
 5. Run the appropriate tests after making changes.
 6. Record important work, test results, errors, and remaining work in the project tracking files.
 7. Commit meaningful checkpoints so another agent can recover the work.
+8. **Push the commit to the appropriate feature branch on the remote repository.** Confirm that the push succeeded and record the branch/commit information in the handover or task tracking documentation. The push is only to make the tested implementation available for the user's local testing — it does not mean the task is approved, merged, or released.
 
 ## User Approval Gate
 
@@ -22,10 +23,9 @@ Passing automated tests does NOT mean a task is complete.
 
 The required workflow is:
 
-Pending
-→ In Progress
-→ Awaiting User Approval
-→ Approved
+```
+Pending → In Progress → Awaiting User Approval → Approved
+```
 
 Only the user can move work from `Awaiting User Approval` to `Approved`.
 
@@ -34,7 +34,8 @@ An AI agent must NOT:
 - mark a task Approved without explicit user approval;
 - merge a feature branch into `main`;
 - release or publish a build;
-- claim that the user has personally tested the change.
+- claim that the user has personally tested the change;
+- interpret automated test success as user approval.
 
 If the automated tests pass, leave the task at:
 
@@ -48,15 +49,32 @@ If the user rejects the change, move the task back to:
 
 and record the reason.
 
-## Git Rules
+## State Distinctions
 
-- Never work directly on `main` for feature implementation.
-- Create or use the appropriate feature branch.
-- Make regular commits at useful checkpoints.
-- Do not merge into `main` without explicit user approval.
-- Do not rewrite history or force-push unless explicitly requested.
-- Before making major changes, inspect `git status` and the current branch.
-- Before claiming completion, inspect `git diff` and `git status`.
+Use these states correctly:
+
+- **Working** — The AI is actively implementing or investigating.
+- **Implementation Ready** — Implementation and automated verification are finished; changes are committed and pushed to the feature branch.
+- **Awaiting User Approval** — Changes have been committed and pushed, and the user must manually test the actual application.
+- **Approved** — Only the user has explicitly approved the implementation (said `APPROVE`).
+- **Rejected** — The user has explicitly rejected the implementation or reported a problem requiring correction.
+
+Do not move the task into `Approved` without explicit user approval.
+
+## Feature Request Process
+
+When the user gives a feature request:
+
+1. Understand the requested behavior independently.
+2. Inspect the existing NexusStudio architecture.
+3. Determine the appropriate implementation.
+4. Make the necessary changes.
+5. Update tests where appropriate.
+6. Run the relevant automated tests.
+7. Inspect the application when practical.
+8. Document the implementation and evidence.
+
+Ask the user a question only when an important requirement genuinely cannot be determined safely from the request, existing code, or project documentation.
 
 ## Testing Rules
 
@@ -74,23 +92,56 @@ Test results must be recorded in `TEST_RESULTS.md`.
 
 Do not describe a test as successful unless it was actually run and passed.
 
+Clearly distinguish:
+
+- tests that passed;
+- tests that failed;
+- tests that could not be run;
+- manual testing that still needs to be performed by the user.
+
+Automated test success does **not** equal user approval.
+
+## Git Workflow
+
+When the implementation and automated verification are ready for user testing:
+
+1. Commit the changes with an appropriate commit message.
+2. **Push the commit to the appropriate feature branch on the remote repository.**
+3. Confirm that the push succeeded.
+4. Record the relevant commit/branch information in the handover or task tracking documentation.
+
+The push is only to make the tested implementation available for the user's local testing.
+
+**Do not merge the feature branch into `main`.**
+
+**Do not release a build unless the user explicitly instructs you to do so after approval.**
+
 ## Handover Rules
 
 At the end of a work session, update `AI_HANDOVER.md` with:
 
-- current task;
-- current branch;
-- what was completed;
+- user's original request;
+- current task/state;
+- implementation completed;
 - files changed;
-- tests run;
-- test results;
+- tests performed and results;
+- current Git branch;
+- latest commit;
+- whether changes were pushed;
+- remaining work;
 - known problems;
-- next action;
-- user approval status.
+- user's approval/rejection status;
+- exact next action.
 
 The next AI agent must read `AI_HANDOVER.md` before continuing work.
 
 Do not assume that previous conversation context is available.
+
+If the AI session runs out of credits, reaches a limit, or is interrupted before completion, leave the project in the safest recoverable state possible and update the handover before stopping whenever technically possible.
+
+A new agent/session must read the handover and workflow files before continuing.
+
+Running out of credits must **not** be interpreted as approval or completion.
 
 ## Task Tracking
 
@@ -102,11 +153,11 @@ Do not assume that previous conversation context is available.
 
 Use these statuses:
 
-- `Pending`
-- `In Progress`
-- `Blocked`
-- `Awaiting User Approval`
-- `Approved`
+- `Pending` — not started.
+- `In Progress` — currently being worked on.
+- `Blocked` — cannot continue because of a known blocker.
+- `Awaiting User Approval` — implementation/tests are ready, but the user must personally test and approve.
+- `Approved` — explicitly approved by the user.
 
 Do not use `Approved` unless the user explicitly approves the work.
 
@@ -145,6 +196,8 @@ If another agent takes over:
 6. Inspect the current branch and recent commits.
 7. Continue from the recorded `Next Action`.
 
+Never assume that a previous AI session finished successfully merely because changes exist in the repository.
+
 ## Completion Definition
 
 A task is only fully approved when:
@@ -158,3 +211,34 @@ A task is only fully approved when:
 Automated test success alone means:
 
 `Awaiting User Approval`
+
+## Normal Future Workflow
+
+For every feature request, follow this cycle:
+
+```
+User describes feature
+   ↓
+AI investigates and implements
+   ↓
+AI runs automated tests
+   ↓
+AI documents evidence
+   ↓
+AI commits changes
+   ↓
+AI pushes feature branch
+   ↓
+AI reports `Awaiting User Approval`
+   ↓
+User pulls the changes
+   ↓
+User manually tests NexusStudio
+   ↓
+User says `APPROVE` or `REJECT`
+   ↓
+If approved: wait for the user's next instruction regarding merge/release.
+If rejected: fix → test → commit → push → `Awaiting User Approval` again.
+```
+
+This workflow is now the expected development process for NexusStudio.
