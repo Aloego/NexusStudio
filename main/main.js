@@ -214,9 +214,50 @@ app.whenReady().then(async function () {
     return new Response(previewHtml, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });
   });
   mcp = createMcp({
-    dataDir: dataDir, version: app.getVersion(), callRenderer: callRenderer, screenshot: screenshot,
-    onActivity: function (name) { if (win && !win.isDestroyed()) win.webContents.send('ai:activity', { tool: name }); }
-  });
+      dataDir: dataDir, version: app.getVersion(), callRenderer: callRenderer, screenshot: screenshot,
+      getWindowState: function () {
+        if (!win || win.isDestroyed()) return { error: 'The editor window is not open.' };
+        const b = win.getBounds();
+        return {
+          bounds: { x: b.x, y: b.y, width: b.width, height: b.height },
+          focused: win.isFocused(),
+          visible: win.isVisible(),
+          minimized: win.isMinimized(),
+          maximized: win.isMaximized(),
+          fullscreen: win.isFullScreen(),
+          title: win.getTitle()
+        };
+      },
+      getAppState: function () {
+        return {
+          electron: process.versions.electron,
+          chrome: process.versions.chrome,
+          node: process.versions.node,
+          platform: process.platform,
+          arch: process.arch,
+          uptime: Math.round(process.uptime()),
+          memory: process.memoryUsage(),
+          aiServerRunning: !!(mcp && mcp.info().running),
+          aiServerPort: mcp ? mcp.info().port : null
+        };
+      },
+      getProcessInfo: function () {
+        const mem = process.memoryUsage();
+        return {
+          pid: process.pid,
+          memory: {
+            rss: mem.rss,
+            heapTotal: mem.heapTotal,
+            heapUsed: mem.heapUsed,
+            external: mem.external,
+            arrayBuffers: mem.arrayBuffers
+          },
+          uptime: Math.round(process.uptime()),
+          cpuUsage: process.cpuUsage()
+        };
+      },
+      onActivity: function (name) { if (win && !win.isDestroyed()) win.webContents.send('ai:activity', { tool: name }); }
+    });
   if (readSettings().aiEnabled !== false) {
     try { await mcp.start(); } catch (e) { console.error('AI server did not start:', e.message); }
   }

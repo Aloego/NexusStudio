@@ -23,6 +23,9 @@ function createMcp(opts) {
   const dataDir = opts.dataDir;
   const callRenderer = opts.callRenderer;
   const screenshot = opts.screenshot;
+  const getWindowState = opts.getWindowState;
+  const getAppState = opts.getAppState;
+  const getProcessInfo = opts.getProcessInfo;
   const onActivity = opts.onActivity || function () {};
   const version = opts.version || '1.0.0';
   const infoFile = path.join(dataDir, 'mcp.json');
@@ -79,13 +82,22 @@ function createMcp(opts) {
     checkArgs(tool, args);
     onActivity(tool.name, args);
     if (tool.name === 'screenshot') {
-      const shot = await screenshot(args);
-      return { content: [
-        { type: 'image', data: shot.data, mimeType: shot.mimeType },
-        { type: 'text', text: 'Canvas screenshot, ' + shot.width + ' x ' + shot.height + ' pixels.' }
-      ] };
-    }
-    const result = await callRenderer(tool.name, args);
+          const shot = await screenshot(args);
+          return { content: [
+            { type: 'image', data: shot.data, mimeType: shot.mimeType },
+            { type: 'text', text: 'Canvas screenshot, ' + shot.width + ' x ' + shot.height + ' pixels.' }
+          ] };
+        }
+        if (tool.name === 'get_window_state') {
+          return textResult(clip(JSON.stringify(await getWindowState(), null, 1)));
+        }
+        if (tool.name === 'get_app_state') {
+          return textResult(clip(JSON.stringify(await getAppState(), null, 1)));
+        }
+        if (tool.name === 'get_process_info') {
+          return textResult(clip(JSON.stringify(await getProcessInfo(), null, 1)));
+        }
+        const result = await callRenderer(tool.name, args);
     return textResult(clip(typeof result === 'string' ? result : JSON.stringify(result, null, 1)));
   }
   function serial(fn) {

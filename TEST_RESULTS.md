@@ -54,3 +54,100 @@ The user must personally review/test the work and explicitly approve it before i
 ### Next Test/Verification
 
 User must personally review/test the completed Phase 2 workflow and explicitly approve it.
+
+---
+
+## Phase 3-5
+
+### Date
+
+2026-11-13
+
+### Branch
+
+feature/ai-development-workflow
+
+### Scope
+
+Development mode documentation, live application inspection capabilities, and desktop/MCP testing tools.
+
+### Pre-change Check
+
+Command:
+
+git status --short --branch
+
+Result:
+
+## feature/ai-development-workflow
+
+Working tree was clean before the Phase 3-5 changes.
+
+### Automated Application Tests
+
+#### Main Process Smoke Tests
+
+Command:
+
+node test/main-smoke.js
+
+Result:
+
+20 passed, 0 failed
+
+#### End-to-End Editor Tests
+
+Command:
+
+npm test
+
+Result:
+
+98 passed, 0 failed
+
+#### Total
+
+118 passed, 0 failed
+
+### Files Changed
+
+- `DEVELOPMENT.md` — new file, development workflow documentation
+- `README.md` — added link to DEVELOPMENT.md
+- `main/tools.js` — added 7 new inspection tools
+- `main/mcp-server.js` — added desktop tool handlers
+- `main/main.js` — added desktop tool implementations
+- `renderer/app.js` — added inspection API functions and console log capture
+- `AI_HANDOVER.md` — updated with current status
+- `TASK_CHECKLIST.md` — updated with Phase 3-5 completion
+- `TEST_RESULTS.md` — updated with test results
+
+### New Tools Added
+
+#### Live Application Inspection (Phase 4)
+
+- `get_computed_style` — returns computed CSS styles for an element
+- `get_accessibility` — returns accessibility info (role, name, state, ARIA)
+- `get_console_logs` — returns recent console messages from the editor
+- `inspect_element` — comprehensive element inspection (DOM, styles, accessibility, layout, interactive state)
+
+#### Desktop/MCP Testing Tools (Phase 5)
+
+- `get_window_state` — window bounds, focus, visibility, maximized/minimized state
+- `get_app_state` — Electron version, platform, memory, uptime, AI server status
+- `get_process_info` — process ID, memory usage, CPU usage, uptime
+
+### Current Result
+
+All tests pass. The new inspection tools are available via MCP and can be used by AI agents to inspect the application without relying on screenshots.
+
+### Approval
+
+Awaiting User Approval
+
+Automated checks and file review do not constitute user approval.
+
+The user must personally review/test the work and explicitly approve it before it can be considered approved or merged.
+
+### Next Test/Verification
+
+User must personally review/test the completed Phase 3-5 workflow and explicitly approve it.

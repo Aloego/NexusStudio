@@ -100,3 +100,5 @@ It cannot read or write other files on your computer.
 - `main/` Electron main process, the MCP server (`mcp-server.js`) and the tool list (`tools.js`)
 - `mcp/stdio-bridge.js` lets stdio-only apps such as Claude Desktop reach the server
 - Adding a tool: describe it in `main/tools.js`, then add `API.<name>` in `renderer/app.js`
+
+See [DEVELOPMENT.md](DEVELOPMENT.md) for the full development workflow, including how to run the app from source, run tests, and debug.

@@ -775,6 +775,19 @@ function boot(){
 /* ---------- automation API (used by the AI server and by tests) ---------- */
 var API={};
 var MAX_ELEMENTS=5000;
+var __consoleLogs=[];
+
+// Capture console logs for inspection
+var origConsole={log:console.log,warn:console.warn,error:console.error,info:console.info,debug:console.debug};
+['log','warn','error','info','debug'].forEach(function(m){
+  console[m]=function(){
+    var args=Array.from(arguments);
+    var msg=args.map(function(a){return typeof a==='object'?JSON.stringify(a):String(a);}).join(' ');
+    __consoleLogs.push({level:m,timestamp:Date.now(),message:msg,args:args});
+    if(__consoleLogs.length>1000)__consoleLogs.shift();
+    origConsole[m].apply(console,args);
+  };
+});
 function resolveId(id){
   if(id==null||id==='body'||id==='root'||id==='page')return S.root.id;
   var m=/^nx-(\d+)$/.exec(String(id));if(m)return 'n'+m[1];
@@ -870,6 +883,80 @@ API.find_elements=function(a){
   return {count:out.length,matches:out};
 };
 API.get_selection=function(){var f=find(S.sel);var o=describe(f.node,0,1);o.rect=rectOf(f.node.id);return o;};
+
+API.get_computed_style=function(a){
+  var f=need(a.id),el=elOf(f.node.id);
+  if(!el)return null;
+  var cs=getComputedStyle(el),out={};
+  var props=a.properties&&Array.isArray(a.properties)?a.properties:null;
+  if(props){
+    props.forEach(function(p){out[p]=cs.getPropertyValue(p);});
+  }else{
+    for(var i=0;i<cs.length;i++){out[cs[i]]=cs.getPropertyValue(cs[i]);}
+  }
+  return {id:pubId(f.node),computed:out};
+};
+
+API.get_accessibility=function(a){
+  var f=need(a.id),el=elOf(f.node.id);
+  if(!el)return null;
+  var cs=getComputedStyle(el),out={};
+  out.role=el.getAttribute('role')||el.tagName.toLowerCase();
+  out.accessibleName=el.getAttribute('aria-label')||el.getAttribute('title')||el.textContent||'';
+  out.accessibleValue=el.getAttribute('aria-value')||null;
+  out.state={};
+  ['aria-expanded','aria-checked','aria-selected','aria-disabled','aria-pressed','aria-hidden'].forEach(function(k){
+    var v=el.getAttribute(k);
+    if(v!==null)out.state[k]=v;
+  });
+  out.tabIndex=el.tabIndex;
+  out.focusable=el.tabIndex>=0&&out.state['aria-disabled']!=='true';
+  out.hidden=el.hidden||cs.display==='none'||cs.visibility==='hidden';
+  return {id:pubId(f.node),accessibility:out};
+};
+
+API.get_console_logs=function(a){
+  var level=a&&a.level,limit=a&&typeof a.limit==='number'?Math.max(1,Math.min(200,Math.floor(a.limit))):50;
+  var logs=__consoleLogs.slice();
+  if(level)logs=logs.filter(function(l){return l.level===level;});
+  return {count:logs.length,logs:logs.slice(-limit)};
+};
+
+API.inspect_element=function(a){
+  var f=need(a.id),el=elOf(f.node.id);
+  if(!el)return null;
+  var tree=describe(f.node,0,0);
+  var rect=rectOf(f.node.id);
+  var cs=getComputedStyle(el),computed={};
+  for(var i=0;i<cs.length;i++){computed[cs[i]]=cs.getPropertyValue(cs[i]);}
+  var acc={role:el.getAttribute('role')||el.tagName.toLowerCase(),
+    accessibleName:el.getAttribute('aria-label')||el.getAttribute('title')||el.textContent||''};
+  ['aria-expanded','aria-checked','aria-selected','aria-disabled','aria-pressed','aria-hidden'].forEach(function(k){
+    var v=el.getAttribute(k);if(v!==null)acc[k]=v;
+  });
+  return {
+    id:pubId(f.node),
+    tree:tree,
+    rect:rect,
+    computed:computed,
+    accessibility:acc,
+    offsetWidth:el.offsetWidth,
+    offsetHeight:el.offsetHeight,
+    scrollWidth:el.scrollWidth,
+    scrollHeight:el.scrollHeight,
+    clientWidth:el.clientWidth,
+    clientHeight:el.clientHeight,
+    tagName:el.tagName,
+    attributes:{},
+    interactive:{
+      focusable:el.tabIndex>=0,
+      disabled:el.disabled||false,
+      checked:el.checked||false,
+      selected:el.selected||false,
+      editable:el.isContentEditable
+    }
+  };
+};
 API.select_element=function(a){var f=need(a.id);selectNode(f.node.id);return describe(f.node,0,0);};
 API.get_full_html=function(){return fullDoc();};
 
@@ -1002,7 +1089,7 @@ API.__prepare_screenshot=function(a){
   });
 };
 API.__after_screenshot=function(){placeOverlay();return true;};
-['get_document','get_tree','get_element','find_elements','get_selection','select_element','get_full_html','new_document','undo','redo','__prepare_screenshot','__after_screenshot'].forEach(function(k){API[k].raw=true;});
+['get_document','get_tree','get_element','find_elements','get_selection','select_element','get_full_html','new_document','undo','redo','__prepare_screenshot','__after_screenshot','get_computed_style','get_accessibility','get_console_logs','inspect_element'].forEach(function(k){API[k].raw=true;});
 
 function callApi(m,p){
   if(!Object.prototype.hasOwnProperty.call(API,m))throw new Error('Unknown method: '+m);

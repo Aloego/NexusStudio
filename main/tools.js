@@ -39,12 +39,32 @@ const TOOLS = [
     inputSchema: obj({}), readOnly: true
   },
   {
-    name: 'select_element', title: 'Select an element',
-    description: 'Selects an element in the editor so the person can see it highlighted.',
-    inputSchema: obj({ id: id() }, ['id']), readOnly: true
-  },
-  {
-    name: 'add_element', title: 'Add an element',
+      name: 'select_element', title: 'Select an element',
+      description: 'Selects an element in the editor so the person can see it highlighted.',
+      inputSchema: obj({ id: id() }, ['id']), readOnly: true
+    },
+    {
+      name: 'get_computed_style', title: 'Get computed styles',
+      description: 'Returns the computed CSS styles for an element (including inherited and default values). Useful for verifying actual rendered styles.',
+      inputSchema: obj({ id: id(), properties: { type: 'array', description: 'Specific CSS properties to return. If omitted, returns all computed styles.', items: { type: 'string' } } }, ['id']), readOnly: true
+    },
+    {
+      name: 'get_accessibility', title: 'Get accessibility info',
+      description: 'Returns accessibility information for an element: role, accessible name, state, and relevant ARIA attributes.',
+      inputSchema: obj({ id: id() }, ['id']), readOnly: true
+    },
+    {
+      name: 'get_console_logs', title: 'Get console logs',
+      description: 'Returns recent console messages (errors, warnings, logs) from the editor page. Useful for debugging.',
+      inputSchema: obj({ level: str('Filter by level: error, warn, log, info, debug.', { enum: ['error', 'warn', 'log', 'info', 'debug'] }), limit: num('Maximum messages to return. Default 50.') }), readOnly: true
+    },
+    {
+      name: 'inspect_element', title: 'Comprehensive element inspection',
+      description: 'Returns a complete inspection report for an element: DOM properties, computed styles, accessibility, layout, and interactive state.',
+      inputSchema: obj({ id: id() }, ['id']), readOnly: true
+    },
+    {
+      name: 'add_element', title: 'Add an element',
     description: 'Adds one element, optionally with nested children. Example: {"tag":"section","style":{"padding":"48px"},"children":[{"tag":"h2","text":"Pricing"}]}. Elements that need an opening and closing tag may contain children; img, input, hr and br may not.',
     inputSchema: obj({
       tag: str('HTML or SVG tag name, for example div, h1, button, img, svg, rect.'),
@@ -131,10 +151,25 @@ const TOOLS = [
     inputSchema: obj({}), destructive: true
   },
   {
-    name: 'screenshot', title: 'Take a screenshot',
-    description: 'Returns a picture of the editing canvas so you can check how the page looks. Optionally scrolls to an element first.',
-    inputSchema: obj({ element_id: id('Scroll this element into the middle of the view first.'), hide_selection: bool('Hide the blue selection box. Default true.') }), readOnly: true
-  }
-];
+      name: 'screenshot', title: 'Take a screenshot',
+      description: 'Returns a picture of the editing canvas so you can check how the page looks. Optionally scrolls to an element first.',
+      inputSchema: obj({ element_id: id('Scroll this element into the middle of the view first.'), hide_selection: bool('Hide the blue selection box. Default true.') }), readOnly: true
+    },
+    {
+      name: 'get_window_state', title: 'Get window state',
+      description: 'Returns information about the NexusStudio window: bounds, size, position, focus state, and whether it is maximized or minimized.',
+      inputSchema: obj({}), readOnly: true
+    },
+    {
+      name: 'get_app_state', title: 'Get application state',
+      description: 'Returns runtime information about the NexusStudio process: Electron version, platform, memory usage, uptime, and whether the AI server is running.',
+      inputSchema: obj({}), readOnly: true
+    },
+    {
+      name: 'get_process_info', title: 'Get process info',
+      description: 'Returns information about the current Electron process: process ID, memory usage, CPU usage, and uptime.',
+      inputSchema: obj({}), readOnly: true
+    }
+  ];
 
 module.exports = TOOLS;

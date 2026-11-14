@@ -2,7 +2,7 @@
 
 ## Current Task
 
-Phase 2 — Persistent AI handover and tracking workflow.
+Phase 3-5 — Development mode, live application inspection, and desktop/MCP testing tools.
 
 ## Branch
 
@@ -10,7 +10,7 @@ Phase 2 — Persistent AI handover and tracking workflow.
 
 ## Work Session Status
 
-Phase 2 implementation and recovery verification are complete.
+Phases 3, 4, and 5 implementation is complete. All changes are on the feature branch and ready for user review.
 
 ## Completed
 
@@ -18,19 +18,48 @@ Phase 2 implementation and recovery verification are complete.
 - Confirmed the working tree was clean before Phase 2.
 - Established the project workflow requirements.
 - Created the persistent AI workflow instructions in `AGENTS.md`.
+- **Phase 3:** Documented development mode in `DEVELOPMENT.md` — how to run NexusStudio from source, run tests, and debug.
+- **Phase 4:** Added live application inspection capabilities:
+  - `get_computed_style` — returns computed CSS styles for an element
+  - `get_accessibility` — returns accessibility info (role, name, state, ARIA)
+  - `get_console_logs` — returns recent console messages from the editor
+  - `inspect_element` — comprehensive element inspection (DOM, styles, accessibility, layout, interactive state)
+  - Console log capture added to renderer
+- **Phase 5:** Added desktop/MCP testing tools:
+  - `get_window_state` — window bounds, focus, visibility, maximized/minimized state
+  - `get_app_state` — Electron version, platform, memory, uptime, AI server status
+  - `get_process_info` — process ID, memory usage, CPU usage, uptime
+  - All desktop tools are read-only and preserve security boundaries
 
 ## Files Changed
 
-- `AGENTS.md`
-- `AI_HANDOVER.md`
-- `TASK_CHECKLIST.md`
-- `TEST_RESULTS.md`
+- `AGENTS.md` — (unchanged, already complete)
+- `AI_HANDOVER.md` — updated with current status
+- `TASK_CHECKLIST.md` — updated with Phase 3-5 completion
+- `TEST_RESULTS.md` — updated with test results
+- `DEVELOPMENT.md` — new file, development workflow documentation
+- `README.md` — added link to DEVELOPMENT.md
+- `main/tools.js` — added 7 new inspection tools
+- `main/mcp-server.js` — added desktop tool handlers
+- `main/main.js` — added desktop tool implementations
+- `renderer/app.js` — added inspection API functions and console log capture
 
 ## Tests
 
-No application tests have been run yet.
+### Main Process Smoke Tests
+```bash
+node test/main-smoke.js
+```
+Result: 20 passed, 0 failed
 
-This Phase 2 change only establishes workflow/tracking files.
+### End-to-End Editor Tests
+```bash
+npm test
+```
+Result: 98 passed, 0 failed
+
+### Total
+118 passed, 0 failed
 
 ## Known Issues
 
@@ -38,10 +67,10 @@ None currently known.
 
 ## Next Action
 
-User must personally review/test the completed Phase 2 workflow and explicitly approve it before Phase 2 can be marked Approved.
+User must personally review/test the completed Phases 3-5 workflow and explicitly approve it before these phases can be marked Approved.
 
 ## Approval Status
 
 Awaiting User Approval
 
-> Note: This status refers to the workflow-file implementation after verification. It does not authorize merging into `main` or releasing the application.
+> Note: This status refers to the workflow implementation after verification. It does not authorize merging into `main` or releasing the application.
