@@ -2,17 +2,24 @@
 
 ## Current Task
 
-Add the missing HTML elements to the Elements tab (state: Awaiting User Approval once pushed). The earlier task, removing the `SVG / Drawing` group, was approved by the user on 2026-11-14.
+Show each element's browser-default styles on the canvas and in the CSS tab (state: Awaiting User Approval once pushed). The earlier task, adding the missing elements, was approved by the user on 2026-11-14.
 
-## Latest Session (2026-11-14, second request)
+## Latest Session (2026-11-14, third request)
 
-- User request: "Approved. Now add all the missing elements. Add each under the category they fit into; if they don't fit into any category, create for them." The user also suggested an SVG image might go under Media; agreed.
-- Done in `renderer/app.js`: the Elements tab (`PAL`) now offers 98 elements in 12 groups (was 25 in 7). New groups: Text Formatting, Quotes & Code, Inline Details, Form Extras, Table Parts. Each new element has a starter preset in `make()`. `VOID` now also has wbr, source, track, col, area. `CONT` now also has tfoot, td, th, colgroup, li, dl, menu, figure, fieldset, blockquote, dialog, hgroup, search, picture, map, datalist, optgroup, address. A plain `svg` graphic was added under Media and selects itself (not its first shape) when added.
-- Done in `test/e2e.js`: new "Elements tab" checks (no SVG group, exact element list, no duplicates, every element can be added, empty elements exported without a closing tag).
-- Deliberately not added: elements the editor blocks for security (script, style, iframe, frame, frameset, object, embed, link, meta, base, head, html, body, title, noscript, template, slot, portal), obsolete elements, MathML.
-- Tests: `npm test` gives 107 passed, 3 failed. The 3 failures (`get_window_state`, `get_app_state`, `get_process_info`) also failed before these changes. Not investigated.
+- User request: all HTML elements should show their default behaviour/characteristics on the canvas and in the CSS tab. Example: a div normally takes the width of its container; show that when it is dragged on, with the values in the CSS tab.
+- Done in `renderer/app.js`: new `UA` table (browser-default styles for all 98 palette elements) and `applyUA()`. `make()` now wraps `makeRaw()` and applies the defaults to the new element and its starter children. Starter styling that sets the same property wins over the default. Starters added in the previous task were simplified to show true defaults. `ul`/`ol` starters use the `padding` shorthand so the CSS tab agrees with the canvas. svg starter has explicit 120px width/height (a `width: auto` would override the svg's width attribute).
+- Not changed: elements added by `add_html` or by the MCP `add_element` tool without `use_preset`, imported HTML, and the sample page. Only palette adds (and `use_preset`) get the defaults.
+- Starters that deliberately differ from the browser default: div, section, header, nav, main, footer, article, aside, details (padding, minimum height, background, flex rows, width), h1, h2, p (zero margins, custom sizes), img, video, audio, a, button, input, textarea, select, form, ul, ol, table, dialog, canvas, svg. Offer to switch these to pure browser defaults if the user wants.
+- Done in `test/e2e.js`: new checks in their own browser context ("Elements start with their browser defaults").
+- Tests: `npm test` gives 109 passed, 3 failed. The 3 failures (`get_window_state`, `get_app_state`, `get_process_info`) also failed before these changes. Not investigated.
 - Not run: real Electron window testing. The user must test it.
 - Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+
+## Earlier Session (2026-11-14, second request)
+
+- User request: add all missing elements, each under the category it fits, creating new categories where needed. Approved by the user.
+- Done: the Elements tab offers 98 elements in 12 groups (was 25 in 7). New groups: Text Formatting, Quotes & Code, Inline Details, Form Extras, Table Parts. `svg` graphic added under Media. `VOID` and `CONT` extended.
+- Deliberately not added: elements the editor blocks for security (script, style, iframe, frame, frameset, object, embed, link, meta, base, head, html, body, title, noscript, template, slot, portal), obsolete elements, MathML.
 
 ## Earlier Session (2026-11-14, first request)
 
@@ -96,21 +103,22 @@ Result: 98 passed, 0 failed
 ## Git Status
 
 - Branch: `feature/ai-development-workflow`
-- Latest code commit (add missing elements): `222264841b7cd6f92822280a8da472304fcba51a`
-- Changes pushed: Yes (the commit above; this handover note is pushed in a follow-up commit)
+- Latest code commit: see `git log` (the commit titled "Show browser-default styles for every element")
+- Changes pushed: Yes
 - Working tree: Clean after the follow-up commit
 
 ## Known Issues
 
 - `get_window_state`, `get_app_state` and `get_process_info` fail in `npm test` in the AI sandbox, both before and after the latest changes. Cause not investigated.
 - Elements that only make sense inside a parent (li, td, option, source and similar) are added inside the selected element only if it can hold children; otherwise they are added after it. Nothing enforces valid nesting.
+- Elements now carry more inline CSS than before, so Copy page code is longer.
 
 ## Next Action
 
-Wait for the user to test the new Elements tab and say `APPROVE` or `REJECT`. A separate approval is required before merging into `main` or releasing the application.
+Wait for the user to test the default styles and say `APPROVE` or `REJECT`. A separate approval is required before merging into `main` or releasing the application.
 
 ## Approval Status
 
-Awaiting User Approval (add missing elements). Earlier tasks (SVG / Drawing removal, window sizing fix) were approved by the user.
+Awaiting User Approval (browser-default styles). Earlier tasks (SVG / Drawing removal, add missing elements, window sizing fix) were approved by the user.
 
 > Note: No approval here authorizes merging into `main` or releasing the application.

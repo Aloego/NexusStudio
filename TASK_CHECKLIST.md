@@ -118,7 +118,20 @@
 - [x] Add automated tests for the Elements tab
 - [x] Run automated tests and look at the app in a browser
 - [x] Commit and push changes to feature branch (commit `2222648`)
-- [ ] User personally tests the Elements tab
+- [x] User personally tests the Elements tab
+
+**Status:** Approved (user said "Approved" on 2026-11-14)
+
+## Show browser-default styles for every element
+
+- [x] Build a table of browser-default styles for all 98 palette elements (display, position, width, height, margin, padding, fonts, text decoration and similar)
+- [x] Apply the defaults when an element is added (including its starter children), so they show on the canvas and in the CSS tab
+- [x] Starter styling that sets the same property still wins (for example the div's padding and minimum height)
+- [x] Simplify the starters added in the previous task so they show true defaults
+- [x] Add automated tests (new div fills its container; CSS tab shows each probed element's defaults)
+- [x] Run automated tests and look at the app in a browser
+- [x] Commit and push changes to feature branch
+- [ ] User personally tests the defaults in the CSS tab
 
 **Status:** Awaiting User Approval
 

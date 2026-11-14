@@ -326,4 +326,51 @@ Opened the editor in headless Chromium, took screenshots of the palette and of a
 
 ### Approval
 
-Awaiting User Approval (committed and pushed as `2222648`)
+Approved (user said "Approved" on 2026-11-14)
+
+
+## Show browser-default styles for every element
+
+### Date
+
+2026-11-14
+
+### Branch
+
+feature/ai-development-workflow
+
+### Scope
+
+Every element in the Elements tab is now added with its browser-default styles stored on it, so they show on the canvas and in the CSS tab. Example: a new div gets display: block, position: static, width: auto, height: auto, margin 0, padding. Headings, lists, tables, form controls, links and text formatting elements get their own defaults (for example h3 font-size 1.17em, bold, margin 1em 0; li display list-item; table display table; datalist display none). Where the app's starter styling sets the same property it still wins (for example the div's 16px padding and 64px minimum height, h1/h2/p zero margins, header and nav as flex rows). The starters added in the previous task were simplified so they show true defaults. Changed files: `renderer/app.js`, `test/e2e.js`.
+
+### Static check
+
+`node --check renderer/app.js` and `node --check test/e2e.js` — both passed.
+
+### Automated tests
+
+Command: `npm test` (run in the AI sandbox)
+
+Result: 109 passed, 3 failed.
+
+New checks that passed: a new div fills the width of its container on the canvas (832 px in 832 px); the CSS tab shows the expected default values for 16 probe elements (div, p, h3, span, strong, em, a, li, ul, table, td, input, button, blockquote, progress, datalist).
+
+The 3 failures are the same ones that already failed before these changes: `get_window_state`, `get_app_state`, `get_process_info`. Cause not investigated.
+
+### Inspected in a browser
+
+Opened the editor in headless Chromium, added a mix of elements to a blank page and selected a div. The CSS tab showed display block, position static, width auto, height auto, margin 0 and padding 16px, with the "set" counts updated. The canvas rendered the elements with their browser defaults. No page errors were raised.
+
+### Could not be run
+
+- The real Electron window. Not run in this sandbox.
+
+### Manual testing for the user
+
+- Drag several different elements onto the canvas and select each one; check the CSS tab shows sensible default values.
+- Change a value (for example the div's width) and check the canvas follows.
+- Check Copy page code: elements now carry more CSS than before.
+
+### Approval
+
+Awaiting User Approval

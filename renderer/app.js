@@ -101,8 +101,73 @@ var PAL=[
  {g:'Semantic',c:'c-f',b:{article:'ART',aside:'ASD',details:'DET',summary:'SUM',dialog:'DLG',address:'ADR',hgroup:'HGR',search:'SRH'},i:[['article','Standalone post'],['aside','Complementary'],['details','Disclosure'],['summary','Disclosure label (in details)'],['dialog','Dialog box'],['address','Contact info'],['hgroup','Heading + subtitle'],['search','Search region']]}
 ];
 var PLACE="data:image/svg+xml;utf8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="480" height="300" viewBox="0 0 480 300"><rect width="480" height="300" fill="#27272a"/><path d="M0 240l130-90 90 60 110-110 150 120v80H0z" fill="#3f3f46"/><circle cx="360" cy="80" r="30" fill="#52525b"/></svg>');
+/* ---------- browser default styles ----------
+   What each element looks like with no CSS at all. They are stored on the element when it is added,
+   so they show on the canvas and in the CSS tab. Any starter style below that sets the same property wins. */
+var UA={};
+function ua(tags,st){tags.split(' ').forEach(function(t){UA[t]=Object.assign(UA[t]||{},st);});}
+PAL.forEach(function(g){g.i.forEach(function(it){UA[it[0]]={display:'inline',position:'static',margin:'0',padding:'0'};});});
+ua('div section header nav main footer article aside form hgroup search address details summary figcaption legend fieldset blockquote figure dl dt dd menu ul ol p h1 h2 h3 h4 h5 h6 pre hr dialog',{display:'block',width:'auto',height:'auto'});
+ua('option optgroup',{display:'block'});
+ua('li',{display:'list-item'});
+ua('p dl menu ul ol pre',{margin:'1em 0'});
+ua('ul ol menu',{padding:'0 0 0 40px'});
+ua('h1',{'font-size':'2em','font-weight':'700',margin:'0.67em 0'});
+ua('h2',{'font-size':'1.5em','font-weight':'700',margin:'0.83em 0'});
+ua('h3',{'font-size':'1.17em','font-weight':'700',margin:'1em 0'});
+ua('h4',{'font-size':'1em','font-weight':'700',margin:'1.33em 0'});
+ua('h5',{'font-size':'0.83em','font-weight':'700',margin:'1.67em 0'});
+ua('h6',{'font-size':'0.67em','font-weight':'700',margin:'2.33em 0'});
+ua('blockquote figure',{margin:'1em 40px'});
+ua('dd',{margin:'0 0 0 40px'});
+ua('address',{'font-style':'italic'});
+ua('hr',{margin:'0.5em auto',border:'1px inset',overflow:'hidden'});
+ua('fieldset',{margin:'0 2px',padding:'0.35em 0.75em 0.625em',border:'2px groove'});
+ua('legend',{padding:'0 2px'});
+ua('dialog',{width:'fit-content',height:'fit-content'});
+ua('pre',{'font-family':'monospace','white-space':'pre'});
+ua('code kbd samp',{'font-family':'monospace'});
+ua('strong b',{'font-weight':'700'});
+ua('em i cite dfn var',{'font-style':'italic'});
+ua('u ins',{'text-decoration':'underline'});
+ua('s del',{'text-decoration':'line-through'});
+ua('abbr',{'text-decoration':'underline dotted'});
+ua('small sub sup',{'font-size':'smaller'});
+ua('sub',{'vertical-align':'sub'});
+ua('sup',{'vertical-align':'super'});
+ua('mark',{'background-color':'yellow',color:'black'});
+ua('a',{color:'#0000ee','text-decoration':'underline',cursor:'pointer'});
+ua('img video canvas',{width:'auto',height:'auto'});
+ua('audio',{display:'inline-block',width:'300px',height:'54px'});
+ua('input button select textarea progress meter',{display:'inline-block',width:'auto',height:'auto'});
+ua('input',{padding:'1px 2px','font-size':'13.3333px'});
+ua('textarea',{padding:'2px','font-size':'13.3333px','font-family':'monospace'});
+ua('select',{'font-size':'13.3333px'});
+ua('button',{padding:'1px 6px','font-size':'13.3333px','text-align':'center',cursor:'default'});
+ua('progress',{width:'10em',height:'1em'});
+ua('meter',{width:'5em',height:'1em'});
+ua('table',{display:'table',width:'auto',height:'auto','border-collapse':'separate','border-spacing':'2px'});
+ua('caption',{display:'table-caption','text-align':'center'});
+ua('thead',{display:'table-header-group'});
+ua('tbody',{display:'table-row-group'});
+ua('tfoot',{display:'table-footer-group'});
+ua('tr',{display:'table-row'});
+ua('td th',{display:'table-cell',padding:'1px'});
+ua('th',{'font-weight':'700','text-align':'center'});
+ua('colgroup',{display:'table-column-group'});
+ua('col',{display:'table-column'});
+ua('ruby',{display:'ruby'});
+ua('rt',{display:'ruby-text'});
+ua('datalist source track area rp',{display:'none'});
+Object.keys(UA).forEach(function(k){if(UA[k].display==='none')UA[k]={display:'none'};});
+function applyUA(n){
+  if(!n.ns||n.tag==='svg'){var d=UA[n.tag];if(d)n.style=Object.assign({},d,n.style);}
+  n.children.forEach(applyUA);
+  return n;
+}
 var FIELDSTY={padding:'8px 12px',border:'1px solid #475569','border-radius':'6px',background:'transparent',color:'inherit','font-family':'inherit','font-size':'14px'};
-function make(tag){
+function make(tag){return applyUA(makeRaw(tag));}
+function makeRaw(tag){
   var soft={background:'rgba(148,163,184,.12)'};
   function cell(t,h){return N(h?'th':'td',{text:t,style:{padding:'8px 12px',border:'1px solid #475569','text-align':'left'}});}
   function box(extra){return Object.assign({padding:'16px','min-height':'64px'},soft,extra||{});}
@@ -130,16 +195,16 @@ function make(tag){
    case 'textarea':return N('textarea',{attrs:{rows:'3',placeholder:'Write a message'},style:o(FIELDSTY,{width:'100%'})});
    case 'select':return N('select',{style:FIELDSTY,children:[N('option',{text:'Option 1'}),N('option',{text:'Option 2'}),N('option',{text:'Option 3'})]});
    case 'form':return N('form',{style:{display:'flex','flex-direction':'column',gap:'12px',padding:'16px','max-width':'360px'},children:[make('input'),make('button')]});
-   case 'ul':case 'ol':return N(tag,{style:{'padding-left':'24px',margin:'0'},children:[N('li',{text:'First item'}),N('li',{text:'Second item'}),N('li',{text:'Third item'})]});
+   case 'ul':case 'ol':return N(tag,{style:{padding:'0 0 0 24px',margin:'0'},children:[N('li',{text:'First item'}),N('li',{text:'Second item'}),N('li',{text:'Third item'})]});
    case 'table':
      var td=function(t,h){return N(h?'th':'td',{text:t,style:{padding:'8px 12px',border:'1px solid #475569','text-align':'left'}});};
      return N('table',{style:{'border-collapse':'collapse',width:'100%'},children:[N('tbody',{children:[N('tr',{children:[td('Name',1),td('Role',1)]}),N('tr',{children:[td('Ada'),td('Engineer')]}),N('tr',{children:[td('Lin'),td('Designer')]})]})]});
    /* layout + text */
-   case 'hr':return N('hr',{style:{border:'0','border-top':'1px solid #475569',margin:'16px 0',width:'100%'}});
-   case 'h3':return N('h3',{text:'Heading level 3',style:{'font-size':'22px','font-weight':'700','line-height':'1.25',margin:'0'}});
-   case 'h4':return N('h4',{text:'Heading level 4',style:{'font-size':'18px','font-weight':'700','line-height':'1.3',margin:'0'}});
-   case 'h5':return N('h5',{text:'Heading level 5',style:{'font-size':'16px','font-weight':'700','line-height':'1.3',margin:'0'}});
-   case 'h6':return N('h6',{text:'Heading level 6',style:{'font-size':'14px','font-weight':'700','line-height':'1.3',margin:'0'}});
+   case 'hr':return N('hr');
+   case 'h3':return N('h3',{text:'Heading level 3'});
+   case 'h4':return N('h4',{text:'Heading level 4'});
+   case 'h5':return N('h5',{text:'Heading level 5'});
+   case 'h6':return N('h6',{text:'Heading level 6'});
    case 'br':return N('br');
    case 'wbr':return N('wbr');
    /* text formatting */
@@ -156,12 +221,12 @@ function make(tag){
    case 'del':return N('del',{text:'Deleted text'});
    case 'ins':return N('ins',{text:'Inserted text'});
    /* quotes + code */
-   case 'blockquote':return N('blockquote',{style:{margin:'0',padding:'8px 16px','border-left':'4px solid #475569'},children:[N('p',{text:'A quotation goes here.',style:{margin:'0'}})]});
+   case 'blockquote':return N('blockquote',{children:[N('p',{text:'A quotation goes here.'})]});
    case 'q':return N('q',{text:'A short inline quote'});
    case 'cite':return N('cite',{text:'Title of a work'});
-   case 'pre':return N('pre',{text:'Preformatted text\n  keeps its spacing',style:{margin:'0',padding:'12px','border-radius':'6px','overflow':'auto','font-family':"'JetBrains Mono', monospace",'font-size':'13px'}});
-   case 'code':return N('code',{text:'const x = 1;',style:{'font-family':"'JetBrains Mono', monospace",'font-size':'0.9em',padding:'2px 6px','border-radius':'4px'}});
-   case 'kbd':return N('kbd',{text:'Ctrl + S',style:{'font-family':"'JetBrains Mono', monospace",'font-size':'0.85em',padding:'2px 6px',border:'1px solid #475569','border-radius':'4px'}});
+   case 'pre':return N('pre',{text:'Preformatted text\n  keeps its spacing'});
+   case 'code':return N('code',{text:'const x = 1;'});
+   case 'kbd':return N('kbd',{text:'Ctrl + S'});
    case 'samp':return N('samp',{text:'Sample output'});
    case 'var':return N('var',{text:'x'});
    /* inline details */
@@ -175,34 +240,34 @@ function make(tag){
    case 'rt':return N('rt',{text:'Annotation'});
    case 'rp':return N('rp',{text:'('});
    /* media */
-   case 'svg':return N('svg',{ns:1,attrs:{width:'120',height:'120',viewBox:'0 0 120 120'},style:{display:'block'},children:[
+   case 'svg':return N('svg',{ns:1,attrs:{width:'120',height:'120',viewBox:'0 0 120 120'},style:{width:'120px',height:'120px'},children:[
      N('rect',{ns:1,attrs:{width:'120',height:'120',rx:'16'},style:{fill:'#1e293b'}}),
      N('circle',{ns:1,attrs:{cx:'60',cy:'60',r:'30'},style:{fill:'#3b82f6'}})]});
-   case 'canvas':return N('canvas',{attrs:{width:'300',height:'150'},style:{display:'block','max-width':'100%','background':'rgba(148,163,184,.12)','border-radius':'8px'}});
+   case 'canvas':return N('canvas',{attrs:{width:'300',height:'150'},style:{'max-width':'100%','background':'rgba(148,163,184,.12)','border-radius':'8px'}});
    case 'picture':return N('picture',{children:[N('source',{attrs:{media:'(min-width: 800px)',srcset:PLACE}}),make('img')]});
    case 'source':return N('source',{attrs:{media:'(min-width: 800px)',srcset:PLACE}});
    case 'track':return N('track',{attrs:{kind:'captions',srclang:'en',label:'English'}});
-   case 'figure':return N('figure',{style:{margin:'0'},children:[make('img'),make('figcaption')]});
-   case 'figcaption':return N('figcaption',{text:'Caption text',style:{'font-size':'13px',opacity:'.7','margin-top':'8px'}});
+   case 'figure':return N('figure',{children:[make('img'),make('figcaption')]});
+   case 'figcaption':return N('figcaption',{text:'Caption text'});
    case 'map':return N('map',{attrs:{name:'image-map'},children:[make('area')]});
    case 'area':return N('area',{attrs:{shape:'rect',coords:'0,0,100,100',href:'#',alt:'Clickable area'}});
    /* forms */
-   case 'label':return N('label',{text:'Field label',style:{display:'block','font-weight':'600'}});
-   case 'fieldset':return N('fieldset',{style:{padding:'12px 16px',border:'1px solid #475569','border-radius':'8px'},children:[make('legend'),make('input')]});
-   case 'legend':return N('legend',{text:'Group title',style:{'font-weight':'600',padding:'0 6px'}});
+   case 'label':return N('label',{text:'Field label'});
+   case 'fieldset':return N('fieldset',{children:[make('legend'),make('input')]});
+   case 'legend':return N('legend',{text:'Group title'});
    case 'option':return N('option',{text:'Option'});
    case 'optgroup':return N('optgroup',{attrs:{label:'Group'},children:[N('option',{text:'Option 1'}),N('option',{text:'Option 2'})]});
    case 'datalist':return N('datalist',{children:[N('option',{attrs:{value:'Suggestion 1'}}),N('option',{attrs:{value:'Suggestion 2'}})]});
    case 'output':return N('output',{text:'Result: 42'});
-   case 'progress':return N('progress',{attrs:{value:'60',max:'100'},style:{width:'200px'}});
-   case 'meter':return N('meter',{attrs:{value:'0.6',min:'0',max:'1'},style:{width:'200px'}});
+   case 'progress':return N('progress',{attrs:{value:'60',max:'100'}});
+   case 'meter':return N('meter',{attrs:{value:'0.6',min:'0',max:'1'}});
    /* lists + tables */
    case 'li':return N('li',{text:'List item'});
-   case 'dl':return N('dl',{style:{margin:'0'},children:[make('dt'),make('dd')]});
-   case 'dt':return N('dt',{text:'Term',style:{'font-weight':'700'}});
-   case 'dd':return N('dd',{text:'Description of the term.',style:{margin:'4px 0 0 16px'}});
-   case 'menu':return N('menu',{style:{'padding-left':'24px',margin:'0'},children:[N('li',{text:'Action one'}),N('li',{text:'Action two'})]});
-   case 'caption':return N('caption',{text:'Table caption',style:{'text-align':'left','font-weight':'600',padding:'8px 0'}});
+   case 'dl':return N('dl',{children:[make('dt'),make('dd')]});
+   case 'dt':return N('dt',{text:'Term'});
+   case 'dd':return N('dd',{text:'Description of the term.'});
+   case 'menu':return N('menu',{children:[N('li',{text:'Action one'}),N('li',{text:'Action two'})]});
+   case 'caption':return N('caption',{text:'Table caption'});
    case 'thead':return N('thead',{children:[N('tr',{children:[cell('Name',1),cell('Role',1)]})]});
    case 'tbody':return N('tbody',{children:[N('tr',{children:[cell('Ada'),cell('Engineer')]}),N('tr',{children:[cell('Lin'),cell('Designer')]})]});
    case 'tfoot':return N('tfoot',{children:[N('tr',{children:[cell('Total'),cell('2')]})]});
@@ -212,11 +277,11 @@ function make(tag){
    case 'colgroup':return N('colgroup',{children:[N('col'),N('col')]});
    case 'col':return N('col');
    /* semantic */
-   case 'summary':return N('summary',{text:'Click to expand',style:{cursor:'pointer'}});
+   case 'summary':return N('summary',{text:'Click to expand'});
    case 'dialog':return N('dialog',{attrs:{open:''},style:{position:'relative',inset:'auto',margin:'0',padding:'16px',border:'1px solid #475569','border-radius':'8px',background:'transparent',color:'inherit'},children:[N('p',{text:'Dialog content goes here.',style:{margin:'0'}})]});
-   case 'address':return N('address',{text:'Your name, 12 Example Street, City',style:{'font-style':'normal'}});
-   case 'hgroup':return N('hgroup',{children:[N('h2',{text:'Main title',style:{margin:'0'}}),N('p',{text:'Supporting subtitle',style:{margin:'0'}})]});
-   case 'search':return N('search',{style:{display:'block'},children:[N('input',{attrs:{type:'search',placeholder:'Search…'},style:FIELDSTY})]});
+   case 'address':return N('address',{text:'Your name, 12 Example Street, City'});
+   case 'hgroup':return N('hgroup',{children:[N('h2',{text:'Main title'}),N('p',{text:'Supporting subtitle'})]});
+   case 'search':return N('search',{children:[N('input',{attrs:{type:'search',placeholder:'Search…'},style:FIELDSTY})]});
    case 'line':return svgWrap(N('line',{ns:1,attrs:{x1:'10',y1:'10',x2:'110',y2:'110'},style:{stroke:'#60a5fa','stroke-width':'4','stroke-linecap':'round'}}));
    case 'rect':return svgWrap(N('rect',{ns:1,attrs:{x:'10',y:'10',width:'100',height:'100',rx:'10'},style:{fill:'#3b82f6'}}));
    case 'circle':return svgWrap(N('circle',{ns:1,attrs:{cx:'60',cy:'60',r:'48'},style:{fill:'#06b6d4'}}));

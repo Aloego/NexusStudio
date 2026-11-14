@@ -259,6 +259,55 @@ page.on('console', function (m) {
   const fullHtml = JSON.stringify(await callRenderer('get_full_html', {}));
   ok(!/<\/(br|wbr|hr|img|input|source|track|col|area)>/.test(fullHtml), 'empty elements are written without a closing tag');
 
+  console.log('Elements start with their browser defaults');
+  // a separate browser context, so clearing the page here cannot touch the saved draft the later tests load
+  const defCtx = await browser.newContext({ viewport: { width: 1480, height: 920 } });
+  const defPage = await defCtx.newPage();
+  await defPage.goto(url);
+  await defPage.waitForSelector('#page h1');
+  await defPage.evaluate(function () { return window.NexusAPI.call('new_document', {}); });
+  await defPage.click('#tabEl');
+  const addPalette = function (tag) {
+    return defPage.evaluate(function (t) {
+      const em = [].slice.call(document.querySelectorAll('#palette .it em')).filter(function (e) { return e.textContent === t; })[0];
+      em.closest('button').click();
+    }, tag);
+  };
+  await addPalette('div');
+  const divBox = await defPage.evaluate(function () {
+    const el = document.querySelector('#page > div'), pg = document.querySelector('#page'), cs = getComputedStyle(pg);
+    return [el.offsetWidth, Math.round(pg.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight))];
+  });
+  ok(divBox[0] === divBox[1], 'a new div fills the width of its container on the canvas ' + JSON.stringify(divBox));
+  const PROBES = {
+    div: { display: 'block', position: 'static', width: 'auto', height: 'auto', margin: '0', padding: '16px' },
+    p: { display: 'block', margin: '0', width: 'auto' },
+    h3: { display: 'block', 'font-size': '1.17em', 'font-weight': '700', margin: '1em 0' },
+    span: { display: 'inline', position: 'static', width: '', margin: '0' },
+    strong: { display: 'inline', 'font-weight': '700' },
+    em: { display: 'inline', 'font-style': 'italic' },
+    a: { display: 'inline', 'text-decoration': 'underline' },
+    li: { display: 'list-item' },
+    ul: { display: 'block', width: 'auto' },
+    table: { display: 'table', width: '100%' },
+    td: { display: 'table-cell' },
+    input: { display: 'inline-block' },
+    button: { display: 'inline-block' },
+    blockquote: { display: 'block', margin: '1em 40px' },
+    progress: { display: 'inline-block', width: '10em' },
+    datalist: { display: 'none' }
+  };
+  const probeBad = [];
+  for (const t of Object.keys(PROBES)) {
+    await addPalette(t);
+    for (const prop of Object.keys(PROBES[t])) {
+      const got = await defPage.inputValue('#f-' + prop);
+      if (got !== PROBES[t][prop]) probeBad.push(t + ' ' + prop + ': expected "' + PROBES[t][prop] + '" got "' + got + '"');
+    }
+  }
+  ok(probeBad.length === 0, 'the CSS tab shows each element\'s default values ' + JSON.stringify(probeBad));
+  await defCtx.close();
+
   console.log('Desktop wiring with a stand-in for the Electron window');
   const dpage = await ctx.newPage();
   const derr = [];
