@@ -2,7 +2,7 @@
 
 ## Current Task
 
-Show each element's browser-default styles on the canvas and in the CSS tab (state: Awaiting User Approval once pushed). The earlier task, adding the missing elements, was approved by the user on 2026-11-14.
+No task is in progress. The last task, showing each element's browser-default styles on the canvas and in the CSS tab, was approved by the user on 2026-11-14. The user then asked for an audit of the CSS tab against all available CSS (read-only, no code changes; findings are in `TEST_RESULTS.md`).
 
 ## Latest Session (2026-11-14, third request)
 
@@ -115,10 +115,10 @@ Result: 98 passed, 0 failed
 
 ## Next Action
 
-Wait for the user to test the default styles and say `APPROVE` or `REJECT`. A separate approval is required before merging into `main` or releasing the application.
+Wait for the user's next instruction. A separate approval is required before merging into `main` or releasing the application.
 
 ## Approval Status
 
-Awaiting User Approval (browser-default styles). Earlier tasks (SVG / Drawing removal, add missing elements, window sizing fix) were approved by the user.
+Approved (browser-default styles). Earlier tasks (SVG / Drawing removal, add missing elements, window sizing fix) were also approved by the user.
 
 > Note: No approval here authorizes merging into `main` or releasing the application.

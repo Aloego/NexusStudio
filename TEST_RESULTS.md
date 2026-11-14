@@ -373,4 +373,28 @@ Opened the editor in headless Chromium, added a mix of elements to a blank page 
 
 ### Approval
 
-Awaiting User Approval
+Approved (user said "Approved" on 2026-11-14)
+
+
+## Audit: CSS tab versus all available CSS
+
+### Date
+
+2026-11-14 (read-only; no code changed)
+
+### Method
+
+Listed every CSS property the browser supports (headless Chromium 153: 760 names, of which 587 are standard and 173 are vendor-prefixed) and compared it with the CSS tab's own fields (72) plus the property search list (147 names; 148 together).
+
+### Result
+
+The CSS tab does not offer all CSS properties as ready-made fields or search suggestions. 439 of the 587 standard properties are in neither (many are longhands of a shorthand that is available, such as `margin-top`, `border-top-width` and `text-decoration-color`). Examples of useful ones not suggested: `margin-top`, `padding-left`, `outline-color`, `list-style-type`, `accent-color`, `resize`, `appearance`, `fill`, `stroke`, `mask`, `container-type`, `animation-timing-function`, `transition-property`, `transition-duration`, `perspective`, `color-scheme`, `direction`, `contain`, `zoom`, `all`.
+
+Typing any property name in the search box and pressing Enter does add it, even when it is not suggested. Checked in a browser: `text-decoration-color` (applied to a heading), `--brand` and `-webkit-line-clamp` each added a field. The search list shows at most 40 suggestions.
+
+Drop-down fields offer a short list of values (for example `display` has block, inline, inline-block, flex, inline-flex, grid, none). Any other value, such as `list-item`, `table` or `contents`, can only be set through a property's text field or when it is already set. Text fields accept any value.
+
+### Approval
+
+Not applicable (audit only)
+
