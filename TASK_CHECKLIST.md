@@ -86,6 +86,17 @@
 
 **Status:** Pending
 
+## Window Sizing Fix
+
+- [x] Fix window sizing to fit screen and center the app
+- [x] Add `screen` import from Electron
+- [x] Calculate window size from primary display work area
+- [x] Add `center: true` to BrowserWindow options
+- [x] Run tests to verify no regressions
+- [x] Commit and push changes to feature branch
+
+**Status:** Awaiting User Approval
+
 ## Phase 8 — End-to-End Workflow Verification
 
 - [ ] Test the complete AI workflow

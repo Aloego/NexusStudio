@@ -1,5 +1,5 @@
 'use strict';
-const { app, BrowserWindow, Menu, dialog, ipcMain, protocol, session, shell } = require('electron');
+const { app, BrowserWindow, Menu, dialog, ipcMain, protocol, session, shell, screen } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { createMcp } = require('./mcp-server');
@@ -179,9 +179,19 @@ ipcMain.handle('file:importHtml', async function (e) {
 
 /* ---------- window ---------- */
 function createWindow() {
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
+
+  // Calculate window size that fits within the screen, leaving room for taskbar
+  const maxWidth = Math.min(1480, Math.floor(screenWidth * 0.95));
+  const maxHeight = Math.min(920, Math.floor(screenHeight * 0.95));
+  const width = Math.max(980, maxWidth);
+  const height = Math.max(640, maxHeight);
+
   win = new BrowserWindow({
-    width: 1480, height: 920, minWidth: 980, minHeight: 640, show: false, backgroundColor: '#0e0e11', title: APP_NAME,
+    width: width, height: height, minWidth: 980, minHeight: 640, show: false, backgroundColor: '#0e0e11', title: APP_NAME,
     icon: path.join(__dirname, '..', 'build', 'icon.png'), autoHideMenuBar: true,
+    center: true,
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, sandbox: true, spellcheck: false }
   });
   win.once('ready-to-show', function () { win.show(); });

@@ -2,7 +2,7 @@
 
 ## Current Task
 
-Phase 3-5 — Development mode, live application inspection, and desktop/MCP testing tools.
+Fix window sizing to fit screen and center the app.
 
 ## Branch
 
@@ -10,11 +10,11 @@ Phase 3-5 — Development mode, live application inspection, and desktop/MCP tes
 
 ## Work Session Status
 
-Phases 3, 4, and 5 implementation is complete. All changes are committed and pushed to the feature branch. Ready for user review.
+Window sizing fix is complete. All changes are on the feature branch and ready for user review.
 
 ## User's Original Request
 
-Implement the NexusStudio AI Development Workflow (Phases 3-5): development mode documentation, live application inspection capabilities, and desktop/MCP testing tools.
+The app dimension extends beyond the screen that the user cannot see the taskbar or the minimize/cancel button. Make the app responsive to whatever screen it is opened in.
 
 ## Completed
 
@@ -34,6 +34,12 @@ Implement the NexusStudio AI Development Workflow (Phases 3-5): development mode
   - `get_app_state` — Electron version, platform, memory, uptime, AI server status
   - `get_process_info` — process ID, memory usage, CPU usage, uptime
   - All desktop tools are read-only and preserve security boundaries
+- **Window Sizing Fix:** Made the app responsive to any screen size:
+  - Added `screen` import from Electron
+  - Get primary display work area size
+  - Calculate window size that fits within screen (95% of work area)
+  - Center the window on screen
+  - Ensure minimum size constraints are respected
 
 ## Files Changed
 
@@ -45,7 +51,7 @@ Implement the NexusStudio AI Development Workflow (Phases 3-5): development mode
 - `README.md` — added link to DEVELOPMENT.md
 - `main/tools.js` — added 7 new inspection tools
 - `main/mcp-server.js` — added desktop tool handlers
-- `main/main.js` — added desktop tool implementations
+- `main/main.js` — added desktop tool implementations + window sizing fix
 - `renderer/app.js` — added inspection API functions and console log capture
 
 ## Tests
@@ -68,7 +74,7 @@ Result: 98 passed, 0 failed
 ## Git Status
 
 - Branch: `feature/ai-development-workflow`
-- Latest commit: `f787e5bd3c103a813172ad8597cfd2afea659983`
+- Latest commit: `432500e9863e5d77af61c465da793ae2fbc9c61d`
 - Changes pushed: Yes
 - Working tree: Clean
 
@@ -78,10 +84,10 @@ None currently known.
 
 ## Next Action
 
-User must personally review/test the completed Phases 3-5 workflow and explicitly approve it before these phases can be marked Approved.
+User must personally review/test the window sizing fix and explicitly approve it before it can be marked Approved.
 
 ## Approval Status
 
 Awaiting User Approval
 
-> Note: This status refers to the workflow implementation after verification. It does not authorize merging into `main` or releasing the application.
+> Note: This status refers to the window sizing fix after verification. It does not authorize merging into `main` or releasing the application.
