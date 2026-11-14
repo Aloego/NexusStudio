@@ -238,3 +238,43 @@ The user personally tested the window sizing fix and confirmed it works correctl
 ### Next Test/Verification
 
 A separate approval is required before merging into `main` or releasing the application.
+
+## Remove SVG / Drawing group from Elements tab
+
+### Date
+
+2026-11-14
+
+### Branch
+
+feature/ai-development-workflow
+
+### Scope
+
+Removed the `SVG / Drawing` group (line, rect, circle, ellipse, path) from the Elements tab palette. Only the palette entry in `renderer/app.js` was removed; the SVG support in the editor, MCP tools and `make()` is untouched.
+
+### Static check
+
+`node --check renderer/app.js` — passed.
+
+### Automated tests
+
+Command: `npm test` (run in the AI sandbox)
+
+Result with the change: 102 passed, 3 failed.
+
+Result on the unmodified branch (git stash): 102 passed, 3 failed — identical.
+
+Failing in both runs: `get_window_state`, `get_app_state`, `get_process_info`. These are the desktop-state tools and were already failing before this change. Cause not investigated; they may need a real desktop window, which this sandbox does not have.
+
+### Could not be run
+
+- Actual application behavior (the real Electron window). Not run in this sandbox.
+
+### Manual testing for the user
+
+- Open the Elements tab and confirm the `SVG / Drawing` group is gone and the other groups still add and drag onto the page.
+
+### Approval
+
+Awaiting User Approval

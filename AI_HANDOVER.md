@@ -2,6 +2,19 @@
 
 ## Current Task
 
+Remove the `SVG / Drawing` group from the Elements tab (state: Awaiting User Approval). The user also asked whether the Elements tab contains every HTML element; answer given: it does not (see "Latest Session" below).
+
+## Latest Session (2026-11-14)
+
+- User request: confirm whether the Elements tab contains all HTML elements, and remove SVG/DRAWING from it.
+- Done: removed the `SVG / Drawing` entry from `PAL` in `renderer/app.js`. Nothing else changed.
+- Audit result: the tab offers 25 HTML elements (div, section, header, nav, main, footer, h1, h2, p, span, img, video, audio, a, button, input, textarea, select, form, ul, ol, table, article, aside, details). Many common ones are missing, for example h3–h6, li, label, strong, em, blockquote, pre, code, figure, hr, br, canvas, dl, fieldset, progress. The user has not yet asked to add any.
+- Tests: `npm test` gives 102 passed, 3 failed, both before and after the change. The 3 failures are `get_window_state`, `get_app_state`, `get_process_info`. Not investigated.
+- Not run: real Electron window testing. The user must test it.
+- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+
+## Previous Task
+
 Fix window sizing to fit screen and center the app.
 
 ## Branch

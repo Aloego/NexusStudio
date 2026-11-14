@@ -92,8 +92,7 @@ var PAL=[
  {g:'Links & Buttons',c:'c-t',b:{a:'A',button:'BTN'},i:[['a','Anchor link'],['button','Button element']]},
  {g:'Forms',c:'c-f',b:{input:'IN',textarea:'TX',select:'SEL',form:'FRM'},i:[['input','Text / number'],['textarea','Multiline text'],['select','Dropdown'],['form','Form wrapper']]},
  {g:'Lists & Tables',c:'c-f',b:{ul:'UL',ol:'OL',table:'TBL'},i:[['ul','Bulleted list'],['ol','Numbered list'],['table','Table']]},
- {g:'Semantic',c:'c-f',b:{article:'ART',aside:'ASD',details:'DET'},i:[['article','Standalone post'],['aside','Complementary'],['details','Disclosure']]},
- {g:'SVG / Drawing',c:'c-s',b:{line:'╱',rect:'□',circle:'○',ellipse:'⬭',path:'∿'},i:[['line','Line'],['rect','Rectangle'],['circle','Circle'],['ellipse','Ellipse'],['path','Curve path']]}
+ {g:'Semantic',c:'c-f',b:{article:'ART',aside:'ASD',details:'DET'},i:[['article','Standalone post'],['aside','Complementary'],['details','Disclosure']]}
 ];
 var PLACE="data:image/svg+xml;utf8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="480" height="300" viewBox="0 0 480 300"><rect width="480" height="300" fill="#27272a"/><path d="M0 240l130-90 90 60 110-110 150 120v80H0z" fill="#3f3f46"/><circle cx="360" cy="80" r="30" fill="#52525b"/></svg>');
 var FIELDSTY={padding:'8px 12px',border:'1px solid #475569','border-radius':'6px',background:'transparent',color:'inherit','font-family':'inherit','font-size':'14px'};

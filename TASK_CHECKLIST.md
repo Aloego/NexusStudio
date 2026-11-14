@@ -97,6 +97,16 @@
 
 **Status:** Approved
 
+## Remove SVG / Drawing group from Elements tab
+
+- [x] Audit Elements tab against the full list of HTML elements (result: not complete, 25 HTML elements offered)
+- [x] Remove the `SVG / Drawing` group from the `PAL` palette in `renderer/app.js`
+- [x] Syntax check and run automated tests (same 3 failures as before the change; see `TEST_RESULTS.md`)
+- [x] Commit and push changes to feature branch
+- [ ] User personally tests the Elements tab
+
+**Status:** Awaiting User Approval
+
 ## Phase 8 — End-to-End Workflow Verification
 
 - [ ] Test the complete AI workflow
