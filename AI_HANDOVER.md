@@ -73,7 +73,8 @@ The app dimension extends beyond the screen that the user cannot see the taskbar
 - `main/tools.js` — added 7 new inspection tools
 - `main/mcp-server.js` — added desktop tool handlers
 - `main/main.js` — added desktop tool implementations + window sizing fix
-- `renderer/app.js` — added inspection API functions and console log capture
+- `renderer/app.js` — added inspection API functions and console log capture; Elements tab palette changes (SVG / Drawing removed, 73 elements added)
+- `test/e2e.js` — new Elements tab checks
 
 ## Tests
 
@@ -95,20 +96,21 @@ Result: 98 passed, 0 failed
 ## Git Status
 
 - Branch: `feature/ai-development-workflow`
-- Latest code commit (SVG / Drawing removal): `984036ffbebeeaf1904512942b4ccd28ee6ac4a9`
+- Latest code commit (add missing elements): `222264841b7cd6f92822280a8da472304fcba51a`
 - Changes pushed: Yes (the commit above; this handover note is pushed in a follow-up commit)
 - Working tree: Clean after the follow-up commit
 
 ## Known Issues
 
-- `get_window_state`, `get_app_state` and `get_process_info` fail in `npm test` in the AI sandbox, both before and after the latest change. Cause not investigated.
+- `get_window_state`, `get_app_state` and `get_process_info` fail in `npm test` in the AI sandbox, both before and after the latest changes. Cause not investigated.
+- Elements that only make sense inside a parent (li, td, option, source and similar) are added inside the selected element only if it can hold children; otherwise they are added after it. Nothing enforces valid nesting.
 
 ## Next Action
 
-Wait for the user to test the Elements tab and say `APPROVE` or `REJECT`. A separate approval is required before merging into `main` or releasing the application.
+Wait for the user to test the new Elements tab and say `APPROVE` or `REJECT`. A separate approval is required before merging into `main` or releasing the application.
 
 ## Approval Status
 
-Awaiting User Approval (SVG / Drawing removal). The earlier window sizing fix was approved by the user.
+Awaiting User Approval (add missing elements). Earlier tasks (SVG / Drawing removal, window sizing fix) were approved by the user.
 
 > Note: No approval here authorizes merging into `main` or releasing the application.

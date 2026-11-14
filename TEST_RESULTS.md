@@ -326,4 +326,4 @@ Opened the editor in headless Chromium, took screenshots of the palette and of a
 
 ### Approval
 
-In Progress (becomes Awaiting User Approval once committed and pushed)
+Awaiting User Approval (committed and pushed as `2222648`)
