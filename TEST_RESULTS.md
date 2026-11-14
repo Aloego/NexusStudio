@@ -398,3 +398,64 @@ Drop-down fields offer a short list of values (for example `display` has block, 
 
 Not applicable (audit only)
 
+
+## Fill the gaps in the CSS tab
+
+### Date
+
+2026-11-14
+
+### Branch
+
+feature/ai-development-workflow
+
+### Scope
+
+Changes in `renderer/app.js` (tests in `test/e2e.js`):
+
+- The property search list now holds 600 names: every standard property the browser supports (587) plus 13 common vendor-prefixed ones such as `-webkit-line-clamp` and `-webkit-text-fill-color`. It had 147. The list was taken from headless Chromium 153, so properties newer than that browser are not suggested (they can still be typed and added).
+- Search shows names that start with what you typed first, then the rest (up to 40, as before). Enter adds any name, including CSS variables (`--name`) and vendor properties.
+- Drop-down fields offer the full set of keyword values for `display`, `float`, `clear`, `visibility`, `overflow`, `font-family`, `font-weight`, `font-style`, `text-transform`, `text-decoration`, `white-space`, `text-wrap`, `justify-content`, `align-items`, `align-self`, `grid-auto-flow`, `background-repeat`, `mix-blend-mode` and `cursor`. The earlier options keep their position and the new ones follow them.
+- Text fields (both the panel's own and those added through search) suggest common values for about 300 properties as you type, as native autocomplete. Any other value can still be typed. Properties without a list still suggest the global values (inherit, initial, unset, revert, revert-layer).
+- `text-align` has a fourth button, justify, in the same row.
+- No layout or styling changes.
+
+### Static check
+
+`node --check renderer/app.js` and `node --check test/e2e.js` — both passed.
+
+### Automated tests
+
+Command: `npm test` (run in the AI sandbox)
+
+Result: 118 passed, 3 failed.
+
+New checks that passed: display drop-down offers table, list-item, contents and others; original display options keep their order; text fields suggest common values; text-align has a justify button; search suggests and adds accent-color; search suggests text-decoration-color and puts margin-top first; a CSS variable can be added with Enter; search suggests every property that was missing before.
+
+The 3 failures are the same ones that already failed before these changes: `get_window_state`, `get_app_state`, `get_process_info`. Cause not investigated.
+
+### Inspected in a browser
+
+Took screenshots of the CSS panel (Typography section and the search suggestions). The layout matches the previous version; the justify button sits in the same row as the other three.
+
+### Could not be run
+
+- The real Electron window. Not run in this sandbox.
+
+### Not done
+
+- Dedicated fields for the new properties. They appear as "Custom properties" fields when added through search, as before. Longhands such as `margin-top` therefore sit in that group rather than next to `margin`.
+- Value suggestions are common values, not every value the CSS standard allows; the drop-downs and suggestions do not check what is valid for a property.
+
+### Manual testing for the user
+
+- In the CSS tab, search for a few properties (for example `margin-top`, `accent`, `transition-dur`) and add them.
+- Click into a text field such as width and check the suggestions appear.
+- Open the display drop-down and check the longer value list.
+- Click the new justify button on a paragraph.
+- Check the panel looks the same as before.
+
+### Approval
+
+Awaiting User Approval
+

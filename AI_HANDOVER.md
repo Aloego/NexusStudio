@@ -2,18 +2,25 @@
 
 ## Current Task
 
-No task is in progress. The last task, showing each element's browser-default styles on the canvas and in the CSS tab, was approved by the user on 2026-11-14. The user then asked for an audit of the CSS tab against all available CSS (read-only, no code changes; findings are in `TEST_RESULTS.md`).
+Fill the gaps in the CSS tab (state: Awaiting User Approval once pushed). The earlier task, showing browser-default styles for each element, was approved by the user on 2026-11-14.
 
-## Latest Session (2026-11-14, third request)
+## Latest Session (2026-11-14, fifth request)
 
-- User request: all HTML elements should show their default behaviour/characteristics on the canvas and in the CSS tab. Example: a div normally takes the width of its container; show that when it is dragged on, with the values in the CSS tab.
-- Done in `renderer/app.js`: new `UA` table (browser-default styles for all 98 palette elements) and `applyUA()`. `make()` now wraps `makeRaw()` and applies the defaults to the new element and its starter children. Starter styling that sets the same property wins over the default. Starters added in the previous task were simplified to show true defaults. `ul`/`ol` starters use the `padding` shorthand so the CSS tab agrees with the canvas. svg starter has explicit 120px width/height (a `width: auto` would override the svg's width attribute).
-- Not changed: elements added by `add_html` or by the MCP `add_element` tool without `use_preset`, imported HTML, and the sample page. Only palette adds (and `use_preset`) get the defaults.
-- Starters that deliberately differ from the browser default: div, section, header, nav, main, footer, article, aside, details (padding, minimum height, background, flex rows, width), h1, h2, p (zero margins, custom sizes), img, video, audio, a, button, input, textarea, select, form, ul, ol, table, dialog, canvas, svg. Offer to switch these to pure browser defaults if the user wants.
-- Done in `test/e2e.js`: new checks in their own browser context ("Elements start with their browser defaults").
-- Tests: `npm test` gives 109 passed, 3 failed. The 3 failures (`get_window_state`, `get_app_state`, `get_process_info`) also failed before these changes. Not investigated.
+- User request: audit the CSS tab against all CSS (answered: it did not cover all of it), then "fill up the gap wherever necessary without disrupting the UI".
+- Done in `renderer/app.js`: `CSSLIST` (property search) now has 600 names taken from the browser (587 standard plus 13 common `-webkit-` ones). Search puts names that start with the typed text first. Enter accepts CSS variables and vendor names. Drop-down option lists for display, float, clear, visibility, overflow, font-family, font-weight, font-style, text-transform, text-decoration, white-space, text-wrap, justify-content, align-items, align-self, grid-auto-flow, background-repeat, mix-blend-mode and cursor were extended (old options keep their order). New `VALS` table and `valList()` give text fields native autocomplete of common values (about 300 properties; others get the global keywords). `text-align` has a fourth button, justify.
+- Done in `test/e2e.js`: new "CSS tab covers the full set of CSS" checks.
+- Not done: dedicated panel fields for the newly searchable longhands (they show under "Custom properties"); value lists are suggestions, not validation; properties newer than the sandbox browser (Chromium 153) are not suggested.
+- Tests: `npm test` gives 118 passed, 3 failed. The 3 failures (`get_window_state`, `get_app_state`, `get_process_info`) also failed before these changes. Not investigated.
 - Not run: real Electron window testing. The user must test it.
 - Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+
+## Earlier Session (2026-11-14, fourth request)
+
+- User request: confirm whether the CSS tab contains all CSS. Read-only audit; findings recorded in `TEST_RESULTS.md`.
+
+## Earlier Session (2026-11-14, third request)
+
+- Show each element's browser-default styles on the canvas and in the CSS tab. Done and approved. Details: `UA` table and `applyUA()` in `renderer/app.js`; starter styling that sets the same property wins over the default.
 
 ## Earlier Session (2026-11-14, second request)
 
@@ -103,22 +110,23 @@ Result: 98 passed, 0 failed
 ## Git Status
 
 - Branch: `feature/ai-development-workflow`
-- Latest code commit: see `git log` (the commit titled "Show browser-default styles for every element")
+- Latest code commit: see `git log` (the commit titled "Fill the gaps in the CSS tab")
 - Changes pushed: Yes
-- Working tree: Clean after the follow-up commit
+- Working tree: Clean
 
 ## Known Issues
 
 - `get_window_state`, `get_app_state` and `get_process_info` fail in `npm test` in the AI sandbox, both before and after the latest changes. Cause not investigated.
 - Elements that only make sense inside a parent (li, td, option, source and similar) are added inside the selected element only if it can hold children; otherwise they are added after it. Nothing enforces valid nesting.
-- Elements now carry more inline CSS than before, so Copy page code is longer.
+- Elements carry more inline CSS than before, so Copy page code is longer.
+- Properties added through search show under "Custom properties", not next to related fields.
 
 ## Next Action
 
-Wait for the user's next instruction. A separate approval is required before merging into `main` or releasing the application.
+Wait for the user to test the CSS tab changes and say `APPROVE` or `REJECT`. A separate approval is required before merging into `main` or releasing the application.
 
 ## Approval Status
 
-Approved (browser-default styles). Earlier tasks (SVG / Drawing removal, add missing elements, window sizing fix) were also approved by the user.
+Awaiting User Approval (CSS tab gaps). Earlier tasks (SVG / Drawing removal, add missing elements, browser-default styles, window sizing fix) were approved by the user.
 
 > Note: No approval here authorizes merging into `main` or releasing the application.

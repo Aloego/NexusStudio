@@ -306,6 +306,37 @@ page.on('console', function (m) {
     }
   }
   ok(probeBad.length === 0, 'the CSS tab shows each element\'s default values ' + JSON.stringify(probeBad));
+  console.log('CSS tab covers the full set of CSS');
+  const cssInfo = await defPage.evaluate(function () {
+    const sel = document.querySelector('#f-display');
+    const opts = [].slice.call(sel.options).map(function (o) { return o.value; });
+    const wl = document.querySelector('#f-width').getAttribute('list');
+    const dl = wl ? [].slice.call(document.querySelectorAll('#' + wl + ' option')).map(function (o) { return o.value; }) : [];
+    return { displayOpts: opts, widthList: wl, widthVals: dl, justify: !!document.querySelector('.seg button[title="justify"]') };
+  });
+  ok(['table', 'table-cell', 'list-item', 'contents', 'flow-root', 'inline-grid'].every(function (v) { return cssInfo.displayOpts.indexOf(v) >= 0; }), 'display drop-down offers table, list-item, contents and the other values');
+  ok(cssInfo.displayOpts.slice(0, 8).join() === ['', 'block', 'inline', 'inline-block', 'flex', 'inline-flex', 'grid', 'none'].join(), 'the original display options keep their order');
+  ok(cssInfo.widthVals.indexOf('fit-content') >= 0 && cssInfo.widthVals.indexOf('100%') >= 0 && cssInfo.widthVals.indexOf('inherit') >= 0, 'text fields suggest common values ' + JSON.stringify(cssInfo.widthList));
+  ok(cssInfo.justify, 'text-align has a justify button');
+  const addByName = async function (name, viaEnter) {
+    await defPage.fill('#propSearch', name);
+    const n = await defPage.$$eval('#dd button span:first-child', function (b) { return b.map(function (x) { return x.textContent; }); });
+    if (viaEnter) { await defPage.press('#propSearch', 'Enter'); } else { await defPage.click('#dd button:first-child'); }
+    return n;
+  };
+  const sug = await addByName('accent-co', false);
+  ok(sug[0] === 'accent-color' && (await defPage.$$('#f-accent-color')).length === 1, 'search suggests accent-color and adds its field');
+  const sug2 = await addByName('text-decoration-c', false);
+  ok(sug2.indexOf('text-decoration-color') >= 0, 'search suggests longhand properties such as text-decoration-color');
+  const sug3 = await addByName('margin-to', false);
+  ok(sug3[0] === 'margin-top', 'search suggests margin-top first');
+  await addByName('--brand-color', true);
+  ok((await defPage.$$('#f---brand-color')).length === 1, 'a CSS variable can be added by typing its name and pressing Enter');
+  const coverage = await defPage.evaluate(function () {
+    const probe = ['margin-top', 'padding-left', 'border-top-width', 'outline-color', 'list-style-type', 'accent-color', 'resize', 'appearance', 'fill', 'stroke', 'mask', 'container-type', 'animation-timing-function', 'transition-property', 'transition-duration', 'perspective', 'color-scheme', 'direction', 'contain', 'zoom', 'all', 'text-decoration-line', 'text-decoration-style', 'text-underline-offset'];
+    return probe.filter(function (p) { document.querySelector('#propSearch').value = p; document.querySelector('#propSearch').dispatchEvent(new Event('input')); return ![].slice.call(document.querySelectorAll('#dd button span:first-child')).some(function (s) { return s.textContent === p; }); });
+  });
+  ok(coverage.length === 0, 'search suggests every property that was missing before ' + JSON.stringify(coverage));
   await defCtx.close();
 
   console.log('Desktop wiring with a stand-in for the Electron window');

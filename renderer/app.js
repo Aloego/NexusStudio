@@ -295,49 +295,175 @@ function svgWrap(child){return N('svg',{ns:1,attrs:{width:'120',height:'120',vie
 /* ---------- CSS property catalogue ---------- */
 var SECTIONS=[
  {k:'layout',name:'Layout & Positioning',hint:function(n){return (n.style.display||'block')+' · '+(n.style.position||'static');},rows:[
-   [{p:'display',t:'select',o:['block','inline','inline-block','flex','inline-flex','grid','none']},{p:'position',t:'select',o:['static','relative','absolute','fixed','sticky']}],
+   [{p:'display',t:'select',o:['block','inline','inline-block','flex','inline-flex','grid','none','inline-grid','flow-root','contents','list-item','table','inline-table','table-row','table-cell','table-caption','table-column','table-row-group','table-header-group','table-footer-group','table-column-group','ruby','ruby-text']},{p:'position',t:'select',o:['static','relative','absolute','fixed','sticky']}],
    ['INSETS'],
-   [{p:'float',t:'select',o:['none','left','right']},{p:'clear',t:'select',o:['none','both','left','right']},{p:'visibility',t:'select',o:['visible','hidden']},{p:'z-index'}]]},
+   [{p:'float',t:'select',o:['none','left','right','inline-start','inline-end']},{p:'clear',t:'select',o:['none','both','left','right','inline-start','inline-end']},{p:'visibility',t:'select',o:['visible','hidden','collapse']},{p:'z-index'}]]},
  {k:'box',name:'Box Model & Spacing',hint:function(n,el){return el?Math.round(el.offsetWidth)+' × '+Math.round(el.offsetHeight):'';},rows:[
    ['BOXMODEL'],
    [{p:'width'},{p:'min-width',l:'Min W'},{p:'max-width',l:'Max W'}],
    [{p:'height'},{p:'min-height',l:'Min H'},{p:'max-height',l:'Max H'}],
    [{p:'margin',l:'Margin (T R B L)'}],[{p:'padding',l:'Padding (T R B L)'}],
-   [{p:'box-sizing',t:'select',o:['border-box','content-box']},{p:'overflow',t:'select',o:['visible','hidden','auto','scroll']}]]},
+   [{p:'box-sizing',t:'select',o:['border-box','content-box']},{p:'overflow',t:'select',o:['visible','hidden','auto','scroll','clip']}]]},
  {k:'type',name:'Typography',hint:function(n,el){return el?(getComputedStyle(el).fontSize):'';},rows:[
-   [{p:'font-family',t:'select',o:["'Plus Jakarta Sans', sans-serif","'JetBrains Mono', monospace","system-ui, sans-serif","Georgia, serif","'Courier New', monospace"]}],
-   [{p:'font-size'},{p:'font-weight',t:'select',o:['300','400','500','600','700','800']}],
+   [{p:'font-family',t:'select',o:["'Plus Jakarta Sans', sans-serif","'JetBrains Mono', monospace","system-ui, sans-serif","Georgia, serif","'Courier New', monospace","Arial, Helvetica, sans-serif","'Helvetica Neue', Helvetica, sans-serif","Verdana, Geneva, sans-serif","Tahoma, Geneva, sans-serif","'Trebuchet MS', sans-serif","'Times New Roman', Times, serif","Garamond, serif","'Palatino Linotype', Palatino, serif","'Segoe UI', sans-serif","ui-sans-serif, sans-serif","ui-serif, serif","ui-monospace, monospace","ui-rounded, sans-serif","serif","sans-serif","monospace","cursive","fantasy"]}],
+   [{p:'font-size'},{p:'font-weight',t:'select',o:['300','400','500','600','700','800','100','200','900','normal','bold','lighter','bolder']}],
    [{p:'line-height'},{p:'letter-spacing'}],
    [{p:'text-align',t:'align'},{p:'color',t:'color'}],
-   [{p:'text-transform',t:'select',o:['none','uppercase','lowercase','capitalize']},{p:'font-style',t:'select',o:['normal','italic']},{p:'text-decoration',t:'select',o:['none','underline','line-through','overline']}],
+   [{p:'text-transform',t:'select',o:['none','uppercase','lowercase','capitalize','full-width','full-size-kana']},{p:'font-style',t:'select',o:['normal','italic','oblique']},{p:'text-decoration',t:'select',o:['none','underline','line-through','overline','underline overline','underline line-through','underline dotted','underline dashed','underline wavy']}],
    [{p:'text-shadow'}],
-   [{p:'white-space',t:'select',o:['normal','nowrap','pre-wrap']},{p:'text-wrap',t:'select',o:['wrap','nowrap','balance','pretty']}]]},
+   [{p:'white-space',t:'select',o:['normal','nowrap','pre-wrap','pre','pre-line','break-spaces']},{p:'text-wrap',t:'select',o:['wrap','nowrap','balance','pretty','stable']}]]},
  {k:'flex',name:'Flexbox',hint:function(n){return n.style.display==='flex'?'container':'set display: flex';},rows:[
    [{p:'flex-direction',t:'select',o:['row','row-reverse','column','column-reverse']},{p:'flex-wrap',t:'select',o:['nowrap','wrap','wrap-reverse']}],
-   [{p:'justify-content',t:'select',o:['flex-start','flex-end','center','space-between','space-around','space-evenly']},{p:'align-items',t:'select',o:['stretch','flex-start','flex-end','center','baseline']}],
+   [{p:'justify-content',t:'select',o:['flex-start','flex-end','center','space-between','space-around','space-evenly','start','end','left','right','stretch','normal']},{p:'align-items',t:'select',o:['stretch','flex-start','flex-end','center','baseline','start','end','normal','self-start','self-end','first baseline','last baseline']}],
    [{p:'gap'}],
-   [{p:'flex',l:'Flex item'},{p:'align-self',t:'select',o:['auto','stretch','flex-start','flex-end','center']},{p:'order'}]]},
+   [{p:'flex',l:'Flex item'},{p:'align-self',t:'select',o:['auto','stretch','flex-start','flex-end','center','normal','start','end','self-start','self-end','baseline']},{p:'order'}]]},
  {k:'grid',name:'CSS Grid',hint:function(){return 'grid-template';},rows:[
    [{p:'grid-template-columns',l:'Template cols'},{p:'grid-template-rows',l:'Template rows'}],
-   [{p:'grid-column'},{p:'grid-auto-flow',t:'select',o:['row','column','dense']}],
+   [{p:'grid-column'},{p:'grid-auto-flow',t:'select',o:['row','column','dense','row dense','column dense']}],
    [{p:'row-gap'},{p:'column-gap'}]]},
  {k:'bg',name:'Background',hint:function(n){return n.style['background-color']||n.style.background||'transparent';},rows:[
    [{p:'background-color',t:'color',l:'Background color'}],[{p:'background',l:'Background (shorthand, gradients)'}],[{p:'background-image'}],
-   [{p:'background-size',t:'select',o:['auto','cover','contain']},{p:'background-repeat',t:'select',o:['repeat','no-repeat','repeat-x','repeat-y']},{p:'background-position'}]]},
+   [{p:'background-size',t:'select',o:['auto','cover','contain']},{p:'background-repeat',t:'select',o:['repeat','no-repeat','repeat-x','repeat-y','space','round']},{p:'background-position'}]]},
  {k:'border',name:'Border & Outline',hint:function(n){return n.style.border||'none';},rows:[
    [{p:'border',l:'Border (e.g. 1px solid #fff)'}],[{p:'border-radius',l:'Border radius'}],
    [{p:'outline'},{p:'outline-offset'}],[{p:'box-shadow'}]]},
  {k:'fx',name:'Effects & Transforms',hint:function(){return 'opacity · filter';},rows:[
    [{p:'opacity',t:'range'}],[{p:'filter'},{p:'backdrop-filter'}],
-   [{p:'mix-blend-mode',t:'select',o:['normal','multiply','screen','overlay','difference']},{p:'cursor',t:'select',o:['auto','pointer','text','move','not-allowed']}],
+   [{p:'mix-blend-mode',t:'select',o:['normal','multiply','screen','overlay','difference','darken','lighten','color-dodge','color-burn','hard-light','soft-light','exclusion','hue','saturation','color','luminosity','plus-lighter']},{p:'cursor',t:'select',o:['auto','pointer','text','move','not-allowed','default','none','context-menu','help','progress','wait','cell','crosshair','vertical-text','alias','copy','no-drop','grab','grabbing','all-scroll','col-resize','row-resize','n-resize','e-resize','s-resize','w-resize','ne-resize','nw-resize','se-resize','sw-resize','ew-resize','ns-resize','nesw-resize','nwse-resize','zoom-in','zoom-out']}],
    [{p:'transition'},{p:'transform'}]]}
 ];
 var PHYS=['top','right','bottom','left'];
 var LOGI=['inset','inset-block','inset-inline','inset-block-start','inset-block-end','inset-inline-start','inset-inline-end'];
 var KNOWN={};
+/* common values per property, offered as autocomplete on the text fields; any other value can still be typed */
+var GLOBALV=['inherit','initial','unset','revert','revert-layer'];
+var VALS={};
+(function(){
+  var SPEC=[
+   'width,height,inline-size,block-size: auto|fit-content|min-content|max-content|stretch|100%|50%|25%|100vw|100vh|0',
+   'min-width,min-height,min-inline-size,min-block-size: 0|auto|fit-content|min-content|max-content|100%|100vw|100vh',
+   'max-width,max-height,max-inline-size,max-block-size: none|fit-content|min-content|max-content|100%|100vw|100vh|1200px|65ch',
+   'margin,margin-top,margin-right,margin-bottom,margin-left,margin-block,margin-inline: 0|auto|8px|16px|1rem|0 auto|1em 0',
+   'padding,padding-top,padding-right,padding-bottom,padding-left,padding-block,padding-inline: 0|4px|8px|16px|24px|1rem|8px 16px',
+   'top,right,bottom,left,inset,inset-block,inset-inline: auto|0|50%|100%|10px|-1px',
+   'z-index: auto|0|1|2|10|100|999|-1',
+   'font-size: xx-small|x-small|small|medium|large|x-large|xx-large|smaller|larger|12px|14px|16px|18px|24px|1rem|1.25rem|2em',
+   'line-height: normal|1|1.2|1.4|1.5|1.6|2|24px',
+   'letter-spacing,word-spacing: normal|0|0.05em|0.1em|1px|2px',
+   'text-indent: 0|1em|2em|1rem',
+   'text-shadow,box-shadow: none|0 1px 2px rgba(0,0,0,.2)|0 2px 8px rgba(0,0,0,.25)|0 10px 30px rgba(0,0,0,.3)|inset 0 1px 3px rgba(0,0,0,.3)',
+   'color,background-color,border-color,outline-color,text-decoration-color,caret-color,accent-color,fill,stroke: currentcolor|transparent|black|white|red|blue|green|gray|#000000|#ffffff',
+   'background: none|transparent|#ffffff|linear-gradient(90deg, #3b82f6, #8b5cf6)|radial-gradient(circle, #3b82f6, #1e293b)|url("") center / cover no-repeat',
+   'background-image,mask-image,border-image: none|linear-gradient(180deg, #ffffff, #000000)|radial-gradient(circle, #ffffff, #000000)|url("")',
+   'background-position,object-position,mask-position: center|top|bottom|left|right|top left|top right|bottom left|bottom right|0 0|50% 50%',
+   'background-attachment: scroll|fixed|local',
+   'background-clip,background-origin,mask-clip,mask-origin: border-box|padding-box|content-box|text',
+   'border: none|1px solid currentcolor|1px solid #cccccc|2px solid #000000|1px dashed #cccccc|1px dotted #cccccc|medium none',
+   'border-top,border-right,border-bottom,border-left,outline: none|1px solid currentcolor|2px solid #3b82f6|1px dashed #cccccc|medium none',
+   'border-style,border-top-style,border-right-style,border-bottom-style,border-left-style,outline-style: none|hidden|solid|dashed|dotted|double|groove|ridge|inset|outset',
+   'border-width,border-top-width,border-right-width,border-bottom-width,border-left-width,outline-width: thin|medium|thick|0|1px|2px|4px',
+   'border-radius,border-top-left-radius,border-top-right-radius,border-bottom-left-radius,border-bottom-right-radius: 0|2px|4px|8px|12px|16px|50%|9999px|8px 8px 0 0',
+   'border-collapse: collapse|separate','border-spacing: 0|2px|4px 8px','outline-offset: 0|2px|4px|-2px',
+   'opacity: 0|0.25|0.5|0.75|1','pointer-events: auto|none|all|visiblePainted|painted|fill|stroke',
+   'user-select,-webkit-user-select: auto|none|text|all|contain','resize: none|both|horizontal|vertical|block|inline',
+   'object-fit: fill|contain|cover|none|scale-down','aspect-ratio: auto|1 / 1|16 / 9|4 / 3|3 / 2|21 / 9',
+   'flex: none|auto|initial|1|1 1 0%|0 0 auto|1 1 auto|2','flex-grow,flex-shrink,order: 0|1|2|3|-1','flex-basis: auto|content|0|100%|50%|200px',
+   'flex-flow: row nowrap|row wrap|column nowrap|column wrap',
+   'gap,row-gap,column-gap,grid-gap: normal|0|4px|8px|16px|24px|1rem',
+   'justify-items,justify-self,place-items,place-self: auto|normal|stretch|start|end|center|left|right|baseline|safe center',
+   'align-content,place-content: normal|start|end|center|stretch|space-between|space-around|space-evenly|baseline',
+   'grid-template-columns,grid-template-rows: none|auto|1fr|1fr 1fr|repeat(2, 1fr)|repeat(3, 1fr)|repeat(4, 1fr)|repeat(auto-fit, minmax(200px, 1fr))|repeat(auto-fill, minmax(200px, 1fr))|200px 1fr|subgrid',
+   'grid-template-areas: none|"header header" "sidebar main"|"a b" "c d"',
+   'grid-column,grid-row,grid-column-start,grid-column-end,grid-row-start,grid-row-end: auto|1|2|-1|1 / -1|span 2|span 3|1 / span 2',
+   'grid-area: auto|header|main|sidebar|footer|1 / 1 / 2 / 3','grid-auto-columns,grid-auto-rows: auto|1fr|min-content|max-content|minmax(100px, auto)',
+   'transform: none|rotate(45deg)|rotate(-5deg)|scale(1.05)|scale(0.95)|translateX(10px)|translateY(-4px)|translate(-50%, -50%)|skew(10deg)|perspective(600px) rotateY(20deg)',
+   'transform-origin: center|top|bottom|left|right|top left|top right|bottom left|bottom right|50% 50%|0 0',
+   'transform-style: flat|preserve-3d','backface-visibility: visible|hidden','perspective: none|400px|600px|800px|1000px|1200px','perspective-origin: center|50% 50%|top|bottom|left|right',
+   'rotate: none|45deg|90deg|-45deg','scale: none|1.1|0.9|1.5|2','translate: none|10px 20px|50% 50%|0 -4px',
+   'transition: none|all 0.2s ease|all 0.3s ease-in-out|opacity 0.3s ease|transform 0.3s ease|background-color 0.2s ease, color 0.2s ease',
+   'transition-property: all|none|opacity|transform|color|background-color|width|height|box-shadow','transition-duration,transition-delay,animation-duration,animation-delay: 0s|0.1s|0.2s|0.3s|0.5s|1s|2s',
+   'transition-timing-function,animation-timing-function: ease|linear|ease-in|ease-out|ease-in-out|step-start|step-end|steps(4)|cubic-bezier(0.4, 0, 0.2, 1)',
+   'transition-behavior: normal|allow-discrete',
+   'animation: none|spin 1s linear infinite|fade 0.3s ease-in|pulse 2s ease-in-out infinite',
+   'animation-name: none|spin|fade|pulse|bounce','animation-iteration-count: 1|2|3|infinite','animation-direction: normal|reverse|alternate|alternate-reverse',
+   'animation-fill-mode: none|forwards|backwards|both','animation-play-state: running|paused',
+   'filter: none|blur(4px)|brightness(1.2)|contrast(1.2)|grayscale(1)|sepia(1)|saturate(1.5)|hue-rotate(90deg)|invert(1)|opacity(0.5)|drop-shadow(0 2px 4px rgba(0,0,0,.3))',
+   'backdrop-filter,-webkit-backdrop-filter: none|blur(8px)|blur(12px) saturate(1.5)|brightness(0.8)',
+   'clip-path: none|circle(50%)|ellipse(50% 40%)|inset(0 round 8px)|polygon(50% 0, 100% 100%, 0 100%)',
+   'will-change: auto|transform|opacity|scroll-position|contents','contain: none|strict|content|size|layout|paint|style',
+   'isolation: auto|isolate','content-visibility: visible|auto|hidden',
+   'content: normal|none|""|"•"|attr(title)|counter(item)|open-quote|close-quote',
+   'quotes: auto|none|"“" "”" "‘" "’"','counter-reset,counter-increment: none|item|item 1|section 0',
+   'list-style: none|disc inside|decimal outside|square|circle',
+   'list-style-type: none|disc|circle|square|decimal|decimal-leading-zero|lower-alpha|upper-alpha|lower-roman|upper-roman|lower-greek',
+   'list-style-position: inside|outside','list-style-image: none|url("")',
+   'table-layout: auto|fixed','caption-side: top|bottom','empty-cells: show|hide',
+   'text-decoration-line: none|underline|overline|line-through|underline line-through',
+   'text-decoration-style: solid|double|dotted|dashed|wavy','text-decoration-thickness: auto|from-font|1px|2px|0.1em',
+   'text-underline-offset: auto|1px|2px|4px|0.2em','text-underline-position: auto|under|left|right',
+   'text-overflow: clip|ellipsis','text-align-last: auto|start|end|left|right|center|justify',
+   'text-justify: auto|inter-word|inter-character|none','text-orientation: mixed|upright|sideways',
+   'vertical-align: baseline|top|middle|bottom|text-top|text-bottom|sub|super|0',
+   'word-break: normal|break-all|keep-all|break-word','overflow-wrap,word-wrap: normal|anywhere|break-word',
+   'hyphens: none|manual|auto','tab-size: 2|4|8','line-break: auto|loose|normal|strict|anywhere',
+   'font-variant: normal|small-caps|all-small-caps|petite-caps|tabular-nums|oldstyle-nums','font-variant-numeric: normal|tabular-nums|lining-nums|oldstyle-nums|slashed-zero',
+   'font-stretch: normal|condensed|expanded|75%|100%|125%','font-kerning: auto|normal|none','font-synthesis: weight style|none',
+   'font-feature-settings: normal|"liga" 0|"tnum"|"smcp"','font-variation-settings: normal|"wght" 400|"wght" 700','font-optical-sizing: auto|none',
+   'direction: ltr|rtl','unicode-bidi: normal|embed|isolate|bidi-override|isolate-override|plaintext',
+   'writing-mode: horizontal-tb|vertical-rl|vertical-lr|sideways-rl|sideways-lr',
+   'color-scheme: normal|light|dark|light dark','appearance,-webkit-appearance: none|auto|button|textfield|menulist',
+   'scroll-behavior: auto|smooth','scroll-snap-type: none|x mandatory|y mandatory|both mandatory|x proximity|y proximity',
+   'scroll-snap-align: none|start|center|end','scroll-snap-stop: normal|always',
+   'scroll-margin,scroll-padding: 0|8px|16px|auto','overscroll-behavior,overscroll-behavior-x,overscroll-behavior-y: auto|contain|none',
+   'overflow-x,overflow-y,overflow-block,overflow-inline: visible|hidden|auto|scroll|clip','overflow-anchor: auto|none','overflow-clip-margin: 0|4px|content-box',
+   'scrollbar-width: auto|thin|none','scrollbar-gutter: auto|stable|stable both-edges','scrollbar-color: auto|#888 #eee|dark',
+   'touch-action: auto|none|manipulation|pan-x|pan-y|pinch-zoom','container-type: normal|size|inline-size','container-name: none|card|sidebar','container: card / inline-size',
+   'zoom: 1|0.5|0.75|1.25|1.5|2','all: initial|inherit|unset|revert|revert-layer',
+   'box-decoration-break: slice|clone','break-before,break-after: auto|avoid|always|page|column','break-inside: auto|avoid|avoid-page|avoid-column',
+   'orphans,widows: 1|2|3|4','column-count: auto|2|3|4','column-width: auto|200px|20em','columns: 2|3|auto 200px','column-fill: balance|auto','column-span: none|all',
+   'column-rule,column-rule-width: none|1px solid #cccccc|thin|1px','column-rule-style: none|solid|dashed|dotted',
+   'mask-repeat: repeat|no-repeat|space|round','mask-size: auto|cover|contain','mask-mode: match-source|alpha|luminance','mask-composite: add|subtract|intersect|exclude','mask-type: luminance|alpha',
+   'mask: none|linear-gradient(#000, transparent)|url("") center / contain no-repeat',
+   'image-rendering: auto|crisp-edges|pixelated|smooth|high-quality','image-orientation: from-image|none',
+   'shape-outside: none|circle(50%)|margin-box|border-box|padding-box|content-box','shape-margin: 0|8px|16px','shape-image-threshold: 0|0.5|1',
+   'offset-path: none|circle(50%)|path("M0 0 L100 100")','offset-distance: 0|50%|100%','offset-rotate: auto|0deg|reverse',
+   'stroke-width,stroke-dashoffset,stroke-miterlimit: 0|1|2|4','stroke-dasharray: none|4|4 2|8 4','stroke-linecap: butt|round|square','stroke-linejoin: miter|round|bevel',
+   'fill-opacity,stroke-opacity,stop-opacity,flood-opacity: 0|0.5|1','fill-rule,clip-rule: nonzero|evenodd',
+   'paint-order: normal|stroke fill|stroke fill markers|markers','vector-effect: none|non-scaling-stroke','shape-rendering: auto|crispEdges|geometricPrecision|optimizeSpeed',
+   'text-rendering: auto|optimizeSpeed|optimizeLegibility|geometricPrecision','dominant-baseline,alignment-baseline: auto|middle|hanging|central|text-top|text-bottom|alphabetic|mathematical',
+   'text-anchor: start|middle|end','mix-blend-mode,background-blend-mode: normal|multiply|screen|overlay|darken|lighten|color-dodge|color-burn|hard-light|soft-light|difference|exclusion|hue|saturation|color|luminosity',
+   'cursor: auto|default|pointer|text|move|not-allowed|grab|grabbing|help|wait|progress|crosshair|zoom-in|zoom-out|none',
+   'visibility: visible|hidden|collapse','float: none|left|right|inline-start|inline-end','clear: none|left|right|both|inline-start|inline-end',
+   'display: block|inline|inline-block|flex|inline-flex|grid|inline-grid|flow-root|contents|list-item|table|none',
+   'position: static|relative|absolute|fixed|sticky','box-sizing: border-box|content-box',
+   'flex-direction: row|row-reverse|column|column-reverse','flex-wrap: nowrap|wrap|wrap-reverse','justify-content,align-items,align-self: start|end|center|stretch|space-between|space-around|space-evenly|baseline',
+   '-webkit-line-clamp,line-clamp: none|1|2|3|4|5','-webkit-box-orient: horizontal|vertical|inline-axis|block-axis',
+   '-webkit-text-fill-color,-webkit-text-stroke-color: currentcolor|transparent|#000000|#ffffff','-webkit-text-stroke,-webkit-text-stroke-width: 1px|1px #000000|2px #ffffff|thin|medium',
+   '-webkit-background-clip: border-box|padding-box|content-box|text','-webkit-tap-highlight-color: transparent|rgba(0,0,0,0)','-webkit-font-smoothing: auto|antialiased|subpixel-antialiased',
+   '-webkit-text-security: none|disc|circle|square','-webkit-user-drag: auto|none|element',
+   'field-sizing: fixed|content','interpolate-size: numeric-only|allow-keywords','view-transition-name: none|hero|header',
+   'anchor-name: none|--anchor','position-anchor: auto|--anchor','position-area: top|bottom|left|right|top center|bottom center',
+   'text-wrap-mode: wrap|nowrap','text-wrap-style: auto|balance|pretty|stable','hyphenate-character: auto|"-"','hanging-punctuation: none|first|last|force-end|allow-end',
+   'print-color-adjust,color-adjust: economy|exact','forced-color-adjust: auto|none|preserve-parent-color','math-style: normal|compact','math-depth: 0|1|auto-add',
+   'ruby-position: over|under|alternate','ruby-align: space-around|start|center|space-between','page: auto|left|right','page-orientation: upright|rotate-left|rotate-right'
+  ];
+  SPEC.forEach(function(line){
+    var i=line.indexOf(': ');var names=line.slice(0,i).split(','),vals=line.slice(i+2).split('|');
+    names.forEach(function(n){VALS[n]=(VALS[n]||[]).concat(vals);});
+  });
+})();
+function valList(prop){
+  var key=VALS[prop]?prop:'_',id='vl-'+key;
+  if(!document.getElementById(id)){
+    var dl=document.createElement('datalist');dl.id=id;
+    var seen={};((VALS[prop]||[]).concat(GLOBALV)).forEach(function(v){if(seen[v])return;seen[v]=1;var o=document.createElement('option');o.value=v;dl.appendChild(o);});
+    document.body.appendChild(dl);
+  }
+  return id;
+}
 SECTIONS.forEach(function(s){s.rows.forEach(function(r){r.forEach(function(f){if(f.p)KNOWN[f.p]=s.k;});});});
 PHYS.forEach(function(p){KNOWN[p]='layout';});LOGI.forEach(function(p){KNOWN[p]='layout';});
-var CSSLIST=('align-content align-items align-self animation animation-delay animation-duration animation-name aspect-ratio backdrop-filter background background-attachment background-blend-mode background-clip background-color background-image background-origin background-position background-repeat background-size border border-bottom border-collapse border-color border-left border-radius border-right border-spacing border-style border-top border-width bottom box-shadow box-sizing clear clip-path color column-count column-gap columns content cursor display filter flex flex-basis flex-direction flex-flow flex-grow flex-shrink flex-wrap float font font-family font-feature-settings font-kerning font-size font-style font-variant font-variant-caps font-variant-numeric font-weight gap grid grid-area grid-auto-columns grid-auto-flow grid-auto-rows grid-column grid-row grid-template-areas grid-template-columns grid-template-rows height hyphens inset inset-block inset-block-end inset-block-start inset-inline inset-inline-end inset-inline-start isolation justify-content justify-items justify-self left letter-spacing line-break line-height list-style margin margin-block margin-inline max-height max-width min-height min-width mix-blend-mode object-fit object-position opacity order outline outline-offset overflow overflow-wrap overflow-x overflow-y padding padding-block padding-inline place-content place-items place-self pointer-events position right rotate row-gap scale scroll-behavior scroll-snap-type tab-size table-layout text-align text-decoration text-indent text-orientation text-overflow text-shadow text-transform top touch-action transform transform-origin transition translate user-select vertical-align visibility white-space width will-change word-break word-spacing writing-mode z-index').split(' ');
+var CSSLIST=('-webkit-appearance -webkit-background-clip -webkit-box-orient -webkit-box-reflect -webkit-font-smoothing -webkit-line-clamp -webkit-tap-highlight-color -webkit-text-fill-color -webkit-text-security -webkit-text-stroke -webkit-text-stroke-color -webkit-text-stroke-width -webkit-user-drag accent-color additive-symbols align-content align-items align-self alignment-baseline all anchor-name anchor-scope animation animation-composition animation-delay animation-direction animation-duration animation-fill-mode animation-iteration-count animation-name animation-play-state animation-range animation-range-end animation-range-start animation-timeline animation-timing-function animation-trigger app-region appearance ascent-override aspect-ratio backdrop-filter backface-visibility background background-attachment background-blend-mode background-clip background-color background-image background-origin background-position background-position-x background-position-y background-repeat background-size base-palette baseline-shift baseline-source block-size border border-block border-block-color border-block-end border-block-end-color border-block-end-style border-block-end-width border-block-start border-block-start-color border-block-start-style border-block-start-width border-block-style border-block-width border-bottom border-bottom-color border-bottom-left-radius border-bottom-right-radius border-bottom-style border-bottom-width border-collapse border-color border-end-end-radius border-end-start-radius border-image border-image-outset border-image-repeat border-image-slice border-image-source border-image-width border-inline border-inline-color border-inline-end border-inline-end-color border-inline-end-style border-inline-end-width border-inline-start border-inline-start-color border-inline-start-style border-inline-start-width border-inline-style border-inline-width border-left border-left-color border-left-style border-left-width border-radius border-right border-right-color border-right-style border-right-width border-shape border-spacing border-start-end-radius border-start-start-radius border-style border-top border-top-color border-top-left-radius border-top-right-radius border-top-style border-top-width border-width bottom box-decoration-break box-shadow box-sizing break-after break-before break-inside buffered-rendering caption-side caret-animation caret-color caret-shape clear clip clip-path clip-rule color color-interpolation color-interpolation-filters color-rendering color-scheme column-count column-fill column-gap column-height column-rule column-rule-break column-rule-color column-rule-inset column-rule-inset-cap column-rule-inset-cap-end column-rule-inset-cap-start column-rule-inset-end column-rule-inset-junction column-rule-inset-junction-end column-rule-inset-junction-start column-rule-inset-start column-rule-style column-rule-visibility-items column-rule-width column-span column-width column-wrap columns contain contain-intrinsic-block-size contain-intrinsic-height contain-intrinsic-inline-size contain-intrinsic-size contain-intrinsic-width container container-name container-type content content-visibility corner-block-end-shape corner-block-start-shape corner-bottom-left-shape corner-bottom-right-shape corner-bottom-shape corner-end-end-shape corner-end-start-shape corner-inline-end-shape corner-inline-start-shape corner-left-shape corner-right-shape corner-shape corner-start-end-shape corner-start-start-shape corner-top-left-shape corner-top-right-shape corner-top-shape counter-increment counter-reset counter-set cursor cx cy d descent-override direction display dominant-baseline dynamic-range-limit empty-cells fallback field-sizing fill fill-opacity fill-rule filter flex flex-basis flex-direction flex-flow flex-grow flex-line-count flex-shrink flex-wrap float flood-color flood-opacity font font-display font-family font-feature-settings font-kerning font-language-override font-optical-sizing font-palette font-size font-size-adjust font-stretch font-style font-synthesis font-synthesis-small-caps font-synthesis-style font-synthesis-weight font-variant font-variant-alternates font-variant-caps font-variant-east-asian font-variant-emoji font-variant-ligatures font-variant-numeric font-variant-position font-variation-settings font-weight forced-color-adjust gap grid grid-area grid-auto-columns grid-auto-flow grid-auto-rows grid-column grid-column-end grid-column-gap grid-column-start grid-gap grid-row grid-row-end grid-row-gap grid-row-start grid-template grid-template-areas grid-template-columns grid-template-rows height hyphenate-character hyphenate-limit-chars hyphens image-orientation image-rendering inherits initial-letter initial-value inline-size inset inset-block inset-block-end inset-block-start inset-inline inset-inline-end inset-inline-start interactivity interest-delay interest-delay-end interest-delay-start interpolate-size isolation justify-content justify-items justify-self left letter-spacing lighting-color line-break line-gap-override line-height list-style list-style-image list-style-position list-style-type margin margin-block margin-block-end margin-block-start margin-bottom margin-inline margin-inline-end margin-inline-start margin-left margin-right margin-top marker marker-end marker-mid marker-start mask mask-clip mask-composite mask-image mask-mode mask-origin mask-position mask-repeat mask-size mask-type math-depth math-shift math-style max-block-size max-height max-inline-size max-width min-block-size min-height min-inline-size min-width mix-blend-mode navigation negative object-fit object-position object-view-box offset offset-anchor offset-distance offset-path offset-position offset-rotate opacity order orphans outline outline-color outline-offset outline-style outline-width overflow overflow-anchor overflow-block overflow-clip-margin overflow-inline overflow-wrap overflow-x overflow-y overlay override-colors overscroll-behavior overscroll-behavior-block overscroll-behavior-inline overscroll-behavior-x overscroll-behavior-y pad padding padding-block padding-block-end padding-block-start padding-bottom padding-inline padding-inline-end padding-inline-start padding-left padding-right padding-top page page-break-after page-break-before page-break-inside page-margin-safety page-orientation paint-order perspective perspective-origin place-content place-items place-self pointer-events position position-anchor position-area position-try position-try-fallbacks position-try-order position-visibility prefix print-color-adjust quotes r range reading-flow reading-order resize result right rotate row-gap row-rule row-rule-break row-rule-color row-rule-inset row-rule-inset-cap row-rule-inset-cap-end row-rule-inset-cap-start row-rule-inset-end row-rule-inset-junction row-rule-inset-junction-end row-rule-inset-junction-start row-rule-inset-start row-rule-style row-rule-visibility-items row-rule-width ruby-align ruby-overhang ruby-position rule rule-break rule-color rule-inset rule-inset-cap rule-inset-end rule-inset-junction rule-inset-start rule-overlap rule-style rule-visibility-items rule-width rx ry scale scroll-axis-lock scroll-behavior scroll-initial-target scroll-margin scroll-margin-block scroll-margin-block-end scroll-margin-block-start scroll-margin-bottom scroll-margin-inline scroll-margin-inline-end scroll-margin-inline-start scroll-margin-left scroll-margin-right scroll-margin-top scroll-marker-group scroll-padding scroll-padding-block scroll-padding-block-end scroll-padding-block-start scroll-padding-bottom scroll-padding-inline scroll-padding-inline-end scroll-padding-inline-start scroll-padding-left scroll-padding-right scroll-padding-top scroll-snap-align scroll-snap-stop scroll-snap-type scroll-target-group scroll-timeline scroll-timeline-axis scroll-timeline-name scrollbar-color scrollbar-gutter scrollbar-width shape-image-threshold shape-margin shape-outside shape-rendering size size-adjust speak speak-as src stop-color stop-opacity stroke stroke-dasharray stroke-dashoffset stroke-linecap stroke-linejoin stroke-miterlimit stroke-opacity stroke-width suffix symbols syntax system tab-size table-layout text-align text-align-last text-anchor text-autospace text-box text-box-edge text-box-trim text-combine-upright text-decoration text-decoration-color text-decoration-line text-decoration-skip-ink text-decoration-style text-decoration-thickness text-emphasis text-emphasis-color text-emphasis-position text-emphasis-style text-fit text-indent text-justify text-orientation text-overflow text-rendering text-shadow text-size-adjust text-spacing-trim text-transform text-underline-offset text-underline-position text-wrap text-wrap-mode text-wrap-style timeline-scope timeline-trigger timeline-trigger-activation-range timeline-trigger-activation-range-end timeline-trigger-activation-range-start timeline-trigger-active-range timeline-trigger-active-range-end timeline-trigger-active-range-start timeline-trigger-name timeline-trigger-source top touch-action transform transform-box transform-origin transform-style transition transition-behavior transition-delay transition-duration transition-property transition-timing-function translate trigger-scope types unicode-bidi unicode-range user-select vector-effect vertical-align view-timeline view-timeline-axis view-timeline-inset view-timeline-name view-transition-class view-transition-group view-transition-name view-transition-scope visibility white-space white-space-collapse widows width will-change window-drag word-break word-spacing word-wrap writing-mode x y z-index zoom').split(' ');
 
 /* ---------- history ---------- */
 function snap(){return JSON.stringify({root:S.root,css:S.css,js:S.js,title:S.title});}
@@ -548,13 +674,13 @@ function mkField(f,n,secKey){
     inp.value=val;inp.addEventListener('change',function(){live(inp.value);commit();renderCodeIfOpen();});w.appendChild(inp);
   }else if(f.t==='align'){
     var sg=document.createElement('div');sg.className='seg';
-    [['left','⇤'],['center','≡'],['right','⇥']].forEach(function(a){var b=document.createElement('button');b.type='button';b.textContent=a[1];b.title=a[0];b.setAttribute('aria-label','Align '+a[0]);if(val===a[0])b.className='on';
+    [['left','⇤'],['center','≡'],['right','⇥'],['justify','☰']].forEach(function(a){var b=document.createElement('button');b.type='button';b.textContent=a[1];b.title=a[0];b.setAttribute('aria-label','Align '+a[0]);if(val===a[0])b.className='on';
       b.addEventListener('click',function(){live(val===a[0]?'':a[0]);commit();renderProps();renderCodeIfOpen();});sg.appendChild(b);});
     w.appendChild(sg);
   }else if(f.t==='color'){
     var cw=document.createElement('div');cw.className='colr';
     var sw=document.createElement('input');sw.type='color';sw.setAttribute('aria-label',f.p+' picker');sw.value=toHex(val||(el?getComputedStyle(el)[camel(f.p)]:'#000'));
-    inp=document.createElement('input');inp.type='text';inp.id=id;inp.value=val;inp.placeholder=el?getComputedStyle(el)[camel(f.p)]:'';
+    inp=document.createElement('input');inp.type='text';inp.id=id;inp.value=val;inp.placeholder=el?getComputedStyle(el)[camel(f.p)]:'';inp.setAttribute('list',valList(f.p));
     sw.addEventListener('input',function(){inp.value=sw.value;live(sw.value);});sw.addEventListener('change',function(){commit();renderCodeIfOpen();});
     inp.addEventListener('input',function(){live(inp.value);});inp.addEventListener('change',function(){commit();renderCodeIfOpen();});
     cw.appendChild(sw);cw.appendChild(inp);w.appendChild(cw);
@@ -566,7 +692,7 @@ function mkField(f,n,secKey){
     inp.addEventListener('change',function(){commit();renderCodeIfOpen();});
     rg.appendChild(inp);rg.appendChild(out);w.appendChild(rg);
   }else{
-    inp=document.createElement('input');inp.type='text';inp.id=id;inp.value=val;inp.autocomplete='off';inp.spellcheck=false;
+    inp=document.createElement('input');inp.type='text';inp.id=id;inp.value=val;inp.autocomplete='off';inp.spellcheck=false;inp.setAttribute('list',valList(f.p));
     if(el&&f.p.indexOf('-')>=0||el){try{var cv=getComputedStyle(el).getPropertyValue(f.p);if(cv&&cv.length<28)inp.placeholder=cv;}catch(e){}}
     inp.addEventListener('input',function(){live(inp.value);});inp.addEventListener('change',function(){commit();renderCodeIfOpen();});
     w.appendChild(inp);
@@ -613,7 +739,7 @@ function renderProps(){
     var b2=document.createElement('div');b2.className='body';
     extra.forEach(function(p){
       var c=document.createElement('div');c.className='cust';c.innerHTML='<code title="'+escA(p)+'">'+esc(p)+'</code>';
-      var i=document.createElement('input');i.type='text';i.className='inp';i.id='f-'+p;i.value=n.style[p]||'';i.setAttribute('aria-label',p);
+      var i=document.createElement('input');i.type='text';i.className='inp';i.id='f-'+p;i.value=n.style[p]||'';i.setAttribute('aria-label',p);i.setAttribute('list',valList(p));
       i.addEventListener('input',function(){setStyle(p,i.value);});i.addEventListener('change',function(){commit();renderCodeIfOpen();});
       var x=document.createElement('button');x.type='button';x.textContent='×';x.title='Remove';x.setAttribute('aria-label','Remove '+p);
       x.addEventListener('click',function(){delete S.pending[p];setStyle(p,'');commit();renderProps();renderCodeIfOpen();});
@@ -869,14 +995,14 @@ function addProp(name){
 function filterProps(q){
   var dd=$('#dd');q=(q||'').trim().toLowerCase();
   if(!q){dd.hidden=true;dd.innerHTML='';return;}
-  var res=CSSLIST.filter(function(p){return p.indexOf(q)>=0;}).slice(0,40);
+  var res=CSSLIST.filter(function(p){return p.indexOf(q)===0;}).concat(CSSLIST.filter(function(p){return p.indexOf(q)>0;})).slice(0,40);
   if(!res.length){dd.hidden=true;return;}
   dd.innerHTML='';res.forEach(function(p){var b=document.createElement('button');b.type='button';b.innerHTML='<span>'+esc(p)+'</span><span style="color:#a1a1aa">+ Add</span>';b.addEventListener('click',function(){addProp(p);});dd.appendChild(b);});
   dd.hidden=false;
 }
 $('#propSearch').addEventListener('input',function(){filterProps(this.value);});
 $('#propSearch').addEventListener('focus',function(){filterProps(this.value);});
-$('#propSearch').addEventListener('keydown',function(e){if(e.key==='Enter'){var v=this.value.trim().toLowerCase();if(/^[a-z-]+$/.test(v))addProp(v);}});
+$('#propSearch').addEventListener('keydown',function(e){if(e.key==='Enter'){var v=this.value.trim().toLowerCase();if(/^-{0,2}[a-z][a-z0-9-]*$/.test(v))addProp(v);}});
 $('#addbar').addEventListener('click',function(e){var b=e.target.closest('[data-add]');if(b)addProp(b.getAttribute('data-add'));});
 
 /* code view buttons */

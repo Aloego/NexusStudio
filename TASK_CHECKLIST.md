@@ -135,6 +135,20 @@
 
 **Status:** Approved (user said "Approved" on 2026-11-14)
 
+## Fill the gaps in the CSS tab
+
+- [x] Property search lists every property the browser supports (600 names, was 147)
+- [x] Search shows the closest matches first and accepts any name, including CSS variables and vendor properties
+- [x] Drop-down fields offer the full set of keyword values (existing options keep their order)
+- [x] Text fields suggest common values as you type (any other value can still be typed)
+- [x] Add a justify button to text-align
+- [x] Add automated tests
+- [x] Run automated tests and look at the panel in a browser (layout unchanged)
+- [x] Commit and push changes to feature branch
+- [ ] User personally tests the CSS tab
+
+**Status:** Awaiting User Approval
+
 ## Phase 8 — End-to-End Workflow Verification
 
 - [ ] Test the complete AI workflow
