@@ -145,9 +145,14 @@
 - [x] Add automated tests
 - [x] Run automated tests and look at the panel in a browser (layout unchanged)
 - [x] Commit and push changes to feature branch
+- [x] User rejected on 2026-11-14: "The margin used to have its individual field for top, right, bottom and left. They are no longer there."
+- [x] Checked the earlier versions: the Box Model section only ever had one shorthand "Margin (T R B L)" field; the per-side top/right/bottom/left boxes that exist are the Inset coordinates. Added per-side fields for margin and padding (below their shorthand fields, same look as the inset boxes), kept in step with the shorthand field
+- [x] Searching margin-top, margin-left and the other sides now jumps to those fields
+- [x] Added automated tests, ran them, looked at the panel in a browser
+- [x] Commit and push changes to feature branch
 - [ ] User personally tests the CSS tab
 
-**Status:** Awaiting User Approval
+**Status:** Awaiting User Approval (after rejection)
 
 ## Phase 8 — End-to-End Workflow Verification
 

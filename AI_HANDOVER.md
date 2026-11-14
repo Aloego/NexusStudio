@@ -2,9 +2,19 @@
 
 ## Current Task
 
-Fill the gaps in the CSS tab (state: Awaiting User Approval once pushed). The earlier task, showing browser-default styles for each element, was approved by the user on 2026-11-14.
+Fix after the user rejected the CSS tab gap-filling task: the user wants individual top, right, bottom and left fields for margin (state: Awaiting User Approval once pushed). Rejection reason is recorded in `TASK_CHECKLIST.md` and `TEST_RESULTS.md`.
 
-## Latest Session (2026-11-14, fifth request)
+## Latest Session (2026-11-14, sixth request)
+
+- User said "Rejected. The margin used to have its individual field for top, right, bottom and left. They are no longer there."
+- Finding: no earlier version on the branch had per-side margin fields (only the single "Margin (T R B L)" shorthand); the per-side boxes that exist are the Inset coordinates. Added per-side fields for margin and padding anyway.
+- Done in `renderer/app.js`: `sidesBlock()`, `writeSide()`, `refreshSides()`, `splitVals()`, `expand4()`, `sideVals()`; `['SIDES','margin']` and `['SIDES','padding']` rows in the Box Model section; the 8 side properties are registered in `KNOWN` so search jumps to them; the margin/padding shorthand fields drop stray longhands and refresh the side fields.
+- Done in `test/e2e.js`: "Margin and padding have a field for each side" checks.
+- Tests: `npm test` gives 126 passed, 3 failed (the same 3 as before: `get_window_state`, `get_app_state`, `get_process_info`).
+- Not run: real Electron window testing. The user must test it.
+- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+
+## Earlier Session (2026-11-14, fifth request, rejected)
 
 - User request: audit the CSS tab against all CSS (answered: it did not cover all of it), then "fill up the gap wherever necessary without disrupting the UI".
 - Done in `renderer/app.js`: `CSSLIST` (property search) now has 600 names taken from the browser (587 standard plus 13 common `-webkit-` ones). Search puts names that start with the typed text first. Enter accepts CSS variables and vendor names. Drop-down option lists for display, float, clear, visibility, overflow, font-family, font-weight, font-style, text-transform, text-decoration, white-space, text-wrap, justify-content, align-items, align-self, grid-auto-flow, background-repeat, mix-blend-mode and cursor were extended (old options keep their order). New `VALS` table and `valList()` give text fields native autocomplete of common values (about 300 properties; others get the global keywords). `text-align` has a fourth button, justify.
@@ -12,7 +22,7 @@ Fill the gaps in the CSS tab (state: Awaiting User Approval once pushed). The ea
 - Not done: dedicated panel fields for the newly searchable longhands (they show under "Custom properties"); value lists are suggestions, not validation; properties newer than the sandbox browser (Chromium 153) are not suggested.
 - Tests: `npm test` gives 118 passed, 3 failed. The 3 failures (`get_window_state`, `get_app_state`, `get_process_info`) also failed before these changes. Not investigated.
 - Not run: real Electron window testing. The user must test it.
-- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+- Result: rejected by the user because per-side margin fields were missing; see the sixth request above.
 
 ## Earlier Session (2026-11-14, fourth request)
 
@@ -119,14 +129,14 @@ Result: 98 passed, 0 failed
 - `get_window_state`, `get_app_state` and `get_process_info` fail in `npm test` in the AI sandbox, both before and after the latest changes. Cause not investigated.
 - Elements that only make sense inside a parent (li, td, option, source and similar) are added inside the selected element only if it can hold children; otherwise they are added after it. Nothing enforces valid nesting.
 - Elements carry more inline CSS than before, so Copy page code is longer.
-- Properties added through search show under "Custom properties", not next to related fields.
+- Properties added through search (other than the margin and padding sides) show under "Custom properties", not next to related fields.
 
 ## Next Action
 
-Wait for the user to test the CSS tab changes and say `APPROVE` or `REJECT`. A separate approval is required before merging into `main` or releasing the application.
+Wait for the user to test the CSS tab changes, including the margin and padding per-side fields, and say `APPROVE` or `REJECT`. A separate approval is required before merging into `main` or releasing the application.
 
 ## Approval Status
 
-Awaiting User Approval (CSS tab gaps). Earlier tasks (SVG / Drawing removal, add missing elements, browser-default styles, window sizing fix) were approved by the user.
+Awaiting User Approval (CSS tab gaps, re-submitted after rejection with margin and padding per-side fields). Earlier tasks (SVG / Drawing removal, add missing elements, browser-default styles, window sizing fix) were approved by the user.
 
 > Note: No approval here authorizes merging into `main` or releasing the application.

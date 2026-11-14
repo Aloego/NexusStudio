@@ -337,6 +337,22 @@ page.on('console', function (m) {
     return probe.filter(function (p) { document.querySelector('#propSearch').value = p; document.querySelector('#propSearch').dispatchEvent(new Event('input')); return ![].slice.call(document.querySelectorAll('#dd button span:first-child')).some(function (s) { return s.textContent === p; }); });
   });
   ok(coverage.length === 0, 'search suggests every property that was missing before ' + JSON.stringify(coverage));
+  console.log('Margin and padding have a field for each side');
+  const sideVal = function (id) { return defPage.inputValue('#f-' + id); };
+  await addPalette('div');
+  ok((await sideVal('padding-top')) === '16px' && (await sideVal('padding-left')) === '16px', 'padding sides show the stored padding (16px each)');
+  ok((await sideVal('margin-top')) === '0' && (await sideVal('margin-right')) === '0', 'margin sides show the stored margin');
+  await defPage.fill('#f-padding-left', '8px');
+  ok((await sideVal('padding')) === '16px 16px 16px 8px' || (await sideVal('padding')) === '16px 16px 16px 8px', 'editing one side updates the padding field ' + JSON.stringify(await sideVal('padding')));
+  ok(await defPage.evaluate(function () { return [].slice.call(document.querySelectorAll('#page div')).some(function (d) { return d.style.paddingLeft === '8px' && d.style.paddingTop === '16px' && d.style.paddingRight === '16px'; }); }), 'the canvas shows the new left padding and keeps the others');
+  await defPage.fill('#f-margin-bottom', '24px');
+  ok((await sideVal('margin')) === '0 0 24px' && (await sideVal('margin-bottom')) === '24px', 'a margin side is combined with the others in the margin field ' + JSON.stringify(await sideVal('margin')));
+  await defPage.fill('#f-margin', '10px 20px');
+  ok((await sideVal('margin-top')) === '10px' && (await sideVal('margin-right')) === '20px' && (await sideVal('margin-bottom')) === '10px' && (await sideVal('margin-left')) === '20px', 'typing the margin shorthand fills the four side fields');
+  await addPalette('h3');
+  ok((await sideVal('margin-top')) === '1em' && (await sideVal('margin-right')) === '0' && (await sideVal('margin-bottom')) === '1em', 'a heading shows its default vertical margin per side');
+  await defPage.fill('#propSearch', 'margin-left'); await defPage.press('#propSearch', 'Enter');
+  ok((await defPage.$$('#f-margin-left')).length === 1, 'searching margin-left jumps to the side field instead of adding a second one');
   await defCtx.close();
 
   console.log('Desktop wiring with a stand-in for the Electron window');

@@ -459,3 +459,52 @@ Took screenshots of the CSS panel (Typography section and the search suggestions
 
 Awaiting User Approval
 
+
+## Fix after rejection: margin and padding per-side fields
+
+### Date
+
+2026-11-14
+
+### Rejection reason
+
+User said: "The margin used to have its individual field for top, right, bottom and left. They are no longer there."
+
+### What was found
+
+The earlier versions on the branch (checked back to the first commit) only had one shorthand text field, "Margin (T R B L)", in the Box Model section. The top/right/bottom/left boxes that do exist are for Inset coordinates under Layout & Positioning, and they are still there. No per-side margin fields were removed. They were added anyway, as requested.
+
+### Change (`renderer/app.js`, tests in `test/e2e.js`)
+
+- Margin and padding each get four fields (top, right, bottom, left) directly under their shorthand field, with the same look as the inset boxes and a "per side" label.
+- The side fields and the shorthand field stay in step: typing in a side rewrites the shorthand (for example `16px 16px 16px 8px`, or the shortest equivalent such as `0 0 24px`), and typing the shorthand fills the four sides. Per-side values that were stored on their own (for example `margin-top` from imported HTML) are folded into the shorthand when a side is edited. Sides left empty keep their current computed value.
+- Searching for `margin-top`, `padding-left` and the other sides jumps to these fields instead of adding a separate custom field.
+
+### Automated tests
+
+Command: `npm test` (run in the AI sandbox)
+
+Result: 126 passed, 3 failed.
+
+New checks that passed: padding and margin sides show the stored values; editing one side updates the shorthand field and the canvas; a margin side is combined with the others; typing the shorthand fills the four sides; a heading shows its default vertical margin per side; searching margin-left jumps to the side field.
+
+The 3 failures are the same ones that already failed before these changes: `get_window_state`, `get_app_state`, `get_process_info`. Cause not investigated.
+
+### Inspected in a browser
+
+Screenshot of the Box Model & Spacing section: the two new rows of four fields sit under Margin and Padding and match the inset boxes. No page errors.
+
+### Could not be run
+
+- The real Electron window. Not run in this sandbox.
+
+### Manual testing for the user
+
+- Select an element, open Box Model & Spacing, and change each margin and padding side; check the canvas and the shorthand field follow.
+- Type a shorthand such as `10px 20px` in Margin and check the four boxes fill in.
+- Search `margin-top` in the CSS search and check it jumps to the top margin box.
+
+### Approval
+
+Awaiting User Approval
+
