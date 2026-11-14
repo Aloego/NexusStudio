@@ -10,7 +10,7 @@ Fix window sizing to fit screen and center the app.
 
 ## Work Session Status
 
-Window sizing fix is complete. All changes are on the feature branch and ready for user review.
+Window sizing fix is complete and approved by the user. All changes are on the feature branch.
 
 ## User's Original Request
 
@@ -84,10 +84,10 @@ None currently known.
 
 ## Next Action
 
-User must personally review/test the window sizing fix and explicitly approve it before it can be marked Approved.
+Window sizing fix is approved. A separate approval is required before merging into `main` or releasing the application.
 
 ## Approval Status
 
-Awaiting User Approval
+Approved
 
 > Note: This status refers to the window sizing fix after verification. It does not authorize merging into `main` or releasing the application.

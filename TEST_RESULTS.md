@@ -231,12 +231,10 @@ All tests pass. The window now fits within the screen and is centered, so the ta
 
 ### Approval
 
-Awaiting User Approval
+Approved
 
-Automated checks and file review do not constitute user approval.
-
-The user must personally review/test the work and explicitly approve it before it can be considered approved or merged.
+The user personally tested the window sizing fix and confirmed it works correctly.
 
 ### Next Test/Verification
 
-User must personally review/test the window sizing fix and explicitly approve it.
+A separate approval is required before merging into `main` or releasing the application.
