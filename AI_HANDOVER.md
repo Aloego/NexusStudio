@@ -87,20 +87,20 @@ Result: 98 passed, 0 failed
 ## Git Status
 
 - Branch: `feature/ai-development-workflow`
-- Latest commit: `432500e9863e5d77af61c465da793ae2fbc9c61d`
-- Changes pushed: Yes
-- Working tree: Clean
+- Latest code commit (SVG / Drawing removal): `984036ffbebeeaf1904512942b4ccd28ee6ac4a9`
+- Changes pushed: Yes (the commit above; this handover note is pushed in a follow-up commit)
+- Working tree: Clean after the follow-up commit
 
 ## Known Issues
 
-None currently known.
+- `get_window_state`, `get_app_state` and `get_process_info` fail in `npm test` in the AI sandbox, both before and after the latest change. Cause not investigated.
 
 ## Next Action
 
-Window sizing fix is approved. A separate approval is required before merging into `main` or releasing the application.
+Wait for the user to test the Elements tab and say `APPROVE` or `REJECT`. A separate approval is required before merging into `main` or releasing the application.
 
 ## Approval Status
 
-Approved
+Awaiting User Approval (SVG / Drawing removal). The earlier window sizing fix was approved by the user.
 
-> Note: This status refers to the window sizing fix after verification. It does not authorize merging into `main` or releasing the application.
+> Note: No approval here authorizes merging into `main` or releasing the application.
