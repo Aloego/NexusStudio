@@ -506,5 +506,5 @@ Screenshot of the Box Model & Spacing section: the two new rows of four fields s
 
 ### Approval
 
-Awaiting User Approval
+Approved (user said "Approved" on 2026-11-14)
 

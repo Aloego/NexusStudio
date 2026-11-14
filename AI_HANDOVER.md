@@ -2,7 +2,7 @@
 
 ## Current Task
 
-Fix after the user rejected the CSS tab gap-filling task: the user wants individual top, right, bottom and left fields for margin (state: Awaiting User Approval once pushed). Rejection reason is recorded in `TASK_CHECKLIST.md` and `TEST_RESULTS.md`.
+No task is in progress. The CSS tab gap-filling task (including the margin and padding per-side fields added after the user's rejection) was approved by the user on 2026-11-14.
 
 ## Latest Session (2026-11-14, sixth request)
 
@@ -12,7 +12,7 @@ Fix after the user rejected the CSS tab gap-filling task: the user wants individ
 - Done in `test/e2e.js`: "Margin and padding have a field for each side" checks.
 - Tests: `npm test` gives 126 passed, 3 failed (the same 3 as before: `get_window_state`, `get_app_state`, `get_process_info`).
 - Not run: real Electron window testing. The user must test it.
-- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+- Result: approved by the user.
 
 ## Earlier Session (2026-11-14, fifth request, rejected)
 
@@ -133,10 +133,10 @@ Result: 98 passed, 0 failed
 
 ## Next Action
 
-Wait for the user to test the CSS tab changes, including the margin and padding per-side fields, and say `APPROVE` or `REJECT`. A separate approval is required before merging into `main` or releasing the application.
+Wait for the user's next instruction. A separate approval is required before merging into `main` or releasing the application.
 
 ## Approval Status
 
-Awaiting User Approval (CSS tab gaps, re-submitted after rejection with margin and padding per-side fields). Earlier tasks (SVG / Drawing removal, add missing elements, browser-default styles, window sizing fix) were approved by the user.
+Approved (CSS tab gaps, including the margin and padding per-side fields). Earlier tasks (SVG / Drawing removal, add missing elements, browser-default styles, window sizing fix) were approved by the user.
 
 > Note: No approval here authorizes merging into `main` or releasing the application.
