@@ -2,16 +2,24 @@
 
 ## Current Task
 
-Remove the `SVG / Drawing` group from the Elements tab (state: Awaiting User Approval). The user also asked whether the Elements tab contains every HTML element; answer given: it does not (see "Latest Session" below).
+Add the missing HTML elements to the Elements tab (state: Awaiting User Approval once pushed). The earlier task, removing the `SVG / Drawing` group, was approved by the user on 2026-11-14.
 
-## Latest Session (2026-11-14)
+## Latest Session (2026-11-14, second request)
 
-- User request: confirm whether the Elements tab contains all HTML elements, and remove SVG/DRAWING from it.
-- Done: removed the `SVG / Drawing` entry from `PAL` in `renderer/app.js`. Nothing else changed.
-- Audit result: the tab offers 25 HTML elements (div, section, header, nav, main, footer, h1, h2, p, span, img, video, audio, a, button, input, textarea, select, form, ul, ol, table, article, aside, details). Many common ones are missing, for example h3–h6, li, label, strong, em, blockquote, pre, code, figure, hr, br, canvas, dl, fieldset, progress. The user has not yet asked to add any.
-- Tests: `npm test` gives 102 passed, 3 failed, both before and after the change. The 3 failures are `get_window_state`, `get_app_state`, `get_process_info`. Not investigated.
+- User request: "Approved. Now add all the missing elements. Add each under the category they fit into; if they don't fit into any category, create for them." The user also suggested an SVG image might go under Media; agreed.
+- Done in `renderer/app.js`: the Elements tab (`PAL`) now offers 98 elements in 12 groups (was 25 in 7). New groups: Text Formatting, Quotes & Code, Inline Details, Form Extras, Table Parts. Each new element has a starter preset in `make()`. `VOID` now also has wbr, source, track, col, area. `CONT` now also has tfoot, td, th, colgroup, li, dl, menu, figure, fieldset, blockquote, dialog, hgroup, search, picture, map, datalist, optgroup, address. A plain `svg` graphic was added under Media and selects itself (not its first shape) when added.
+- Done in `test/e2e.js`: new "Elements tab" checks (no SVG group, exact element list, no duplicates, every element can be added, empty elements exported without a closing tag).
+- Deliberately not added: elements the editor blocks for security (script, style, iframe, frame, frameset, object, embed, link, meta, base, head, html, body, title, noscript, template, slot, portal), obsolete elements, MathML.
+- Tests: `npm test` gives 107 passed, 3 failed. The 3 failures (`get_window_state`, `get_app_state`, `get_process_info`) also failed before these changes. Not investigated.
 - Not run: real Electron window testing. The user must test it.
 - Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+
+## Earlier Session (2026-11-14, first request)
+
+- User request: confirm whether the Elements tab contains all HTML elements, and remove SVG/DRAWING from it.
+- Done: removed the `SVG / Drawing` entry from `PAL` in `renderer/app.js`. Approved by the user.
+- Audit result at that time: the tab offered 25 HTML elements and many common ones were missing.
+- Tests then: 102 passed, 3 failed, identical to before the change.
 
 ## Previous Task
 

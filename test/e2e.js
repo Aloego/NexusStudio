@@ -224,6 +224,41 @@ page.on('console', function (m) {
   await page.keyboard.press('Control+z');
   ok((await page.locator('#page h1').count()) === 1, 'Ctrl+Z brings it back');
 
+  console.log('Elements tab');
+  await page.click('#tabEl');
+  const WANT = ['div', 'section', 'header', 'nav', 'main', 'footer', 'hr',
+    'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'br', 'wbr',
+    'strong', 'em', 'b', 'i', 'u', 's', 'small', 'mark', 'sub', 'sup', 'del', 'ins',
+    'blockquote', 'q', 'cite', 'pre', 'code', 'kbd', 'samp', 'var',
+    'abbr', 'dfn', 'time', 'data', 'bdi', 'bdo', 'ruby', 'rt', 'rp',
+    'img', 'video', 'audio', 'svg', 'canvas', 'picture', 'source', 'track', 'figure', 'figcaption', 'map', 'area',
+    'a', 'button',
+    'input', 'textarea', 'select', 'form', 'label', 'fieldset', 'legend',
+    'option', 'optgroup', 'datalist', 'output', 'progress', 'meter',
+    'ul', 'ol', 'li', 'dl', 'dt', 'dd', 'menu', 'table',
+    'caption', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'colgroup', 'col',
+    'article', 'aside', 'details', 'summary', 'dialog', 'address', 'hgroup', 'search'];
+  const groupNames = await page.$$eval('#palette summary span:first-child', function (n) { return n.map(function (x) { return x.textContent; }); });
+  ok(groupNames.indexOf('SVG / Drawing') < 0, 'Elements tab has no SVG / Drawing group');
+  const haveTags = await page.$$eval('#palette .it em', function (n) { return n.map(function (x) { return x.textContent; }); });
+  const missingTags = WANT.filter(function (t) { return haveTags.indexOf(t) < 0; });
+  const extraTags = haveTags.filter(function (t) { return WANT.indexOf(t) < 0; });
+  ok(missingTags.length === 0 && extraTags.length === 0, 'Elements tab lists exactly the expected elements ' + JSON.stringify({ missing: missingTags, extra: extraTags }));
+  ok(haveTags.length === new Set(haveTags).size, 'no element appears twice in the Elements tab');
+  const notAdded = [];
+  for (const t of WANT) {
+    const nb = await page.evaluate(function () { return document.querySelectorAll('.lrow').length; });
+    await page.evaluate(function (tag) {
+      const em = [].slice.call(document.querySelectorAll('#palette .it em')).filter(function (e) { return e.textContent === tag; })[0];
+      em.closest('button').click();
+    }, t);
+    const na = await page.evaluate(function () { return document.querySelectorAll('.lrow').length; });
+    if (na <= nb) notAdded.push(t);
+  }
+  ok(notAdded.length === 0, 'every element in the Elements tab can be added ' + JSON.stringify(notAdded));
+  const fullHtml = JSON.stringify(await callRenderer('get_full_html', {}));
+  ok(!/<\/(br|wbr|hr|img|input|source|track|col|area)>/.test(fullHtml), 'empty elements are written without a closing tag');
+
   console.log('Desktop wiring with a stand-in for the Electron window');
   const dpage = await ctx.newPage();
   const derr = [];

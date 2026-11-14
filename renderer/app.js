@@ -31,8 +31,9 @@ function cleanNode(r,d,cnt){
   return n;}
 function cleanState(o){if(!isObj(o)||!isObj(o.root))throw new Error('This is not a NexusStudio project.');
   return {root:cleanNode(o.root,0,{n:0}),css:typeof o.css==='string'?o.css:'',js:typeof o.js==='string'?o.js:'',title:typeof o.title==='string'&&o.title?o.title.slice(0,120):'untitled-page'};}
-var VOID={img:1,input:1,hr:1,br:1};
-var CONT={div:1,section:1,header:1,nav:1,main:1,footer:1,article:1,aside:1,form:1,ul:1,ol:1,details:1,table:1,thead:1,tbody:1,tr:1,svg:1,body:1,select:1,ul2:1};
+var VOID={img:1,input:1,hr:1,br:1,wbr:1,source:1,track:1,col:1,area:1};
+var CONT={div:1,section:1,header:1,nav:1,main:1,footer:1,article:1,aside:1,form:1,ul:1,ol:1,details:1,table:1,thead:1,tbody:1,tr:1,svg:1,body:1,select:1,ul2:1,
+  tfoot:1,td:1,th:1,colgroup:1,li:1,dl:1,menu:1,figure:1,fieldset:1,blockquote:1,dialog:1,hgroup:1,search:1,picture:1,map:1,datalist:1,optgroup:1,address:1};
 var SVGNS='http://www.w3.org/2000/svg';
 var KEY='nexusstudio.draft.v2';
 var uid=0;
@@ -86,18 +87,24 @@ function blank(){return {root:N('body',{style:{background:'#ffffff',color:'#1818
 
 /* ---------- element palette ---------- */
 var PAL=[
- {g:'Layout',c:'c-l',b:{div:'<>',section:'§',header:'H',nav:'N',main:'M',footer:'F'},i:[['div','Generic box'],['section','Semantic section'],['header','Top region'],['nav','Nav list'],['main','Primary container'],['footer','Bottom region']]},
- {g:'Text',c:'c-t',b:{h1:'H1',h2:'H2',p:'P',span:'T'},i:[['h1','Primary heading'],['h2','Sub heading'],['p','Paragraph text'],['span','Inline text']]},
- {g:'Media',c:'c-m',b:{img:'IMG',video:'VID',audio:'AUD'},i:[['img','Image'],['video','Video player'],['audio','Audio player']]},
+ {g:'Layout',c:'c-l',b:{div:'<>',section:'§',header:'H',nav:'N',main:'M',footer:'F',hr:'HR'},i:[['div','Generic box'],['section','Semantic section'],['header','Top region'],['nav','Nav list'],['main','Primary container'],['footer','Bottom region'],['hr','Divider line']]},
+ {g:'Text',c:'c-t',b:{h1:'H1',h2:'H2',h3:'H3',h4:'H4',h5:'H5',h6:'H6',p:'P',span:'T',br:'BR',wbr:'WBR'},i:[['h1','Primary heading'],['h2','Sub heading'],['h3','Heading level 3'],['h4','Heading level 4'],['h5','Heading level 5'],['h6','Heading level 6'],['p','Paragraph text'],['span','Inline text'],['br','Line break'],['wbr','Word break chance']]},
+ {g:'Text Formatting',c:'c-t',b:{strong:'STR',em:'EM',b:'B',i:'I',u:'U',s:'S',small:'SM',mark:'MRK',sub:'SUB',sup:'SUP',del:'DEL',ins:'INS'},i:[['strong','Important text'],['em','Emphasised text'],['b','Bold text'],['i','Italic text'],['u','Underlined text'],['s','Struck-through'],['small','Small print'],['mark','Highlighted text'],['sub','Subscript'],['sup','Superscript'],['del','Deleted text'],['ins','Inserted text']]},
+ {g:'Quotes & Code',c:'c-p',b:{blockquote:'BQ',q:'Q',cite:'CIT',pre:'PRE',code:'COD',kbd:'KBD',samp:'SMP',var:'VAR'},i:[['blockquote','Block quotation'],['q','Inline quotation'],['cite','Work title'],['pre','Preformatted text'],['code','Code snippet'],['kbd','Keyboard input'],['samp','Sample output'],['var','Variable name']]},
+ {g:'Inline Details',c:'c-p',b:{abbr:'ABR',dfn:'DFN',time:'TIM',data:'DAT',bdi:'BDI',bdo:'BDO',ruby:'RBY',rt:'RT',rp:'RP'},i:[['abbr','Abbreviation'],['dfn','Defined term'],['time','Date or time'],['data','Machine value'],['bdi','Isolated direction'],['bdo','Override direction'],['ruby','Ruby annotation'],['rt','Ruby text (in ruby)'],['rp','Ruby fallback (in ruby)']]},
+ {g:'Media',c:'c-m',b:{img:'IMG',video:'VID',audio:'AUD',svg:'SVG',canvas:'CNV',picture:'PIC',source:'SRC',track:'TRK',figure:'FIG',figcaption:'FCP',map:'MAP',area:'ARE'},i:[['img','Image'],['video','Video player'],['audio','Audio player'],['svg','SVG graphic'],['canvas','Drawing surface'],['picture','Responsive image'],['source','Media source (in picture/video/audio)'],['track','Captions (in video/audio)'],['figure','Media with caption'],['figcaption','Caption (in figure)'],['map','Image map'],['area','Map area (in map)']]},
  {g:'Links & Buttons',c:'c-t',b:{a:'A',button:'BTN'},i:[['a','Anchor link'],['button','Button element']]},
- {g:'Forms',c:'c-f',b:{input:'IN',textarea:'TX',select:'SEL',form:'FRM'},i:[['input','Text / number'],['textarea','Multiline text'],['select','Dropdown'],['form','Form wrapper']]},
- {g:'Lists & Tables',c:'c-f',b:{ul:'UL',ol:'OL',table:'TBL'},i:[['ul','Bulleted list'],['ol','Numbered list'],['table','Table']]},
- {g:'Semantic',c:'c-f',b:{article:'ART',aside:'ASD',details:'DET'},i:[['article','Standalone post'],['aside','Complementary'],['details','Disclosure']]}
+ {g:'Forms',c:'c-f',b:{input:'IN',textarea:'TX',select:'SEL',form:'FRM',label:'LBL',fieldset:'FS',legend:'LEG'},i:[['input','Text / number'],['textarea','Multiline text'],['select','Dropdown'],['form','Form wrapper'],['label','Field label'],['fieldset','Field group'],['legend','Group title (in fieldset)']]},
+ {g:'Form Extras',c:'c-f',b:{option:'OPT',optgroup:'OGR',datalist:'DTL',output:'OUT',progress:'PRG',meter:'MTR'},i:[['option','Choice (in select)'],['optgroup','Choice group (in select)'],['datalist','Suggestions list'],['output','Calculated result'],['progress','Progress bar'],['meter','Gauge']]},
+ {g:'Lists & Tables',c:'c-f',b:{ul:'UL',ol:'OL',li:'LI',dl:'DL',dt:'DT',dd:'DD',menu:'MNU',table:'TBL'},i:[['ul','Bulleted list'],['ol','Numbered list'],['li','List item (in list)'],['dl','Description list'],['dt','Term (in dl)'],['dd','Description (in dl)'],['menu','Toolbar list'],['table','Table']]},
+ {g:'Table Parts',c:'c-f',b:{caption:'CAP',thead:'THD',tbody:'TBD',tfoot:'TFT',tr:'TR',th:'TH',td:'TD',colgroup:'CGP',col:'COL'},i:[['caption','Table title (in table)'],['thead','Header rows (in table)'],['tbody','Body rows (in table)'],['tfoot','Footer rows (in table)'],['tr','Row (in table)'],['th','Header cell (in row)'],['td','Data cell (in row)'],['colgroup','Column group (in table)'],['col','Column (in colgroup)']]},
+ {g:'Semantic',c:'c-f',b:{article:'ART',aside:'ASD',details:'DET',summary:'SUM',dialog:'DLG',address:'ADR',hgroup:'HGR',search:'SRH'},i:[['article','Standalone post'],['aside','Complementary'],['details','Disclosure'],['summary','Disclosure label (in details)'],['dialog','Dialog box'],['address','Contact info'],['hgroup','Heading + subtitle'],['search','Search region']]}
 ];
 var PLACE="data:image/svg+xml;utf8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="480" height="300" viewBox="0 0 480 300"><rect width="480" height="300" fill="#27272a"/><path d="M0 240l130-90 90 60 110-110 150 120v80H0z" fill="#3f3f46"/><circle cx="360" cy="80" r="30" fill="#52525b"/></svg>');
 var FIELDSTY={padding:'8px 12px',border:'1px solid #475569','border-radius':'6px',background:'transparent',color:'inherit','font-family':'inherit','font-size':'14px'};
 function make(tag){
   var soft={background:'rgba(148,163,184,.12)'};
+  function cell(t,h){return N(h?'th':'td',{text:t,style:{padding:'8px 12px',border:'1px solid #475569','text-align':'left'}});}
   function box(extra){return Object.assign({padding:'16px','min-height':'64px'},soft,extra||{});}
   var o=function(a,b){return Object.assign({},a,b||{});};
   switch(tag){
@@ -127,6 +134,89 @@ function make(tag){
    case 'table':
      var td=function(t,h){return N(h?'th':'td',{text:t,style:{padding:'8px 12px',border:'1px solid #475569','text-align':'left'}});};
      return N('table',{style:{'border-collapse':'collapse',width:'100%'},children:[N('tbody',{children:[N('tr',{children:[td('Name',1),td('Role',1)]}),N('tr',{children:[td('Ada'),td('Engineer')]}),N('tr',{children:[td('Lin'),td('Designer')]})]})]});
+   /* layout + text */
+   case 'hr':return N('hr',{style:{border:'0','border-top':'1px solid #475569',margin:'16px 0',width:'100%'}});
+   case 'h3':return N('h3',{text:'Heading level 3',style:{'font-size':'22px','font-weight':'700','line-height':'1.25',margin:'0'}});
+   case 'h4':return N('h4',{text:'Heading level 4',style:{'font-size':'18px','font-weight':'700','line-height':'1.3',margin:'0'}});
+   case 'h5':return N('h5',{text:'Heading level 5',style:{'font-size':'16px','font-weight':'700','line-height':'1.3',margin:'0'}});
+   case 'h6':return N('h6',{text:'Heading level 6',style:{'font-size':'14px','font-weight':'700','line-height':'1.3',margin:'0'}});
+   case 'br':return N('br');
+   case 'wbr':return N('wbr');
+   /* text formatting */
+   case 'strong':return N('strong',{text:'Important text'});
+   case 'em':return N('em',{text:'Emphasised text'});
+   case 'b':return N('b',{text:'Bold text'});
+   case 'i':return N('i',{text:'Italic text'});
+   case 'u':return N('u',{text:'Underlined text'});
+   case 's':return N('s',{text:'Struck-through text'});
+   case 'small':return N('small',{text:'Small print'});
+   case 'mark':return N('mark',{text:'Highlighted text'});
+   case 'sub':return N('sub',{text:'Subscript'});
+   case 'sup':return N('sup',{text:'Superscript'});
+   case 'del':return N('del',{text:'Deleted text'});
+   case 'ins':return N('ins',{text:'Inserted text'});
+   /* quotes + code */
+   case 'blockquote':return N('blockquote',{style:{margin:'0',padding:'8px 16px','border-left':'4px solid #475569'},children:[N('p',{text:'A quotation goes here.',style:{margin:'0'}})]});
+   case 'q':return N('q',{text:'A short inline quote'});
+   case 'cite':return N('cite',{text:'Title of a work'});
+   case 'pre':return N('pre',{text:'Preformatted text\n  keeps its spacing',style:{margin:'0',padding:'12px','border-radius':'6px','overflow':'auto','font-family':"'JetBrains Mono', monospace",'font-size':'13px'}});
+   case 'code':return N('code',{text:'const x = 1;',style:{'font-family':"'JetBrains Mono', monospace",'font-size':'0.9em',padding:'2px 6px','border-radius':'4px'}});
+   case 'kbd':return N('kbd',{text:'Ctrl + S',style:{'font-family':"'JetBrains Mono', monospace",'font-size':'0.85em',padding:'2px 6px',border:'1px solid #475569','border-radius':'4px'}});
+   case 'samp':return N('samp',{text:'Sample output'});
+   case 'var':return N('var',{text:'x'});
+   /* inline details */
+   case 'abbr':return N('abbr',{text:'HTML',attrs:{title:'HyperText Markup Language'}});
+   case 'dfn':return N('dfn',{text:'Defined term'});
+   case 'time':return N('time',{text:'14 Nov 2026',attrs:{datetime:'2026-11-14'}});
+   case 'data':return N('data',{text:'Item',attrs:{value:'42'}});
+   case 'bdi':return N('bdi',{text:'Isolated text'});
+   case 'bdo':return N('bdo',{text:'Reversed text',attrs:{dir:'rtl'}});
+   case 'ruby':return N('ruby',{text:'漢',children:[N('rp',{text:'('}),N('rt',{text:'kan'}),N('rp',{text:')'})]});
+   case 'rt':return N('rt',{text:'Annotation'});
+   case 'rp':return N('rp',{text:'('});
+   /* media */
+   case 'svg':return N('svg',{ns:1,attrs:{width:'120',height:'120',viewBox:'0 0 120 120'},style:{display:'block'},children:[
+     N('rect',{ns:1,attrs:{width:'120',height:'120',rx:'16'},style:{fill:'#1e293b'}}),
+     N('circle',{ns:1,attrs:{cx:'60',cy:'60',r:'30'},style:{fill:'#3b82f6'}})]});
+   case 'canvas':return N('canvas',{attrs:{width:'300',height:'150'},style:{display:'block','max-width':'100%','background':'rgba(148,163,184,.12)','border-radius':'8px'}});
+   case 'picture':return N('picture',{children:[N('source',{attrs:{media:'(min-width: 800px)',srcset:PLACE}}),make('img')]});
+   case 'source':return N('source',{attrs:{media:'(min-width: 800px)',srcset:PLACE}});
+   case 'track':return N('track',{attrs:{kind:'captions',srclang:'en',label:'English'}});
+   case 'figure':return N('figure',{style:{margin:'0'},children:[make('img'),make('figcaption')]});
+   case 'figcaption':return N('figcaption',{text:'Caption text',style:{'font-size':'13px',opacity:'.7','margin-top':'8px'}});
+   case 'map':return N('map',{attrs:{name:'image-map'},children:[make('area')]});
+   case 'area':return N('area',{attrs:{shape:'rect',coords:'0,0,100,100',href:'#',alt:'Clickable area'}});
+   /* forms */
+   case 'label':return N('label',{text:'Field label',style:{display:'block','font-weight':'600'}});
+   case 'fieldset':return N('fieldset',{style:{padding:'12px 16px',border:'1px solid #475569','border-radius':'8px'},children:[make('legend'),make('input')]});
+   case 'legend':return N('legend',{text:'Group title',style:{'font-weight':'600',padding:'0 6px'}});
+   case 'option':return N('option',{text:'Option'});
+   case 'optgroup':return N('optgroup',{attrs:{label:'Group'},children:[N('option',{text:'Option 1'}),N('option',{text:'Option 2'})]});
+   case 'datalist':return N('datalist',{children:[N('option',{attrs:{value:'Suggestion 1'}}),N('option',{attrs:{value:'Suggestion 2'}})]});
+   case 'output':return N('output',{text:'Result: 42'});
+   case 'progress':return N('progress',{attrs:{value:'60',max:'100'},style:{width:'200px'}});
+   case 'meter':return N('meter',{attrs:{value:'0.6',min:'0',max:'1'},style:{width:'200px'}});
+   /* lists + tables */
+   case 'li':return N('li',{text:'List item'});
+   case 'dl':return N('dl',{style:{margin:'0'},children:[make('dt'),make('dd')]});
+   case 'dt':return N('dt',{text:'Term',style:{'font-weight':'700'}});
+   case 'dd':return N('dd',{text:'Description of the term.',style:{margin:'4px 0 0 16px'}});
+   case 'menu':return N('menu',{style:{'padding-left':'24px',margin:'0'},children:[N('li',{text:'Action one'}),N('li',{text:'Action two'})]});
+   case 'caption':return N('caption',{text:'Table caption',style:{'text-align':'left','font-weight':'600',padding:'8px 0'}});
+   case 'thead':return N('thead',{children:[N('tr',{children:[cell('Name',1),cell('Role',1)]})]});
+   case 'tbody':return N('tbody',{children:[N('tr',{children:[cell('Ada'),cell('Engineer')]}),N('tr',{children:[cell('Lin'),cell('Designer')]})]});
+   case 'tfoot':return N('tfoot',{children:[N('tr',{children:[cell('Total'),cell('2')]})]});
+   case 'tr':return N('tr',{children:[cell('Cell'),cell('Cell')]});
+   case 'th':return cell('Header',1);
+   case 'td':return cell('Cell');
+   case 'colgroup':return N('colgroup',{children:[N('col'),N('col')]});
+   case 'col':return N('col');
+   /* semantic */
+   case 'summary':return N('summary',{text:'Click to expand',style:{cursor:'pointer'}});
+   case 'dialog':return N('dialog',{attrs:{open:''},style:{position:'relative',inset:'auto',margin:'0',padding:'16px',border:'1px solid #475569','border-radius':'8px',background:'transparent',color:'inherit'},children:[N('p',{text:'Dialog content goes here.',style:{margin:'0'}})]});
+   case 'address':return N('address',{text:'Your name, 12 Example Street, City',style:{'font-style':'normal'}});
+   case 'hgroup':return N('hgroup',{children:[N('h2',{text:'Main title',style:{margin:'0'}}),N('p',{text:'Supporting subtitle',style:{margin:'0'}})]});
+   case 'search':return N('search',{style:{display:'block'},children:[N('input',{attrs:{type:'search',placeholder:'Search…'},style:FIELDSTY})]});
    case 'line':return svgWrap(N('line',{ns:1,attrs:{x1:'10',y1:'10',x2:'110',y2:'110'},style:{stroke:'#60a5fa','stroke-width':'4','stroke-linecap':'round'}}));
    case 'rect':return svgWrap(N('rect',{ns:1,attrs:{x:'10',y:'10',width:'100',height:'100',rx:'10'},style:{fill:'#3b82f6'}}));
    case 'circle':return svgWrap(N('circle',{ns:1,attrs:{cx:'60',cy:'60',r:'48'},style:{fill:'#06b6d4'}}));
@@ -302,7 +392,7 @@ function insertNode(n,targetId,zone){
 }
 function addByTag(tag,targetId){
   var n=make(tag);insertNode(n,targetId||S.sel);
-  S.sel=(n.tag==='svg'&&n.children[0])?n.children[0].id:n.id;
+  S.sel=(tag!=='svg'&&n.tag==='svg'&&n.children[0])?n.children[0].id:n.id;
   changed();selectNode(S.sel);toast('Added <'+tag+'>');
 }
 function dupSel(){var f=find(S.sel);if(!f||!f.parent)return;var c=clone(f.node);f.parent.children.splice(f.index+1,0,c);S.sel=c.id;changed();}
@@ -355,7 +445,7 @@ function renderLayers(){
     row.addEventListener('drop',function(e){
       e.preventDefault();var z=zoneOf(e,row,n);clearRows();
       var tag=e.dataTransfer.getData('text/x-nx-tag');
-      if(tag){var nn=make(tag);insertNode(nn,n.id,z);S.sel=(nn.tag==='svg'&&nn.children[0])?nn.children[0].id:nn.id;changed();return;}
+      if(tag){var nn=make(tag);insertNode(nn,n.id,z);S.sel=(tag!=='svg'&&nn.tag==='svg'&&nn.children[0])?nn.children[0].id:nn.id;changed();return;}
       var id=e.dataTransfer.getData('text/x-nx-move')||dragId;if(id)moveNode(id,n.id,z);
     });
     box.appendChild(row);

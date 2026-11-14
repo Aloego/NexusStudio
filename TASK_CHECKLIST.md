@@ -103,9 +103,24 @@
 - [x] Remove the `SVG / Drawing` group from the `PAL` palette in `renderer/app.js`
 - [x] Syntax check and run automated tests (same 3 failures as before the change; see `TEST_RESULTS.md`)
 - [x] Commit and push changes to feature branch
+- [x] User personally tests the Elements tab
+
+**Status:** Approved (user said "Approved" on 2026-11-14)
+
+## Add missing HTML elements to Elements tab
+
+- [x] Inspect how the palette, insertion and export code work
+- [x] Add the missing elements, each under the category it fits
+- [x] Create new categories where none fit: Text Formatting, Quotes & Code, Inline Details, Form Extras, Table Parts
+- [x] Add a plain SVG graphic (`svg`) under Media
+- [x] Mark the new empty elements (`wbr`, `source`, `track`, `col`, `area`) so they export without a closing tag
+- [x] Let the new container elements accept children when something is dropped on them
+- [x] Add automated tests for the Elements tab
+- [x] Run automated tests and look at the app in a browser
+- [ ] Commit and push changes to feature branch
 - [ ] User personally tests the Elements tab
 
-**Status:** Awaiting User Approval
+**Status:** In Progress
 
 ## Phase 8 — End-to-End Workflow Verification
 

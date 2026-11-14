@@ -278,3 +278,52 @@ Failing in both runs: `get_window_state`, `get_app_state`, `get_process_info`. T
 ### Approval
 
 Awaiting User Approval
+
+
+## Add missing HTML elements to Elements tab
+
+### Date
+
+2026-11-14
+
+### Branch
+
+feature/ai-development-workflow
+
+### Scope
+
+Added the missing HTML elements to the Elements tab. The tab now offers 98 elements in 12 groups (it offered 25 before). New groups: Text Formatting, Quotes & Code, Inline Details, Form Extras, Table Parts. A plain SVG graphic (`svg`) was added under Media. Changed files: `renderer/app.js`, `test/e2e.js`.
+
+Not added on purpose, because the editor blocks them for security: script, style, iframe, frame, frameset, object, embed, link, meta, base, head, html, body, title, noscript, template, slot, portal. Also not added: obsolete elements (center, font, marquee and similar) and MathML.
+
+### Static check
+
+`node --check renderer/app.js` and `node --check test/e2e.js` — both passed.
+
+### Automated tests
+
+Command: `npm test` (run in the AI sandbox)
+
+Result: 107 passed, 3 failed.
+
+The 5 new checks in the "Elements tab" section all passed: no SVG / Drawing group; the tab lists exactly the expected 98 elements; no element appears twice; every element can be added; empty elements are exported without a closing tag.
+
+The 3 failures are the same ones that already failed before any of these changes: `get_window_state`, `get_app_state`, `get_process_info`. Cause not investigated.
+
+### Inspected in a browser
+
+Opened the editor in headless Chromium, took screenshots of the palette and of a page with a sample of the new elements (h3, blockquote, figure, fieldset, dl, table, dialog, svg, progress, hgroup, kbd, details). They rendered correctly and no page errors were raised.
+
+### Could not be run
+
+- The real Electron window. Not run in this sandbox.
+
+### Manual testing for the user
+
+- Open the Elements tab, expand the new groups, and click or drag a few elements onto the page.
+- Try the elements that only make sense inside a parent (for example `li` into a list, `td` into a row, `option` into a dropdown) by selecting the parent first.
+- Check that Copy page code produces sensible HTML for the new elements.
+
+### Approval
+
+In Progress (becomes Awaiting User Approval once committed and pushed)
