@@ -98,6 +98,12 @@ button{cursor:pointer}
 .stage-inner{position:relative;padding:28px 16px 48px;min-width:min-content;display:flow-root}
 .frame{margin:0 auto;position:relative}
 .page{position:absolute;left:0;top:0;transform-origin:0 0;min-height:640px;background:#fff;color:#111;border:0;border-radius:6px;overflow:hidden;font-family:var(--ui);box-shadow:0 20px 50px rgba(0,0,0,.5)}
+/* viewport resize handles */
+.frh{position:absolute;z-index:6;touch-action:none}
+.frh-e{top:0;right:-7px;width:14px;height:100%;cursor:ew-resize}
+.frh-s{left:0;bottom:-7px;height:14px;width:100%;cursor:ns-resize}
+.frh-se{right:-7px;bottom:-7px;width:14px;height:14px;cursor:nwse-resize;background:#fff;border:2px solid var(--accent);border-radius:3px;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.frh-e:hover,.frh-s:hover{background:rgba(59,130,246,.14)}
 .page *,.page *::before,.page *::after{box-sizing:border-box}
 .page .nx-drop{outline:2px dashed #3b82f6!important;outline-offset:-2px}
 .page [contenteditable="true"]{outline:2px solid #3b82f6;outline-offset:2px;cursor:text;user-select:text}

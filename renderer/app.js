@@ -1013,7 +1013,7 @@ $('#modal').addEventListener('mousedown',function(e){if(e.target.id==='modal')cl
 function setZoom(z){S.zoom=Math.min(2,Math.max(0.3,Math.round(z*10)/10));page.style.transform='scale('+S.zoom+')';sizeFrame();
   $('#zoomVal').textContent=Math.round(S.zoom*100)+'%';$('#zoomLab').textContent=Math.round(S.zoom*100)+'%';placeOverlay();}
 function setDevice(w,h){
-  S.dw=Math.max(280,Math.min(1600,w|0||880));if(h)S.dh=Math.max(200,Math.min(4000,h|0));
+  S.dw=Math.max(120,Math.min(10000,w|0||880));if(h)S.dh=Math.max(120,Math.min(20000,h|0));
   $('#vw').value=S.dw;$('#vh').value=S.dh;
   Array.prototype.forEach.call($('#devs').children,function(b){b.classList.toggle('on',+b.getAttribute('data-w')===S.dw);});
   page.style.width=S.dw+'px';page.style.minHeight=S.dh+'px';sizeFrame();placeOverlay();
@@ -1022,6 +1022,23 @@ $('#devs').addEventListener('click',function(e){var b=e.target.closest('button')
 $('#vw').addEventListener('change',function(){setDevice(parseInt(this.value,10)||S.dw);});
 $('#vh').addEventListener('change',function(){setDevice(S.dw,parseInt(this.value,10)||S.dh);});
 $('#rotate').addEventListener('click',function(){setDevice(S.dh,S.dw);});
+/* drag the frame edges to resize the viewport */
+Array.prototype.forEach.call(document.querySelectorAll('.frh'),function(h){
+  h.addEventListener('pointerdown',function(e){
+    e.preventDefault();e.stopPropagation();
+    var dir=h.getAttribute('data-dir'),sx=e.clientX,sy=e.clientY;
+    var w0=S.dw,h0=Math.max(S.dh,page.offsetHeight||S.dh);
+    try{h.setPointerCapture(e.pointerId);}catch(x){}
+    function mv(ev){
+      var w=w0,ht=h0;
+      if(dir.indexOf('e')>=0)w=Math.max(120,Math.round(w0+(ev.clientX-sx)/S.zoom));
+      if(dir.indexOf('s')>=0)ht=Math.max(120,Math.round(h0+(ev.clientY-sy)/S.zoom));
+      setDevice(w,ht);
+    }
+    function up(){h.removeEventListener('pointermove',mv);h.removeEventListener('pointerup',up);}
+    h.addEventListener('pointermove',mv);h.addEventListener('pointerup',up);
+  });
+});
 $('#zIn').addEventListener('click',function(){setZoom(S.zoom+0.1);});
 $('#zOut').addEventListener('click',function(){setZoom(S.zoom-0.1);});
 $('#tgGrid').addEventListener('click',ACT.grid);$('#tgRuler').addEventListener('click',ACT.rulers);

@@ -8,10 +8,11 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "start": "electron .",
-    "dist": "electron-builder --win nsis --x64 --publish never",
-    "test": "node test/e2e.js && node test/main-smoke.js"
-  },
+      "start": "electron .",
+      "dev": "node server.js",
+      "dist": "electron-builder --win nsis --x64 --publish never",
+      "test": "node test/e2e.js && node test/main-smoke.js"
+    },
   "devDependencies": {
     "electron": "^37.0.0",
     "electron-builder": "^25.1.8",
