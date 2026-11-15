@@ -199,7 +199,8 @@ iframe.pv{flex:1;border:0;background:#fff;width:100%;min-height:0}
 .ctl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:5px 12px;background:var(--alt);border-top:1px solid var(--line);font-size:11px;color:#d4d4d8}
 .ctl .grp2{display:flex;align-items:center;gap:6px}
 .dim{display:flex;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:1px 6px;font:11px var(--mono)}
-.dim input{width:38px;background:none;border:0;text-align:center;padding:2px 0}
+.dim input{width:52px;background:none;border:0;text-align:center;padding:2px 0}
+.dim input:focus{outline:none;background:var(--hi);border-radius:3px}
 .dim span{color:var(--dim);font-size:9.5px}
 .dev{display:flex;gap:2px;background:rgba(24,24,27,.8);border:1px solid var(--line);border-radius:8px;padding:2px;margin:0 auto}
 .dev button{background:none;border:1px solid transparent;border-radius:5px;padding:3px 10px;color:var(--dim);font-size:11px}
