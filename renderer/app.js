@@ -1015,11 +1015,19 @@ function setZoom(z){S.zoom=Math.min(2,Math.max(0.3,Math.round(z*10)/10));page.st
 function setDevice(w,h){
   S.dw=Math.max(120,Math.min(10000,w|0||880));if(h)S.dh=Math.max(120,Math.min(20000,h|0));
   $('#vw').value=S.dw;$('#vh').value=S.dh;
-  var sel=$('#devPreset');if(sel){Array.prototype.forEach.call(sel.options,function(o){o.selected=o.value===String(S.dw);});}
-    page.style.width=S.dw+'px';page.style.minHeight=S.dh+'px';sizeFrame();placeOverlay();
+  page.style.width=S.dw+'px';page.style.minHeight=S.dh+'px';sizeFrame();placeOverlay();
+  syncDevLbl();
 }
-$('#devPreset').addEventListener('change',function(){var w=+this.value;setDevice(w,w===880?640:(w===768?1024:844));});
-function syncDevBtns(){var sel=$('#devPreset');if(sel){Array.prototype.forEach.call(sel.options,function(o){o.selected=o.value===String(S.dw);});}}
+function syncDevLbl(){var lbl=$('#ddvLbl');if(lbl)lbl.textContent=S.dw+' × '+S.dh;}
+function pickDevice(w,h){setDevice(w,h);syncDevLbl();closeDdv();}
+function closeDdv(){var m=$('#ddvMenu');if(m)m.hidden=true;$('#ddv').setAttribute('aria-expanded','false');}
+function openDdv(){var m=$('#ddvMenu');if(m){m.hidden=!m.hidden;$('#ddv').setAttribute('aria-expanded',!m.hidden);if(!m.hidden){var r=m.getBoundingClientRect();if(r.bottom>inner.clientHeight-8)m.style.top=(inner.clientHeight-8-r.height)+'px';}}}
+$('#ddv').addEventListener('click',function(e){e.stopPropagation();openDdv();});
+$('#ddv').addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();openDdv();}else if(e.key==='Escape'){closeDdv();}});
+document.addEventListener('click',function(e){if(!e.target.closest('#ddv'))closeDdv();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('#ddvMenu').hidden)closeDdv();},true);
+$('#ddvMenu').addEventListener('click',function(e){var b=e.target.closest('button[data-w]');if(b){var w=+b.getAttribute('data-w'),h=+b.getAttribute('data-h');pickDevice(w,h);}});
+$('#ddvEdit').addEventListener('click',function(){closeDdv();commitVw();});
 /* live typing: update the canvas as the user types, without reformatting the field */
 function liveVw(){var v=parseInt($('#vw').value,10);if(!isNaN(v)){S.dw=Math.max(120,Math.min(10000,v));page.style.width=S.dw+'px';sizeFrame();placeOverlay();syncDevBtns();}}
 function liveVh(){var v=parseInt($('#vh').value,10);if(!isNaN(v)){S.dh=Math.max(120,Math.min(20000,v));page.style.minHeight=S.dh+'px';sizeFrame();placeOverlay();}}
@@ -1127,7 +1135,7 @@ function boot(){
   S.root=st.root;S.css=st.css||'';S.js=st.js||'';S.title=st.title||'nebula-landing-v2';S.sel=S.root.id;fixUid();
   $('#projName').value=S.title;
   hist=[snap()];hi=0;
-  renderPalette();syncLeft();setDevice(880,640);
+  renderPalette();syncLeft();setDevice(880,640);syncDevLbl();
   var avail=stage.clientWidth-40;if(avail>200&&avail<880)S.zoom=Math.max(0.3,Math.floor(avail/880*10)/10);
   else if(avail>=200&&avail<880+40)S.zoom=1;
   $('#zoomVal').textContent=Math.round(S.zoom*100)+'%';$('#zoomLab').textContent=Math.round(S.zoom*100)+'%';

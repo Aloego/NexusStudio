@@ -124,7 +124,36 @@
       <div class="dim"><input id="vw" type="text" inputmode="numeric" aria-label="Width"><span>W</span></div><span style="color:var(--dim)">×</span>
       <div class="dim"><input id="vh" type="text" inputmode="numeric" aria-label="Minimum height"><span>H</span></div>
       <button class="tg" id="rotate">⟳ Rotate</button></div>
-    <div class="dev" id="devs"><select id="devPreset" aria-label="Device preset"><option value="390">Mobile</option><option value="768">Tablet</option><option value="880" selected>Desktop</option></select></div>
+    <div class="dev" id="devs">
+          <div class="ddv" id="ddv" role="combobox" aria-label="Device preset" aria-haspopup="listbox" aria-expanded="false" tabindex="0">
+            <span class="ddv-lbl" id="ddvLbl">Desktop</span>
+            <svg class="ddv-arr" width="10" height="6" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="ddv-menu" id="ddvMenu" role="listbox" hidden>
+            <div class="ddv-grp"><span>Mobile</span>
+              <button data-w="390" data-h="844"><span>iPhone SE</span><span class="m">390 × 844</span></button>
+              <button data-w="414" data-h="896"><span>iPhone 16</span><span class="m">414 × 896</span></button>
+              <button data-w="430" data-h="932"><span>iPhone 16 Pro Max</span><span class="m">430 × 932</span></button>
+              <button data-w="393" data-h="852"><span>Pixel 9</span><span class="m">393 × 852</span></button>
+              <button data-w="412" data-h="915"><span>Pixel 9 Pro</span><span class="m">412 × 915</span></button>
+              <button data-w="412" data-h="915"><span>Pixel 10</span><span class="m">412 × 915</span></button>
+              <button data-w="360" data-h="800"><span>Samsung Galaxy A55</span><span class="m">360 × 800</span></button>
+            </div>
+            <div class="ddv-grp"><span>Foldables</span>
+              <button data-w="431" data-h="881"><span>Pixel 9 Pro Fold</span><span class="m">431 × 881</span></button>
+              <button data-w="360" data-h="780"><span>Galaxy Z Fold 6</span><span class="m">360 × 780</span></button>
+            </div>
+            <div class="ddv-grp"><span>Tablets &amp; Desktops</span>
+              <button data-w="768" data-h="1024"><span>iPad Mini</span><span class="m">768 × 1024</span></button>
+              <button data-w="810" data-h="1080"><span>iPad Pro 13</span><span class="m">810 × 1080</span></button>
+              <button data-w="880" data-h="640" data-default="1"><span>Desktop</span><span class="m">880 × 640</span></button>
+            </div>
+            <div class="ddv-grp"><span>Smart Displays</span>
+              <button data-w="430" data-h="430"><span>Nest Hub Max</span><span class="m">430 × 430</span></button>
+            </div>
+            <div class="ddv-foot"><button id="ddvEdit">Edit…</button></div>
+          </div>
+        </div>
     <div class="grp2"><span style="color:var(--muted)">Zoom</span><b style="font:500 11px var(--mono)" id="zoomVal">100%</b>
       <div class="zoom"><button id="zOut" title="Zoom out" aria-label="Zoom out">−</button><button id="zIn" title="Zoom in" aria-label="Zoom in">+</button></div>
       <button class="tg on" id="tgGrid" title="Toggle dot grid">Grid</button><button class="tg on" id="tgRuler" title="Toggle position bar">Position</button></div>
