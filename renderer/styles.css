@@ -203,9 +203,9 @@ iframe.pv{flex:1;border:0;background:#fff;width:100%;min-height:0}
 .dim input:focus{outline:none;background:var(--hi);border-radius:3px}
 .dim span{color:var(--dim);font-size:9.5px}
 .dev{display:flex;gap:2px;background:rgba(24,24,27,.8);border:1px solid var(--line);border-radius:8px;padding:2px;margin:0 auto}
-.dev button{background:none;border:1px solid transparent;border-radius:5px;padding:3px 10px;color:var(--dim);font-size:11px}
-.dev button:hover{color:#e4e4e7}
-.dev button.on{border-color:var(--accent);background:var(--accent-soft);color:#60a5fa}
+.dev select{background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:3px 8px;color:var(--dim);font-size:11px;font-family:var(--ui);cursor:pointer}
+.dev select:hover{color:#e4e4e7}
+.dev select:focus{outline:none;border-color:var(--accent)}
 .zoom{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:4px}
 .zoom button{background:none;border:0;padding:1px 9px;font:700 12px var(--mono);color:#d4d4d8}
 .zoom button:first-child{border-right:1px solid var(--line)}

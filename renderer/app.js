@@ -1015,11 +1015,11 @@ function setZoom(z){S.zoom=Math.min(2,Math.max(0.3,Math.round(z*10)/10));page.st
 function setDevice(w,h){
   S.dw=Math.max(120,Math.min(10000,w|0||880));if(h)S.dh=Math.max(120,Math.min(20000,h|0));
   $('#vw').value=S.dw;$('#vh').value=S.dh;
-  Array.prototype.forEach.call($('#devs').children,function(b){b.classList.toggle('on',+b.getAttribute('data-w')===S.dw);});
-  page.style.width=S.dw+'px';page.style.minHeight=S.dh+'px';sizeFrame();placeOverlay();
+  var sel=$('#devPreset');if(sel){Array.prototype.forEach.call(sel.options,function(o){o.selected=o.value===String(S.dw);});}
+    page.style.width=S.dw+'px';page.style.minHeight=S.dh+'px';sizeFrame();placeOverlay();
 }
-$('#devs').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;var w=+b.getAttribute('data-w');setDevice(w,w===880?640:(w===768?1024:844));});
-function syncDevBtns(){Array.prototype.forEach.call($('#devs').children,function(b){b.classList.toggle('on',+b.getAttribute('data-w')===S.dw);});}
+$('#devPreset').addEventListener('change',function(){var w=+this.value;setDevice(w,w===880?640:(w===768?1024:844));});
+function syncDevBtns(){var sel=$('#devPreset');if(sel){Array.prototype.forEach.call(sel.options,function(o){o.selected=o.value===String(S.dw);});}}
 /* live typing: update the canvas as the user types, without reformatting the field */
 function liveVw(){var v=parseInt($('#vw').value,10);if(!isNaN(v)){S.dw=Math.max(120,Math.min(10000,v));page.style.width=S.dw+'px';sizeFrame();placeOverlay();syncDevBtns();}}
 function liveVh(){var v=parseInt($('#vh').value,10);if(!isNaN(v)){S.dh=Math.max(120,Math.min(20000,v));page.style.minHeight=S.dh+'px';sizeFrame();placeOverlay();}}
