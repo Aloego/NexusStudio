@@ -781,3 +781,12 @@ Awaiting User Approval
 ### Approval
 
 Awaiting User Approval
+
+## Element documentation: browser opening and Zeal discovery (second fix, 2026-11-17)
+
+- `node test/e2e.js`: 172 passed, 3 failed (same 3 as before). New checks: address shown, Copy link, step-by-step Zeal help.
+- Not run: real Windows/WSL browser opening, real Zeal; user must test.
+
+### Approval
+
+Awaiting User Approval

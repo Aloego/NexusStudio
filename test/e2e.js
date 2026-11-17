@@ -454,6 +454,10 @@ page.on('console', function (m) {
   await defPage.click('#docMdn');
   const opened = await defPage.evaluate(function () { return window.__opened; });
   ok(opened.length === 1 && opened[0] === 'https://developer.mozilla.org/en-US/docs/Web/HTML/Element/div', 'the MDN button opens the MDN page for the element ' + JSON.stringify(opened));
+  ok((await defPage.textContent('#docLink')) === 'https://developer.mozilla.org/en-US/docs/Web/HTML/Element/div' && !(await defPage.$eval('#docLinkRow', function (d) { return d.hidden; })), 'the page address is shown so it can be copied if no browser opens');
+  await defPage.evaluate(function () { window.__clip = null; Object.defineProperty(navigator, 'clipboard', { value: { writeText: function (t) { window.__clip = t; return Promise.resolve(); } }, configurable: true }); });
+  await defPage.click('#docCopy'); await defPage.waitForTimeout(100);
+  ok((await defPage.evaluate(function () { return window.__clip; })) === 'https://developer.mozilla.org/en-US/docs/Web/HTML/Element/div', 'Copy link puts the address on the clipboard');
   await defPage.keyboard.press('Escape');
   ok(await defPage.$eval('#docDlg', function (d) { return d.hidden; }), 'Escape closes the guide');
   await addPalette('h3'); await defPage.evaluate(function () { document.querySelector('#ovLab').click(); });
@@ -562,7 +566,8 @@ page.on('console', function (m) {
   ok((await dpage.isVisible('#docZeal')) && !(await dpage.isVisible('#docZealRow')), 'in the desktop app the Zeal button shows and the path box is hidden');
   await dpage.click('#docMdn');
   await dpage.click('#docZeal'); await dpage.waitForTimeout(150);
-  ok(await dpage.isVisible('#docZealRow'), 'if Zeal is not found, a box to type its path appears (no file dialog)');
+  ok(await dpage.isVisible('#docZealRow'), 'if Zeal is not found, a box to type its path appears (no file dialog)')
+  ok(await dpage.isVisible('#docZealHelp') && /Open file location/.test(await dpage.textContent('#docZealHelp')), 'step-by-step help for finding Zeal is shown with the box');
   await dpage.fill('#docZealPath', 'C:\\Zeal\\zeal.exe'); await dpage.click('#docZealSave'); await dpage.waitForTimeout(150);
   const docCalls = await dpage.evaluate(function () { return window.__docs; });
   ok(JSON.stringify(docCalls.map(function (c) { return c[0]; })) === '["online","zeal","path","zeal"]' && docCalls[0][1] === docCalls[1][1] && !(await dpage.isVisible('#docZealRow')), 'desktop: MDN button, Zeal button asks for the path, saving it opens Zeal ' + JSON.stringify(docCalls));

@@ -4,7 +4,17 @@
 
 Drag positioned elements on the canvas: elements whose position is not static can be dragged to move them (state: Awaiting User Approval once pushed). Earlier on 2026-11-17: viewport number spinner fields and device size dropdown approved; "add every element blank" rejected and reverted.
 
-## Latest Session (2026-11-17, fourteenth request, fix after rejection)
+## Latest Session (2026-11-17, fifteenth request, fix after second rejection)
+
+- User rejected again: "Open on MDN" showed "opened in your browser" but no browser opened (4 browsers installed, one default); and the Zeal path box was not understandable (Zeal is an application, not a folder).
+- Causes found: (1) `shell.openExternal` resolves with no value, so success was reported even when nothing opened, and the real environment (Windows or WSL) was unknown; (2) the Zeal launch treated the resolved `dash://` call as failure, so the path box could appear even when it worked; (3) Zeal was only looked for in a few fixed places and the path box gave no guidance.
+- Done in `main/main.js`: `openUrl()` (uses `wslview` or `cmd.exe /c start` when Electron runs inside WSL, otherwise `shell.openExternal`; returns the method used); `docs:openOnline` returns url, method and platform; `findZeal()` looks at Start Menu and Desktop shortcuts (resolved with `shell.readShortcutLink`), Program Files, Local AppData, scoop, Downloads/Desktop/Documents and WSL `/mnt/c` paths; `docs:openZeal` treats the `dash://` fallback as success; `docs:setZealPath` accepts a folder, `zeal.exe` or a shortcut (.lnk), converts `C:\` paths in WSL, and saves the real exe path.
+- Done in `renderer/`: the MDN address is always shown with a "Copy link" button; the message now says which method and platform were used and tells the user what to do if no window appears; when Zeal is not found, the box asks for the Zeal folder and step-by-step help is shown (Start, type Zeal, right-click, Open file location, copy the address-bar path).
+- Tests: `node test/e2e.js` gives 172 passed, 3 failed (the same 3 as before); file search helper tried on a sample folder.
+- Not verified: real browsers/Windows/WSL behaviour (none available here), real Zeal. If MDN still does not open, ask the user to read the method and platform shown in the dialog message.
+- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+
+## Earlier Session (2026-11-17, fourteenth request, rejected)
 
 - User rejected the docs-folder design: the dialog opening from the tag is fine, but the buttons should either take the user online to the MDN page or open the Zeal application on the element page (user has Zeal and an HTML docset installed). The folder-chooser Explorer window also extended beyond the screen so it could not be minimised or closed.
 - Done: removed the docs-folder buttons, `docs:chooseFolder`, `docs:openLocal` and the folder search. No file dialog is used any more.

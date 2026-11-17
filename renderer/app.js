@@ -607,7 +607,7 @@ function openDoc(tag){
   $('#docAttrs').textContent=d?d[2]:'-';
   $('#docEx').textContent=d?d[3]:'';
   docMsg('');
-  $('#docZeal').hidden=!window.nexus;$('#docZealRow').hidden=true;
+  $('#docZeal').hidden=!window.nexus;$('#docZealRow').hidden=true;$('#docZealHelp').hidden=true;showDocLink('');
   $('#docDlg').hidden=false;$('#docClose').focus();
 }
 function closeDoc(){$('#docDlg').hidden=true;docTag=null;}
@@ -616,23 +616,38 @@ $('#ovLab').addEventListener('keydown',function(e){if(e.key==='Enter'||e.key==='
 $('#docClose').addEventListener('click',closeDoc);
 $('#docDlg').addEventListener('mousedown',function(e){if(e.target.id==='docDlg')closeDoc();});
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('#docDlg').hidden){closeDoc();e.stopPropagation();}},true);
+function showDocLink(url){$('#docLink').textContent=url;$('#docLink').setAttribute('data-url',url);$('#docLinkRow').hidden=!url;}
+$('#docLink').addEventListener('click',function(e){e.preventDefault();});
+$('#docCopy').addEventListener('click',function(){
+  var u=$('#docLink').getAttribute('data-url')||'';
+  function done(){docMsg('Link copied. Paste it into any browser.');}
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(u).then(done,function(){docMsg('Could not copy. Select the link and copy it by hand.');});}
+  else docMsg('Could not copy. Select the link and copy it by hand.');
+});
 $('#docMdn').addEventListener('click',function(){
   if(!docTag)return;
-  if(window.nexus&&window.nexus.docsOpenOnline){window.nexus.docsOpenOnline(docTag).then(function(r){docMsg(r&&r.error?r.error:'Opened in your browser.');});}
+  showDocLink(mdnUrl(docTag));
+  if(window.nexus&&window.nexus.docsOpenOnline){
+    docMsg('Asking your computer to open the page…');
+    window.nexus.docsOpenOnline(docTag).then(function(r){
+      if(r&&r.error){docMsg(r.error+' Use "Copy link" and paste it into your browser.');return;}
+      docMsg('Sent to your default browser'+(r&&r.method?' ('+r.method+', '+r.platform+')':'')+'. If no browser window appears, use "Copy link" and paste it into any browser.');
+    });
+  }
   else{window.open(mdnUrl(docTag),'_blank','noopener');docMsg('Opened in a new tab.');}
 });
 function openZealDoc(){
   if(!docTag||!window.nexus)return;
   docMsg('Opening Zeal…');
   window.nexus.docsOpenZeal(docTag).then(function(r){
-    if(r&&r.needPath){$('#docZealRow').hidden=false;$('#docZealPath').focus();docMsg('Zeal was not found. Type the full path of zeal.exe below (right-click Zeal, Properties, copy the path).');return;}
-    $('#docZealRow').hidden=true;
-    docMsg(r&&r.error?r.error:'Opened in Zeal.');
+    if(r&&r.needPath){$('#docZealRow').hidden=false;$('#docZealHelp').hidden=false;$('#docZealPath').focus();docMsg('NexusStudio could not find Zeal by itself. Please follow the steps below.');return;}
+    $('#docZealRow').hidden=true;$('#docZealHelp').hidden=true;
+    docMsg(r&&r.error?r.error:'Zeal was started on this element. If it does not show the page, check that Zeal has the HTML docset installed.');
   });
 }
 $('#docZeal').addEventListener('click',openZealDoc);
 $('#docZealSave').addEventListener('click',function(){
-  window.nexus.docsSetZealPath($('#docZealPath').value).then(function(r){if(r&&r.error){docMsg(r.error);return;}$('#docZealRow').hidden=true;openZealDoc();});
+  window.nexus.docsSetZealPath($('#docZealPath').value).then(function(r){if(r&&r.error){docMsg(r.error);return;}$('#docZealRow').hidden=true;$('#docZealHelp').hidden=true;openZealDoc();});
 });
 $('#docZealPath').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();$('#docZealSave').click();}});
 
