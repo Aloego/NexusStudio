@@ -164,9 +164,9 @@
 - [x] Width/height limits follow the Dyad commits (120 to 10000 wide, 120 to 20000 high) so desktop sizes such as 1920 and 2560 fit; MCP tool text updated
 - [x] Add automated tests, run them, look at the app in a browser
 - [x] Commit and push changes to feature branch
-- [ ] User personally tests the device dropdown
+- [x] User personally tests the device dropdown
 
-**Status:** Awaiting User Approval
+**Status:** Approved (user said "I approve the dropdowns task too" on 2026-11-17)
 
 ## Viewport fields as number spinners
 

@@ -2,7 +2,7 @@
 
 ## Current Task
 
-Show the Viewport width and height as number spinner fields (`400 ⬍ × 512 ⬍`), per the user's screenshot. Approved by the user on 2026-11-17. The device size dropdown task before it has no recorded approval yet (still Awaiting User Approval).
+Show the Viewport width and height as number spinner fields (`400 ⬍ × 512 ⬍`), per the user's screenshot. Approved by the user on 2026-11-17. The device size dropdown task before it was also approved by the user on 2026-11-17.
 
 ## Latest Session (2026-11-17, eighth request)
 
@@ -158,10 +158,10 @@ Result: 98 passed, 0 failed
 
 ## Next Action
 
-Wait for the user's next instruction. The device size dropdown still needs the user's explicit `APPROVE` or `REJECT`. A separate approval is required before merging into `main` or releasing the application.
+Wait for the user's next instruction. A separate approval is required before merging into `main` or releasing the application.
 
 ## Approval Status
 
-Awaiting User Approval (device size dropdown). Approved: viewport number spinner fields (2026-11-17). Earlier tasks (SVG / Drawing removal, add missing elements, browser-default styles, CSS tab gaps with margin and padding per-side fields, window sizing fix) were approved by the user.
+Nothing is awaiting approval. Approved on 2026-11-17: viewport number spinner fields and the device size dropdown. Earlier tasks (SVG / Drawing removal, add missing elements, browser-default styles, CSS tab gaps with margin and padding per-side fields, window sizing fix) were approved by the user.
 
 > Note: No approval here authorizes merging into `main` or releasing the application.

@@ -561,7 +561,7 @@ Screenshots of the open dropdown, the Edit devices dialog and the footer bar. Th
 
 ### Approval
 
-Awaiting User Approval
+Approved (user said "I approve the dropdowns task too" on 2026-11-17).
 
 ---
 
