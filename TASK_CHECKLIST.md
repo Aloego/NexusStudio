@@ -160,7 +160,8 @@
 - [x] Dropdown groups: Mobile, Foldables, Tablets, Desktops, Smart Displays; each device shows its width × height
 - [x] Choosing a device sets the Viewport width and height; typing your own size switches back to "Responsive"; Rotate keeps the device name
 - [x] "Edit…" opens an editor: change any name, width or height, add a device to a group, remove a device, reset to defaults; changes are saved on this computer
-- [x] Allow widths up to 3840 (was 1600) so desktop sizes such as 1920 and 2560 fit; MCP tool text updated
+- [x] Merged with another tool's (Dyad) pushed commits (live typing in width/height, drag-handles on the frame edges, `server.js`, `dev` script); the old `data-w` button syncing was replaced by updating the dropdown label
+- [x] Width/height limits follow the Dyad commits (120 to 10000 wide, 120 to 20000 high) so desktop sizes such as 1920 and 2560 fit; MCP tool text updated
 - [x] Add automated tests, run them, look at the app in a browser
 - [x] Commit and push changes to feature branch
 - [ ] User personally tests the device dropdown

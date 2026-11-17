@@ -9,12 +9,13 @@ Replace the Mobile / Tablet / Desktop buttons with a device size dropdown that h
 - User request: change the Mobile / Tablet / Desktop tabs into a viewport dropdown like Chrome's device toolbar (screenshot supplied): groups for mobile, tablet and desktop with the dimensions of each device, and the dimensions must be editable.
 - Done in `renderer/index.html`: `#devs` is now a `.menu.devm` holding `#devBtn` and `#devDrop`; new `#devEdit` dialog.
 - Done in `renderer/styles.css`: `.devm`, `.devdrop`, editor styles; `#modal` rules also apply to `#devEdit`.
-- Done in `renderer/app.js`: `DEVICES` (stored in localStorage key `nexusstudio.devices.v1`, cleaned by `cleanDevices()`), `defaultDevices()`, `renderDevMenu()`, `renderDevButton()`, `openDevEdit()`, `renderDevList()`. `setDevice()` now updates the dropdown label and allows widths up to 3840. The menu uses the existing `data-menu` / `.drop` mechanism.
-- Done in `main/tools.js`: `set_viewport` width description now says 280 to 3840.
+- Done in `renderer/app.js`: `DEVICES` (stored in localStorage key `nexusstudio.devices.v1`, cleaned by `cleanDevices()`), `defaultDevices()`, `renderDevMenu()`, `renderDevButton()`, `openDevEdit()`, `renderDevList()`. `setDevice()` now updates the dropdown label and allows the wider limits (120 to 10000). The menu uses the existing `data-menu` / `.drop` mechanism.
+- Done in `main/tools.js`: `set_viewport` width description now says 120 to 10000.
 - Done in `test/e2e.js`: new "Device size dropdown" checks.
 - Device sizes are estimates and editable. Groups are fixed (Mobile, Foldables, Tablets, Desktops, Smart Displays); devices inside them can be added, renamed, resized and removed.
 - Tests: `npm test` gives 144 passed, 3 failed (the same 3 as before: `get_window_state`, `get_app_state`, `get_process_info`).
 - Not run: real Electron window testing. The user must test it.
+- Merge note: another tool (Dyad) had pushed 2 commits to this branch (live width/height typing, frame-edge drag handles, `server.js`, `dev` script, limits 120 to 10000 wide / 120 to 20000 high). My commit was rebased on top without force-push; the dropdown label now follows typing and dragging, and the limits are Dyad's (not 280 to 3840).
 - Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
 
 ## Earlier Session (2026-11-14, sixth request, approved)
