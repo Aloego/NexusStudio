@@ -596,6 +596,7 @@ function mdnUrl(tag){
   if(/^h[1-6]$/.test(tag))tag='h1';
   return (tag==='svg'?'https://developer.mozilla.org/en-US/docs/Web/SVG/Element/svg':'https://developer.mozilla.org/en-US/docs/Web/HTML/Element/'+tag);
 }
+function w3Url(tag){return tag==='svg'?'https://www.w3schools.com/graphics/svg_intro.asp':'https://www.w3schools.com/tags/tag_'+tag+'.asp';}
 function docMsg(t){$('#docMsg').textContent=t||'';}
 function openDoc(tag){
   if(!/^[a-z][a-z0-9]*$/.test(tag||''))return;
@@ -624,18 +625,21 @@ $('#docCopy').addEventListener('click',function(){
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(u).then(done,function(){docMsg('Could not copy. Select the link and copy it by hand.');});}
   else docMsg('Could not copy. Select the link and copy it by hand.');
 });
-$('#docMdn').addEventListener('click',function(){
+function openOnlineDoc(site){
   if(!docTag)return;
-  showDocLink(mdnUrl(docTag));
+  var url=site==='w3schools'?w3Url(docTag):mdnUrl(docTag);
+  showDocLink(url);
   if(window.nexus&&window.nexus.docsOpenOnline){
     docMsg('Asking your computer to open the page…');
-    window.nexus.docsOpenOnline(docTag).then(function(r){
+    window.nexus.docsOpenOnline(docTag,site).then(function(r){
       if(r&&r.error){docMsg(r.error+' Use "Copy link" and paste it into your browser.');return;}
       docMsg('Sent to your default browser'+(r&&r.method?' ('+r.method+', '+r.platform+')':'')+'. If no browser window appears, use "Copy link" and paste it into any browser.');
     });
   }
-  else{window.open(mdnUrl(docTag),'_blank','noopener');docMsg('Opened in a new tab.');}
-});
+  else{window.open(url,'_blank','noopener');docMsg('Opened in a new tab.');}
+}
+$('#docMdn').addEventListener('click',function(){openOnlineDoc('mdn');});
+$('#docW3').addEventListener('click',function(){openOnlineDoc('w3schools');});
 function openZealDoc(){
   if(!docTag||!window.nexus)return;
   docMsg('Opening Zeal…');

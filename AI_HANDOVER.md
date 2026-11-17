@@ -4,7 +4,15 @@
 
 Drag positioned elements on the canvas: elements whose position is not static can be dragged to move them (state: Awaiting User Approval once pushed). Earlier on 2026-11-17: viewport number spinner fields and device size dropdown approved; "add every element blank" rejected and reverted.
 
-## Latest Session (2026-11-17, fifteenth request, fix after second rejection)
+## Latest Session (2026-11-17, sixteenth request)
+
+- User approved the MDN/Zeal documentation work (fifteenth request) and asked for an extra button that opens the element on the W3Schools website.
+- Done: `Open on W3Schools (online)` button in the documentation dialog (`renderer/index.html`, `app.js`); `docs:openOnline` in `main/main.js` takes an optional site (`mdn` or `w3schools`; anything else means MDN) and builds `https://www.w3schools.com/tags/tag_<tag>.asp` (svg: `/graphics/svg_intro.asp`); `main/preload.js` passes the site. Same browser-opening method, link display and Copy link as the MDN button.
+- Tests: `node test/e2e.js` gives 173 passed, 3 failed (the same 3 as before).
+- Not verified: the W3Schools pages were not opened (no internet here). A few newer elements (for example hgroup, search) may have no W3Schools page; the link would then show W3Schools' not-found page and MDN can be used instead.
+- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+
+## Earlier Session (2026-11-17, fifteenth request, approved)
 
 - User rejected again: "Open on MDN" showed "opened in your browser" but no browser opened (4 browsers installed, one default); and the Zeal path box was not understandable (Zeal is an application, not a folder).
 - Causes found: (1) `shell.openExternal` resolves with no value, so success was reported even when nothing opened, and the real environment (Windows or WSL) was unknown; (2) the Zeal launch treated the resolved `dash://` call as failure, so the path box could appear even when it worked; (3) Zeal was only looked for in a few fixed places and the path box gave no guidance.

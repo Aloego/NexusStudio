@@ -458,6 +458,9 @@ page.on('console', function (m) {
   await defPage.evaluate(function () { window.__clip = null; Object.defineProperty(navigator, 'clipboard', { value: { writeText: function (t) { window.__clip = t; return Promise.resolve(); } }, configurable: true }); });
   await defPage.click('#docCopy'); await defPage.waitForTimeout(100);
   ok((await defPage.evaluate(function () { return window.__clip; })) === 'https://developer.mozilla.org/en-US/docs/Web/HTML/Element/div', 'Copy link puts the address on the clipboard');
+  await defPage.click('#docW3');
+  const opened2 = await defPage.evaluate(function () { return window.__opened; });
+  ok(opened2.length === 2 && opened2[1] === 'https://www.w3schools.com/tags/tag_div.asp' && (await defPage.textContent('#docLink')) === opened2[1], 'the W3Schools button opens the W3Schools page for the element ' + JSON.stringify(opened2));
   await defPage.keyboard.press('Escape');
   ok(await defPage.$eval('#docDlg', function (d) { return d.hidden; }), 'Escape closes the guide');
   await addPalette('h3'); await defPage.evaluate(function () { document.querySelector('#ovLab').click(); });
@@ -526,7 +529,7 @@ page.on('console', function (m) {
       mcpSetEnabled: async function () { return null; }, mcpInstallClaudeDesktop: async function () { return { ok: true, message: 'Added to Claude Desktop.' }; },
       onAiRequest: function (cb) { window.__aiCb = cb; }, aiRespond: function (id, ok, p) { (window.__aiResp = window.__aiResp || []).push({ id: id, ok: ok, p: p }); },
       onAiActivity: function (cb) { window.__actCb = cb; },
-      docsOpenOnline: async function (t) { (window.__docs = window.__docs || []).push(['online', t]); return { ok: true }; },
+      docsOpenOnline: async function (t, site) { (window.__docs = window.__docs || []).push(['online', t, site]); return { ok: true }; },
       docsOpenZeal: async function (t) { (window.__docs = window.__docs || []).push(['zeal', t]); return window.__zealMissing ? { needPath: true, error: 'Zeal was not found on this computer.' } : { ok: true }; },
       docsSetZealPath: async function (p) { (window.__docs = window.__docs || []).push(['path', p]); if (!/zeal/i.test(p)) return { error: 'bad' }; window.__zealMissing = false; return { ok: true }; }
     };
@@ -565,12 +568,13 @@ page.on('console', function (m) {
   await dpage.evaluate(function () { document.querySelector('#ovLab').click(); });
   ok((await dpage.isVisible('#docZeal')) && !(await dpage.isVisible('#docZealRow')), 'in the desktop app the Zeal button shows and the path box is hidden');
   await dpage.click('#docMdn');
+  await dpage.click('#docW3');
   await dpage.click('#docZeal'); await dpage.waitForTimeout(150);
   ok(await dpage.isVisible('#docZealRow'), 'if Zeal is not found, a box to type its path appears (no file dialog)')
   ok(await dpage.isVisible('#docZealHelp') && /Open file location/.test(await dpage.textContent('#docZealHelp')), 'step-by-step help for finding Zeal is shown with the box');
   await dpage.fill('#docZealPath', 'C:\\Zeal\\zeal.exe'); await dpage.click('#docZealSave'); await dpage.waitForTimeout(150);
   const docCalls = await dpage.evaluate(function () { return window.__docs; });
-  ok(JSON.stringify(docCalls.map(function (c) { return c[0]; })) === '["online","zeal","path","zeal"]' && docCalls[0][1] === docCalls[1][1] && !(await dpage.isVisible('#docZealRow')), 'desktop: MDN button, Zeal button asks for the path, saving it opens Zeal ' + JSON.stringify(docCalls));
+  ok(JSON.stringify(docCalls.map(function (c) { return c[0]; })) === '["online","online","zeal","path","zeal"]' && docCalls[0][1] === docCalls[2][1] && docCalls[0][2] === 'mdn' && docCalls[1][2] === 'w3schools' && !(await dpage.isVisible('#docZealRow')), 'desktop: MDN button, Zeal button asks for the path, saving it opens Zeal ' + JSON.stringify(docCalls));
   await dpage.keyboard.press('Escape');
   ok(derr.length === 0, 'no errors in the desktop-wired page ' + (derr.length ? JSON.stringify(derr) : ''));
 

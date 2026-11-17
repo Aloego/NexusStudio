@@ -221,7 +221,16 @@
 - [x] (Rejected 2026-11-17: folder chooser window went beyond the screen; user wants MDN online or the Zeal app.) Replaced with an "Open in Zeal" button that starts the installed Zeal on the element page; no file dialog; a box to type the Zeal path appears only if Zeal is not found
 - [x] Add automated tests, run them, look at the dialog in a browser
 - [x] Commit and push changes to feature branch
-- [ ] User personally tests the tag, the guide, the MDN button and the Zeal button
+- [x] User personally tests the tag, the guide, the MDN button and the Zeal button
+
+**Status:** Approved (user said "Approved" on 2026-11-17, after two rejections and fixes)
+
+## W3Schools button in the element documentation dialog
+
+- [x] Add an "Open on W3Schools (online)" button beside the MDN button (`https://www.w3schools.com/tags/tag_<tag>.asp`; svg goes to the SVG intro page); the address is shown with Copy link
+- [x] Add automated tests, run them
+- [x] Commit and push changes to feature branch
+- [ ] User personally tests the W3Schools button
 
 **Status:** Awaiting User Approval
 

@@ -183,6 +183,9 @@ function mdnUrl(tag) {
   if (/^h[1-6]$/.test(tag)) tag = 'h1';
   return tag === 'svg' ? 'https://developer.mozilla.org/en-US/docs/Web/SVG/Element/svg' : 'https://developer.mozilla.org/en-US/docs/Web/HTML/Element/' + tag;
 }
+function w3Url(tag) {
+  return tag === 'svg' ? 'https://www.w3schools.com/graphics/svg_intro.asp' : 'https://www.w3schools.com/tags/tag_' + tag + '.asp';
+}
 // Is this Electron running inside WSL (a Linux layer on Windows)? Then Windows programs are reached through cmd.exe.
 function inWsl() {
   if (process.platform !== 'linux') return false;
@@ -254,9 +257,9 @@ function findZeal() {
   }
   return found.filter(function (p, i) { return found.indexOf(p) === i; });
 }
-ipcMain.handle('docs:openOnline', async function (e, tag) {
+ipcMain.handle('docs:openOnline', async function (e, tag, site) {
   if (!fromEditor(e) || typeof tag !== 'string' || !TAG_OK.test(tag)) return { error: 'No documentation for that element.' };
-  const url = mdnUrl(tag);
+  const url = site === 'w3schools' ? w3Url(tag) : mdnUrl(tag);
   try { const method = await openUrl(url); return { ok: true, url: url, method: method, platform: process.platform + (inWsl() ? ' (WSL)' : '') }; }
   catch (err) { return { error: 'Could not open your browser: ' + err.message, url: url }; }
 });
