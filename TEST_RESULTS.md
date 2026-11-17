@@ -703,3 +703,54 @@ Not run (no application code changed).
 
 Not applicable (investigation only). Any change, such as drag-to-move on the canvas, would need the user's explicit request first.
 
+---
+
+## Drag positioned elements on the canvas
+
+### Date
+
+2026-11-17
+
+### Branch
+
+feature/ai-development-workflow
+
+### Scope
+
+Files changed: `renderer/app.js`, `test/e2e.js`.
+
+- User request: in addition to Alt+Up / Alt+Down and the other existing ways, let an element be dragged around the canvas unless it is set to static or has default static properties.
+- Rule: dragging works only when the element's computed `position` is not `static`, so `relative`, `absolute`, `fixed` and `sticky` elements can be moved. An element that is set to static, or is static by default (every element added from the Elements tab starts as static), does not move. The page body does not move.
+- How it moves: the drag writes `left` and `top`; if the element has `right` or `bottom` set and no `left` or `top`, it writes `right` and `bottom` instead (moving the mouse right lowers `right`). The start point is the element's current computed offset, and the mouse distance is divided by the zoom, so it follows the pointer at any zoom. Values are written in px (a `%` or `calc()` value on `left` or `top` is replaced by a px value once the element is dragged). The element must move at least 3 px before a drag starts, so a click, a double-click to edit text, and selecting still work. The CSS tab fields, the selection box and the code tabs update, and a drag is one Undo step.
+- Not changed: Alt+Up / Alt+Down, drag-and-drop in the Layers tab, the resize handles, the Elements tab drag onto the canvas, keyboard shortcuts, the MCP tools.
+- Things to know: a static child inside a positioned parent does not move (pressing on the child tries to drag the child; select the parent in the Layers tab or the breadcrumb to drag it); a `sticky` element is written to `left` and `top`, which for sticky shifts its stick offset and may show little or no movement; there is no mouse-pointer hint (such as a move cursor) over elements that can be dragged, because none was requested.
+
+### Static check
+
+`node --check renderer/app.js` and `test/e2e.js` — passed.
+
+### Automated tests
+
+Command: `node test/e2e.js` (run in the AI sandbox)
+
+Result: 154 passed, 3 failed.
+
+New checks that passed (section "Dragging an element on the canvas"): a default-static element does not move; an element set to static does not move; an absolute element follows the mouse and `left`/`top` change by the dragged amount; the CSS tab shows the new `left` and `top`; one Undo restores the old position; a relative element is moved by `left`/`top`; an element placed with `right`/`bottom` moves through those; a fixed element can be dragged; dragging at 80% zoom moves it by the right amount; a plain click selects without moving. Run against the previous `renderer/app.js`, the seven move checks fail (147 passed, 10 failed), so they detect the missing behaviour; the static and plain-click checks pass either way, as they should.
+
+The 3 failures are the same ones that already failed before: `get_window_state`, `get_app_state`, `get_process_info`. Cause not investigated.
+
+### Could not be run
+
+- The real Electron window. Not run in this sandbox (the tests use a browser with mouse input).
+- `node test/main-smoke.js`. Not run (no main-process change).
+
+### Manual testing for the user
+
+- In the CSS tab set `position` to `absolute` (or `relative`) on a box, then drag it around the canvas; check the `left` and `top` fields change and Ctrl+Z puts it back.
+- Drag a box that is still static and check it stays put.
+- Try at a zoom other than 100%, and double-click a positioned text element to edit its text.
+
+### Approval
+
+Awaiting User Approval
+

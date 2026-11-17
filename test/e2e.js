@@ -353,6 +353,77 @@ page.on('console', function (m) {
   ok((await sideVal('margin-top')) === '1em' && (await sideVal('margin-right')) === '0' && (await sideVal('margin-bottom')) === '1em', 'a heading shows its default vertical margin per side');
   await defPage.fill('#propSearch', 'margin-left'); await defPage.press('#propSearch', 'Enter');
   ok((await defPage.$$('#f-margin-left')).length === 1, 'searching margin-left jumps to the side field instead of adding a second one');
+  console.log('Dragging an element on the canvas');
+  // a separate browser context with an empty page; each case adds a fresh box
+  const mvCtx = await browser.newContext({ viewport: { width: 1480, height: 920 } });
+  const mvPage = await mvCtx.newPage();
+  await mvPage.goto(url);
+  await mvPage.waitForSelector('#page h1');
+  await mvPage.click('#tabEl');
+  const mvFresh = async function (style) {
+    await mvPage.evaluate(function () { return window.NexusAPI.call('new_document', {}); });
+    await mvPage.evaluate(function () {
+      const em = [].slice.call(document.querySelectorAll('#palette .it em')).filter(function (e) { return e.textContent === 'div'; })[0];
+      em.closest('button').click();
+    });
+    if (style) {
+      await mvPage.evaluate(function (st) {
+        const sel = window.NexusAPI.call('get_selection', {});
+        return window.NexusAPI.call('update_element', { id: sel.id, style: st });
+      }, style);
+    }
+  };
+  const mvBox = function () {
+    return mvPage.evaluate(function () {
+      const el = document.querySelector('#page > div'), r = el.getBoundingClientRect();
+      return { x: Math.round(r.left), y: Math.round(r.top), left: el.style.left, top: el.style.top, right: el.style.right, bottom: el.style.bottom, position: el.style.position };
+    });
+  };
+  const mvDrag = async function (dx, dy) {
+    const b = await mvPage.locator('#page > div').boundingBox();
+    const x = b.x + b.width / 2, y = b.y + b.height / 2;
+    await mvPage.mouse.move(x, y); await mvPage.mouse.down();
+    await mvPage.mouse.move(x + dx, y + dy, { steps: 10 }); await mvPage.mouse.up();
+  };
+  const SIZE = { width: '120px', height: '60px' };
+  await mvFresh();
+  const stBefore = await mvBox(); await mvDrag(120, 80); const stAfter = await mvBox();
+  ok(stBefore.position === 'static' && stAfter.x === stBefore.x && stAfter.y === stBefore.y && stAfter.left === '' && stAfter.top === '', 'an element that is static by default does not move when dragged ' + JSON.stringify(stAfter));
+  await mvFresh({ position: 'static', width: '120px', height: '60px' });
+  const st2 = await mvBox(); await mvDrag(120, 80); const st2a = await mvBox();
+  ok(st2a.x === st2.x && st2a.y === st2.y && st2a.left === '', 'an element set to static does not move when dragged');
+  await mvFresh({ position: 'absolute', left: '20px', top: '30px', width: SIZE.width, height: SIZE.height });
+  const abBefore = await mvBox(); await mvDrag(100, 60); const abAfter = await mvBox();
+  ok(abAfter.left === '120px' && abAfter.top === '90px' && abAfter.x - abBefore.x === 100 && abAfter.y - abBefore.y === 60, 'an absolute element follows the mouse and its left and top are updated ' + JSON.stringify(abAfter));
+  const abFields = await mvPage.evaluate(function () { return [document.querySelector('#f-left') && document.querySelector('#f-left').value, document.querySelector('#f-top') && document.querySelector('#f-top').value]; });
+  ok(abFields[0] === '120px' && abFields[1] === '90px', 'the CSS tab shows the new left and top after the drag ' + JSON.stringify(abFields));
+  await mvPage.keyboard.press('Control+z');
+  const abUndo = await mvBox();
+  ok(abUndo.left === '20px' && abUndo.top === '30px', 'one undo puts the element back where it was before the drag ' + JSON.stringify(abUndo));
+  await mvFresh({ position: 'relative', width: SIZE.width, height: SIZE.height });
+  await mvDrag(40, 25); const reBox = await mvBox();
+  ok(reBox.left === '40px' && reBox.top === '25px', 'a relative element is moved from its normal place by left and top ' + JSON.stringify(reBox));
+  await mvFresh({ position: 'absolute', right: '50px', bottom: '40px', width: SIZE.width, height: SIZE.height });
+  await mvDrag(-10, -20); const rbBox = await mvBox();
+  ok(rbBox.right === '60px' && rbBox.bottom === '60px' && rbBox.left === '' && rbBox.top === '', 'an element placed with right and bottom is moved through right and bottom ' + JSON.stringify(rbBox));
+  await mvFresh({ position: 'fixed', left: '10px', top: '10px', width: SIZE.width, height: SIZE.height });
+  const fxBefore = await mvBox(); await mvDrag(30, 30); const fxAfter = await mvBox();
+  ok(fxAfter.left === '40px' && fxAfter.top === '40px' && fxAfter.x - fxBefore.x === 30, 'a fixed element can be dragged too ' + JSON.stringify(fxAfter));
+  await mvFresh({ position: 'absolute', left: '20px', top: '20px', width: SIZE.width, height: SIZE.height });
+  await mvPage.click('#zOut'); await mvPage.click('#zOut');
+  const zoomNow = parseInt(await mvPage.textContent('#zoomVal'), 10);
+  await mvDrag(80, 40); const zmBox = await mvBox();
+  const wantL = 20 + Math.round(80 / (zoomNow / 100)), wantT = 20 + Math.round(40 / (zoomNow / 100));
+  ok(zoomNow < 100 && zmBox.left === wantL + 'px' && zmBox.top === wantT + 'px', 'dragging at ' + zoomNow + '% zoom moves the element by the right amount ' + JSON.stringify({ zoomNow: zoomNow, left: zmBox.left, top: zmBox.top, wantL: wantL, wantT: wantT }));
+  await mvPage.click('#zIn'); await mvPage.click('#zIn');
+  await mvFresh({ position: 'absolute', left: '20px', top: '20px', width: SIZE.width, height: SIZE.height });
+  const clBefore = await mvBox();
+  const clb = await mvPage.locator('#page > div').boundingBox();
+  await mvPage.mouse.click(clb.x + clb.width / 2, clb.y + clb.height / 2);
+  const clAfter = await mvBox();
+  ok(clAfter.left === clBefore.left && clAfter.top === clBefore.top, 'a plain click on a positioned element selects it without moving it');
+  await mvCtx.close();
+
   console.log('Device size dropdown');
   ok((await defPage.$$('#devs [data-w]')).length === 0, 'the Mobile / Tablet / Desktop tab buttons are gone');
   ok((await defPage.textContent('#devBtn')).trim() === 'Responsive', 'the dropdown starts as Responsive');

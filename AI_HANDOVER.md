@@ -2,9 +2,21 @@
 
 ## Current Task
 
-No code task in progress. The last request (tenth) was a read-only check, finished: elements cannot be moved by dragging on the canvas. The last code task, "add every element blank", was rejected by the user on 2026-11-17 and reverted: the prefilled starter content stays. The viewport number spinner fields and the device size dropdown were approved by the user on 2026-11-17.
+Drag positioned elements on the canvas: elements whose position is not static can be dragged to move them (state: Awaiting User Approval once pushed). Earlier on 2026-11-17: viewport number spinner fields and device size dropdown approved; "add every element blank" rejected and reverted.
 
-## Latest Session (2026-11-17, tenth request, read-only)
+## Latest Session (2026-11-17, eleventh request)
+
+- User request: in addition to Alt+Up/Down and the other ways to move elements, allow dragging an element on the canvas unless it is set to static or has default static properties.
+- Done in `renderer/app.js`: a capture `mousedown` handler on the stage (after the selection handler) starts a drag when the pressed element's computed `position` is not `static`; after 3 px it writes `left`/`top` (or `right`/`bottom` when those are the element's own offsets) through `setStyle`, divides by `S.zoom`, and on mouse-up calls `commit()`, `renderProps()` and `renderCodeIfOpen()` (one Undo step).
+- Done in `test/e2e.js`: "Dragging an element on the canvas" (10 checks).
+- Not changed: resize handles, Layers drag-and-drop, Alt+Up/Down, Elements tab drops, `main/` files, MCP tools. No move cursor or other visual hint was added (not requested).
+- Known limits: a static child of a positioned parent does not move (select the parent); sticky elements get `left`/`top` written but may barely move; `%`/`calc()` offsets become px after a drag.
+- Tests: `node test/e2e.js` gives 154 passed, 3 failed (the same 3 as before: `get_window_state`, `get_app_state`, `get_process_info`). The seven move checks fail on the old code.
+- Not run: real Electron window testing and `test/main-smoke.js`. The user must test it.
+- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+
+## Earlier Session (2026-11-17, tenth request, read-only)
+
 
 - User request: confirm that elements placed on the canvas are restricted and cannot be moved around the canvas area.
 - Finding: confirmed. A mouse press on the canvas only selects; there is no drag-to-move. Resize handles change only width/height. Tested with a real mouse drag in a browser, both in normal flow and with `position:absolute`: nothing moved. Details and the ways to move or place elements that do work (Alt+Up/Down, Layers drag, Position and Inset fields) are in `TEST_RESULTS.md`.
@@ -176,10 +188,10 @@ Result: 98 passed, 0 failed
 
 ## Next Action
 
-Wait for the user's decision about drag-to-move on the canvas. A separate approval is required before merging into `main` or releasing the application.
+Wait for the user to test dragging positioned elements on the canvas and say `APPROVE` or `REJECT`. A separate approval is required before merging into `main` or releasing the application.
 
 ## Approval Status
 
-Nothing is awaiting approval. Rejected and reverted on 2026-11-17: add every element blank. Approved on 2026-11-17: viewport number spinner fields and the device size dropdown. Earlier tasks (SVG / Drawing removal, add missing elements, browser-default styles, CSS tab gaps with margin and padding per-side fields, window sizing fix) were approved by the user.
+Awaiting User Approval (drag positioned elements on the canvas). Rejected and reverted on 2026-11-17: add every element blank. Approved on 2026-11-17: viewport number spinner fields and the device size dropdown. Earlier tasks (SVG / Drawing removal, add missing elements, browser-default styles, CSS tab gaps with margin and padding per-side fields, window sizing fix) were approved by the user.
 
 > Note: No approval here authorizes merging into `main` or releasing the application.

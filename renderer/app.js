@@ -560,6 +560,36 @@ Array.prototype.forEach.call(ov.querySelectorAll('.h'),function(h){
   });
 });
 
+/* drag a positioned element to move it around the canvas.
+   Only elements whose position is not static (relative, absolute, fixed, sticky) move; an element that is set to
+   static, or is static by default, stays where the normal page flow puts it. Moving writes left/top, or
+   right/bottom when the element already uses those instead. */
+stage.addEventListener('mousedown',function(e){
+  if(e.button!==0||e.target.closest('.sel')||e.target.closest('[contenteditable="true"]'))return;
+  var t=e.target.closest('[data-nid]');
+  if(!t||t===page||!page.contains(t))return;
+  var id=t.getAttribute('data-nid'),f=find(id);
+  if(!f||id===S.root.id)return;
+  var cs=getComputedStyle(t);
+  if(cs.position==='static')return;
+  var sx=e.clientX,sy=e.clientY,z=S.zoom,started=false,node=f.node;
+  function isSet(v){return v!=null&&v!==''&&v!=='auto';}
+  var hRight=!isSet(node.style.left)&&isSet(node.style.right),vBottom=!isSet(node.style.top)&&isSet(node.style.bottom);
+  var b0={l:parseFloat(cs.left)||0,t:parseFloat(cs.top)||0,r:parseFloat(cs.right)||0,b:parseFloat(cs.bottom)||0};
+  function mv(ev){
+    var dx=(ev.clientX-sx)/z,dy=(ev.clientY-sy)/z;
+    if(!started){if(Math.abs(dx*z)<3&&Math.abs(dy*z)<3)return;started=true;}
+    if(S.sel!==id)return;
+    if(hRight)setStyle('right',Math.round(b0.r-dx)+'px');else setStyle('left',Math.round(b0.l+dx)+'px');
+    if(vBottom)setStyle('bottom',Math.round(b0.b-dy)+'px');else setStyle('top',Math.round(b0.t+dy)+'px');
+  }
+  function up(){
+    document.removeEventListener('mousemove',mv,true);document.removeEventListener('mouseup',up,true);
+    if(started){commit();renderProps();renderCodeIfOpen();}
+  }
+  document.addEventListener('mousemove',mv,true);document.addEventListener('mouseup',up,true);
+});
+
 /* drag from palette onto the canvas */
 var lastDrop=null;
 function clearDrop(){if(lastDrop){lastDrop.classList.remove('nx-drop');lastDrop=null;}}

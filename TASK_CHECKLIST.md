@@ -196,9 +196,21 @@
 - [x] Read the canvas mouse handling in `renderer/app.js` (a press on the canvas only selects; no drag-to-move)
 - [x] Test in a browser: mouse-drag a box on the canvas, in normal flow and with `position: absolute` (nothing moved either time)
 - [x] Record findings in `TEST_RESULTS.md`; no application code changed
-- [ ] User decides whether to add drag-to-move on the canvas
+- [x] User decided: add drag-to-move for elements that are not static (next task)
 
-**Status:** Completed (investigation only). Waiting for the user's decision.
+**Status:** Completed (investigation only)
+
+## Drag positioned elements on the canvas
+
+- [x] Inspect how the canvas handles the mouse (a press only selected the element)
+- [x] Let the user drag an element on the canvas when its position is not static (relative, absolute, fixed, sticky); elements set to static, or static by default, do not move
+- [x] Dragging writes `left`/`top` (or `right`/`bottom` when the element already uses those); works at any zoom; the CSS tab fields update; one Undo reverses a whole drag; a plain click still only selects
+- [x] Keep Alt+Up / Alt+Down, Layers drag-and-drop and the resize handles as they were
+- [x] Add automated tests (10 checks), run all tests, confirm the new move tests fail on the old code
+- [x] Commit and push changes to feature branch
+- [ ] User personally tests dragging elements on the canvas
+
+**Status:** Awaiting User Approval
 
 ## Phase 8 — End-to-End Workflow Verification
 
