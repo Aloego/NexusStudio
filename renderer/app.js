@@ -607,7 +607,7 @@ function openDoc(tag){
   $('#docAttrs').textContent=d?d[2]:'-';
   $('#docEx').textContent=d?d[3]:'';
   docMsg('');
-  $('#docLocal').hidden=$('#docFolder').hidden=!window.nexus;
+  $('#docZeal').hidden=!window.nexus;$('#docZealRow').hidden=true;
   $('#docDlg').hidden=false;$('#docClose').focus();
 }
 function closeDoc(){$('#docDlg').hidden=true;docTag=null;}
@@ -621,22 +621,20 @@ $('#docMdn').addEventListener('click',function(){
   if(window.nexus&&window.nexus.docsOpenOnline){window.nexus.docsOpenOnline(docTag).then(function(r){docMsg(r&&r.error?r.error:'Opened in your browser.');});}
   else{window.open(mdnUrl(docTag),'_blank','noopener');docMsg('Opened in a new tab.');}
 });
-function openLocalDoc(){
+function openZealDoc(){
   if(!docTag||!window.nexus)return;
-  window.nexus.docsOpenLocal(docTag).then(function(r){
-    if(r&&r.needFolder){docMsg('Choose your docs folder first.');return pickDocsFolder();}
-    docMsg(r&&r.error?r.error:'Opened from your docs folder.');
+  docMsg('Opening Zeal…');
+  window.nexus.docsOpenZeal(docTag).then(function(r){
+    if(r&&r.needPath){$('#docZealRow').hidden=false;$('#docZealPath').focus();docMsg('Zeal was not found. Type the full path of zeal.exe below (right-click Zeal, Properties, copy the path).');return;}
+    $('#docZealRow').hidden=true;
+    docMsg(r&&r.error?r.error:'Opened in Zeal.');
   });
 }
-function pickDocsFolder(){
-  return window.nexus.docsChooseFolder().then(function(r){
-    if(!r||r.canceled)return;
-    if(r.error){docMsg(r.error);return;}
-    docMsg('Docs folder set: '+r.folder);openLocalDoc();
-  });
-}
-$('#docLocal').addEventListener('click',openLocalDoc);
-$('#docFolder').addEventListener('click',function(){if(window.nexus)pickDocsFolder();});
+$('#docZeal').addEventListener('click',openZealDoc);
+$('#docZealSave').addEventListener('click',function(){
+  window.nexus.docsSetZealPath($('#docZealPath').value).then(function(r){if(r&&r.error){docMsg(r.error);return;}$('#docZealRow').hidden=true;openZealDoc();});
+});
+$('#docZealPath').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();$('#docZealSave').click();}});
 
 /* move cursor and a small "Drag to move" hint while the pointer is over an element that can be dragged */
 var hoverMove=null,moveHintEl=$('#moveHint');

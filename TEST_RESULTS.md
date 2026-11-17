@@ -771,3 +771,13 @@ Awaiting User Approval
 ### Approval
 
 Awaiting User Approval
+
+## Element documentation: MDN and Zeal buttons (fix after rejection, 2026-11-17)
+
+- `node test/e2e.js`: 169 passed, 3 failed (same 3 as before).
+- Zeal launcher tried with a fake `zeal` program: it received `html:div`; a missing program was reported as not found.
+- Not run: real Zeal, MDN opening, real Electron window; user must test.
+
+### Approval
+
+Awaiting User Approval

@@ -4,7 +4,17 @@
 
 Drag positioned elements on the canvas: elements whose position is not static can be dragged to move them (state: Awaiting User Approval once pushed). Earlier on 2026-11-17: viewport number spinner fields and device size dropdown approved; "add every element blank" rejected and reverted.
 
-## Latest Session (2026-11-17, thirteenth request)
+## Latest Session (2026-11-17, fourteenth request, fix after rejection)
+
+- User rejected the docs-folder design: the dialog opening from the tag is fine, but the buttons should either take the user online to the MDN page or open the Zeal application on the element page (user has Zeal and an HTML docset installed). The folder-chooser Explorer window also extended beyond the screen so it could not be minimised or closed.
+- Done: removed the docs-folder buttons, `docs:chooseFolder`, `docs:openLocal` and the folder search. No file dialog is used any more.
+- Done in `renderer/index.html` / `app.js`: buttons are now "Open on MDN (online)" and "Open in Zeal (offline)" (Zeal button only in the desktop app). If Zeal is not found, a text box appears to type the path of `zeal.exe` (checked: absolute path, file name zeal/zeal.exe, file exists), then Zeal opens.
+- Done in `main/main.js` and `main/preload.js`: `docs:openZeal` looks for Zeal in the usual Windows places (Program Files, Program Files (x86), %LOCALAPPDATA%\Programs\Zeal, %LOCALAPPDATA%\Zeal, scoop, C:\Zeal) and common Linux paths, runs `zeal html:<tag>` (svg uses `svg:<tag>`), then tries `zeal` on PATH (Linux), then the `dash://html:<tag>` address; otherwise asks for the path. `docs:setZealPath` saves it in `settings.json` as `zealPath`. `docs:openOnline` unchanged (MDN in the default browser). Executable is never taken from page text except the checked path; the tag is checked with a strict pattern; sender checked with `fromEditor`.
+- Tests: `node test/e2e.js` gives 169 passed, 3 failed (the same 3 as before). The launcher was also tried here with a fake `zeal` program (received `html:div`; missing program reported as not found).
+- Not verified: real Zeal on Windows (the Zeal docset keyword must be `html`, which is Zeal's default for the HTML docset); real MDN opening (no internet here); real Electron window.
+- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+
+## Earlier Session (2026-11-17, thirteenth request, rejected)
 
 - User request: make the small blue element-name tag on the canvas clickable and open documentation for that element, offline (Zeal or any HTML docs), with an option to open MDN online or a locally downloaded documentation. User chose: built-in guide + MDN + user's own docs folder.
 - Done in `renderer/docs.js` (new): built-in offline guide for all 98 palette elements plus `body` (what it is, where it goes, key attributes, example). Loaded before `app.js`.

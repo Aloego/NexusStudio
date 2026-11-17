@@ -218,10 +218,10 @@
 - [x] Make the blue element-name tag on the canvas clickable
 - [x] Built-in offline guide for all 98 palette elements plus body (`renderer/docs.js`)
 - [x] Option to open the MDN page online
-- [x] Option to choose a folder with downloaded docs (MDN copy, Zeal docset, DevDocs) and open the matching page from it (desktop app)
+- [x] (Rejected 2026-11-17: folder chooser window went beyond the screen; user wants MDN online or the Zeal app.) Replaced with an "Open in Zeal" button that starts the installed Zeal on the element page; no file dialog; a box to type the Zeal path appears only if Zeal is not found
 - [x] Add automated tests, run them, look at the dialog in a browser
 - [x] Commit and push changes to feature branch
-- [ ] User personally tests the tag, the guide, the MDN button and the docs-folder buttons
+- [ ] User personally tests the tag, the guide, the MDN button and the Zeal button
 
 **Status:** Awaiting User Approval
 

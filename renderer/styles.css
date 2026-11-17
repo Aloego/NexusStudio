@@ -109,6 +109,8 @@ button{cursor:pointer}
 #docDlg{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55)}
 #docDlg[hidden]{display:none}
 #docDlg .box{width:min(560px,92vw);max-height:90vh;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px}
+#docDlg [hidden]{display:none!important}
+#docDlg input{flex:1;min-width:200px;background:var(--void);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font:11px var(--mono)}
 #docDlg h3{margin:0;font:700 15px var(--mono)}
 #docDlg h4{margin:6px 0 0;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
 #docDlg pre{margin:0;padding:8px;background:var(--bg);border:1px solid var(--line);border-radius:6px;font:11px var(--mono);white-space:pre-wrap;overflow:auto}

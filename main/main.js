@@ -183,52 +183,55 @@ function mdnUrl(tag) {
   if (/^h[1-6]$/.test(tag)) tag = 'h1';
   return tag === 'svg' ? 'https://developer.mozilla.org/en-US/docs/Web/SVG/Element/svg' : 'https://developer.mozilla.org/en-US/docs/Web/HTML/Element/' + tag;
 }
-// Looks inside the user's docs folder for the page about one element. Understands the usual layouts of a
-// downloaded MDN copy (.../element/<tag>/index.html), DevDocs and Zeal/Dash docsets (.../<tag>.html).
-function findDocFile(root, tag) {
-  const want = (/^h[1-6]$/.test(tag)) ? ['heading_elements', tag] : [tag];
-  const skip = /^(node_modules|\.git)$/i;
-  let visited = 0, best = null;
-  const queue = [{ dir: root, depth: 0 }];
-  while (queue.length && visited < 20000) {
-    const cur = queue.shift();
-    let ents;
-    try { ents = fs.readdirSync(cur.dir, { withFileTypes: true }); } catch (e) { continue; }
-    for (const ent of ents) {
-      visited++;
-      const full = path.join(cur.dir, ent.name);
-      if (ent.isDirectory()) { if (cur.depth < 14 && !skip.test(ent.name)) queue.push({ dir: full, depth: cur.depth + 1 }); continue; }
-      if (!/\.html?$/i.test(ent.name)) continue;
-      const parent = path.basename(cur.dir).toLowerCase(), grand = path.basename(path.dirname(cur.dir)).toLowerCase();
-      const name = ent.name.replace(/\.html?$/i, '').toLowerCase();
-      for (const w of want) {
-        if (name === 'index' && parent === w && /^(element|elements)$/.test(grand)) return full;   // MDN content layout
-        if (name === w && !best && /(html|element)/i.test(full.slice(root.length))) best = full;   // DevDocs, Zeal
-        if (name === 'index' && parent === w && !best) best = full;
-      }
-    }
+// Zeal (offline documentation browser). We never show a file dialog: we look in the usual install places,
+// then on the PATH, then try Zeal's dash:// address. If Zeal still cannot be found the user pastes its path.
+function zealCandidates() {
+  const env = process.env, list = [];
+  const saved = readSettings().zealPath;
+  if (saved) list.push(saved);
+  if (process.platform === 'win32') {
+    [env.ProgramFiles, env['ProgramFiles(x86)'], env.ProgramW6432, env.LOCALAPPDATA && path.join(env.LOCALAPPDATA, 'Programs')].forEach(function (b) { if (b) list.push(path.join(b, 'Zeal', 'zeal.exe')); });
+    if (env.LOCALAPPDATA) list.push(path.join(env.LOCALAPPDATA, 'Zeal', 'zeal.exe'));
+    if (env.USERPROFILE) { list.push(path.join(env.USERPROFILE, 'scoop', 'apps', 'zeal', 'current', 'zeal.exe')); list.push(path.join(env.USERPROFILE, 'scoop', 'apps', 'zeal', 'current', 'zeal-portable', 'zeal.exe')); }
+    list.push('C:\\Zeal\\zeal.exe');
+  } else if (process.platform === 'linux') {
+    list.push('/usr/bin/zeal', '/usr/local/bin/zeal', '/var/lib/flatpak/exports/bin/org.zealdocs.Zeal', '/snap/bin/zeal');
   }
-  return best;
+  return list.filter(function (p) { try { return fs.statSync(p).isFile(); } catch (e) { return false; } });
+}
+function runZeal(exe, query) {
+  return new Promise(function (resolve) {
+    const { spawn } = require('child_process');
+    let done = false;
+    function end(ok) { if (!done) { done = true; resolve(ok); } }
+    try {
+      const child = spawn(exe, [query], { detached: true, stdio: 'ignore', windowsHide: false });
+      child.on('error', function () { end(false); });
+      child.unref();
+      setTimeout(function () { end(true); }, 400);
+    } catch (e) { end(false); }
+  });
 }
 ipcMain.handle('docs:openOnline', async function (e, tag) {
   if (!fromEditor(e) || typeof tag !== 'string' || !TAG_OK.test(tag)) return { error: 'No documentation for that element.' };
   try { await shell.openExternal(mdnUrl(tag)); return { ok: true }; } catch (err) { return { error: 'Could not open your browser: ' + err.message }; }
 });
-ipcMain.handle('docs:chooseFolder', async function (e) {
-  if (!fromEditor(e)) return { canceled: true };
-  const r = await dialog.showOpenDialog(win, { title: 'Choose the folder with your downloaded HTML documentation', properties: ['openDirectory'] });
-  if (r.canceled || !r.filePaths.length) return { canceled: true };
-  const s = readSettings(); s.docsFolder = r.filePaths[0]; writeSettings(s);
-  return { ok: true, folder: r.filePaths[0] };
-});
-ipcMain.handle('docs:openLocal', async function (e, tag) {
+ipcMain.handle('docs:openZeal', async function (e, tag) {
   if (!fromEditor(e) || typeof tag !== 'string' || !TAG_OK.test(tag)) return { error: 'No documentation for that element.' };
-  const folder = readSettings().docsFolder;
-  if (!folder || !fs.existsSync(folder)) return { needFolder: true };
-  const file = findDocFile(folder, tag);
-  if (!file) return { error: 'No page for <' + tag + '> was found in ' + folder + '. Choose another folder or use MDN.' };
-  const err = await shell.openPath(file);
-  return err ? { error: 'Could not open the page: ' + err } : { ok: true };
+  const query = (tag === 'svg' ? 'svg:' : 'html:') + tag;
+  const found = zealCandidates();
+  for (const exe of found) { if (await runZeal(exe, query)) return { ok: true }; }
+  if (process.platform === 'linux' && await runZeal('zeal', query)) return { ok: true };
+  try { if (await shell.openExternal('dash://' + query)) return { ok: true }; } catch (err) { /* fall through */ }
+  return { needPath: true, error: 'Zeal was not found on this computer.' };
+});
+ipcMain.handle('docs:setZealPath', function (e, p) {
+  if (!fromEditor(e) || typeof p !== 'string') return { error: 'That path is not valid.' };
+  p = p.trim().replace(/^"(.*)"$/, '$1');
+  if (!path.isAbsolute(p) || !/^zeal(\.exe)?$/i.test(path.basename(p))) return { error: 'Type the full path of zeal.exe, for example C:\\Program Files\\Zeal\\zeal.exe' };
+  try { if (!fs.statSync(p).isFile()) throw new Error('x'); } catch (err) { return { error: 'No file was found at that path.' }; }
+  const s = readSettings(); s.zealPath = p; writeSettings(s);
+  return { ok: true };
 });
 
 /* ---------- window ---------- */

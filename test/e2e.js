@@ -449,7 +449,7 @@ page.on('console', function (m) {
   ok((await defPage.getAttribute('#ovLab', 'role')) === 'button', 'the tag on the canvas is a button');
   await defPage.evaluate(function () { document.querySelector('#ovLab').click(); });
   ok(!(await defPage.$eval('#docDlg', function (d) { return d.hidden; })) && (await defPage.textContent('#docTitle')) === '<div>' && /box/i.test(await defPage.textContent('#docWhat')), 'clicking the tag opens the built-in guide for the element');
-  ok((await defPage.evaluate(function () { return document.querySelector('#docLocal').hidden && document.querySelector('#docFolder').hidden; })), 'in a plain browser the docs-folder buttons are hidden');
+  ok(await defPage.evaluate(function () { return document.querySelector('#docZeal').hidden; }), 'in a plain browser the Zeal button is hidden (it needs the desktop app)');
   await defPage.evaluate(function () { window.__opened = []; window.open = function (u) { window.__opened.push(u); return null; }; });
   await defPage.click('#docMdn');
   const opened = await defPage.evaluate(function () { return window.__opened; });
@@ -523,8 +523,8 @@ page.on('console', function (m) {
       onAiRequest: function (cb) { window.__aiCb = cb; }, aiRespond: function (id, ok, p) { (window.__aiResp = window.__aiResp || []).push({ id: id, ok: ok, p: p }); },
       onAiActivity: function (cb) { window.__actCb = cb; },
       docsOpenOnline: async function (t) { (window.__docs = window.__docs || []).push(['online', t]); return { ok: true }; },
-      docsOpenLocal: async function (t) { (window.__docs = window.__docs || []).push(['local', t]); return window.__docNeed ? { needFolder: true } : { ok: true }; },
-      docsChooseFolder: async function () { (window.__docs = window.__docs || []).push(['choose']); window.__docNeed = false; return { ok: true, folder: 'C:/docs' }; }
+      docsOpenZeal: async function (t) { (window.__docs = window.__docs || []).push(['zeal', t]); return window.__zealMissing ? { needPath: true, error: 'Zeal was not found on this computer.' } : { ok: true }; },
+      docsSetZealPath: async function (p) { (window.__docs = window.__docs || []).push(['path', p]); if (!/zeal/i.test(p)) return { error: 'bad' }; window.__zealMissing = false; return { ok: true }; }
     };
   });
   await dpage.goto(url); await dpage.waitForSelector('#page h1');
@@ -557,13 +557,15 @@ page.on('console', function (m) {
   await dpage.screenshot({ path: '/tmp/nx-ai-dialog.png' });
   await dpage.keyboard.press('Escape');
   ok(!(await dpage.isVisible('#aiModal')), 'Escape closes the dialog');
-  await dpage.evaluate(function () { window.__docNeed = true; });
+  await dpage.evaluate(function () { window.__zealMissing = true; });
   await dpage.evaluate(function () { document.querySelector('#ovLab').click(); });
-  ok((await dpage.isVisible('#docLocal')) && (await dpage.isVisible('#docFolder')), 'in the desktop app the docs-folder buttons show');
+  ok((await dpage.isVisible('#docZeal')) && !(await dpage.isVisible('#docZealRow')), 'in the desktop app the Zeal button shows and the path box is hidden');
   await dpage.click('#docMdn');
-  await dpage.click('#docLocal'); await dpage.waitForTimeout(150);
+  await dpage.click('#docZeal'); await dpage.waitForTimeout(150);
+  ok(await dpage.isVisible('#docZealRow'), 'if Zeal is not found, a box to type its path appears (no file dialog)');
+  await dpage.fill('#docZealPath', 'C:\\Zeal\\zeal.exe'); await dpage.click('#docZealSave'); await dpage.waitForTimeout(150);
   const docCalls = await dpage.evaluate(function () { return window.__docs; });
-  ok(JSON.stringify(docCalls.map(function (c) { return c[0]; })) === '["online","local","choose","local"]' && docCalls[0][1] === docCalls[1][1], 'desktop: MDN button, then local button asks for a folder, then opens the page after choosing ' + JSON.stringify(docCalls));
+  ok(JSON.stringify(docCalls.map(function (c) { return c[0]; })) === '["online","zeal","path","zeal"]' && docCalls[0][1] === docCalls[1][1] && !(await dpage.isVisible('#docZealRow')), 'desktop: MDN button, Zeal button asks for the path, saving it opens Zeal ' + JSON.stringify(docCalls));
   await dpage.keyboard.press('Escape');
   ok(derr.length === 0, 'no errors in the desktop-wired page ' + (derr.length ? JSON.stringify(derr) : ''));
 
