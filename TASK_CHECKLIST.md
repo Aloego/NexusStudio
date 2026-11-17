@@ -213,6 +213,18 @@
 
 **Status:** Approved (user said "Approved" on 2026-11-17)
 
+## Element documentation from the blue tag on the canvas
+
+- [x] Make the blue element-name tag on the canvas clickable
+- [x] Built-in offline guide for all 98 palette elements plus body (`renderer/docs.js`)
+- [x] Option to open the MDN page online
+- [x] Option to choose a folder with downloaded docs (MDN copy, Zeal docset, DevDocs) and open the matching page from it (desktop app)
+- [x] Add automated tests, run them, look at the dialog in a browser
+- [x] Commit and push changes to feature branch
+- [ ] User personally tests the tag, the guide, the MDN button and the docs-folder buttons
+
+**Status:** Awaiting User Approval
+
 ## Phase 8 — End-to-End Workflow Verification
 
 - [ ] Test the complete AI workflow

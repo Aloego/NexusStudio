@@ -759,3 +759,15 @@ Awaiting User Approval
 
 - `node test/e2e.js`: 159 passed, 3 failed (`get_window_state`, `get_app_state`, `get_process_info`, same as before). New checks: move cursor and "Drag to move" hint over a draggable element; gone on leaving and while pressing; absent on static elements; not in the exported page code.
 - Not run: real Electron window; user must test.
+
+## Element documentation from the canvas tag (2026-11-17)
+
+- `node test/e2e.js`: 168 passed, 3 failed (`get_window_state`, `get_app_state`, `get_process_info`, same as before).
+- Docs-folder search tried on sample MDN-copy, Zeal and DevDocs folder layouts: found the right page each time.
+- Real-click screenshot in a browser: the tag opens the guide dialog.
+- `node test/main-smoke.js` crashes in the sandbox (`screen.getPrimaryDisplay` undefined in the Electron stand-in), also without these changes.
+- Not run: real Electron window, opening MDN online, a real downloaded docs copy; user must test.
+
+### Approval
+
+Awaiting User Approval

@@ -590,6 +590,54 @@ stage.addEventListener('mousedown',function(e){
   document.addEventListener('mousemove',mv,true);document.addEventListener('mouseup',up,true);
 });
 
+/* ---------- element documentation (click the blue tag on the canvas) ---------- */
+var docTag=null;
+function mdnUrl(tag){
+  if(/^h[1-6]$/.test(tag))tag='h1';
+  return (tag==='svg'?'https://developer.mozilla.org/en-US/docs/Web/SVG/Element/svg':'https://developer.mozilla.org/en-US/docs/Web/HTML/Element/'+tag);
+}
+function docMsg(t){$('#docMsg').textContent=t||'';}
+function openDoc(tag){
+  if(!/^[a-z][a-z0-9]*$/.test(tag||''))return;
+  docTag=tag;
+  var d=(window.HTML_DOCS||{})[tag];
+  $('#docTitle').textContent='<'+tag+'>';
+  $('#docWhat').textContent=d?d[0]:'No built-in note for this element yet. Use the buttons below for the full reference.';
+  $('#docWhere').textContent=d?d[1]:'-';
+  $('#docAttrs').textContent=d?d[2]:'-';
+  $('#docEx').textContent=d?d[3]:'';
+  docMsg('');
+  $('#docLocal').hidden=$('#docFolder').hidden=!window.nexus;
+  $('#docDlg').hidden=false;$('#docClose').focus();
+}
+function closeDoc(){$('#docDlg').hidden=true;docTag=null;}
+$('#ovLab').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();var f=find(S.sel);if(f)openDoc(f.node.tag);});
+$('#ovLab').addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();var f=find(S.sel);if(f)openDoc(f.node.tag);}});
+$('#docClose').addEventListener('click',closeDoc);
+$('#docDlg').addEventListener('mousedown',function(e){if(e.target.id==='docDlg')closeDoc();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('#docDlg').hidden){closeDoc();e.stopPropagation();}},true);
+$('#docMdn').addEventListener('click',function(){
+  if(!docTag)return;
+  if(window.nexus&&window.nexus.docsOpenOnline){window.nexus.docsOpenOnline(docTag).then(function(r){docMsg(r&&r.error?r.error:'Opened in your browser.');});}
+  else{window.open(mdnUrl(docTag),'_blank','noopener');docMsg('Opened in a new tab.');}
+});
+function openLocalDoc(){
+  if(!docTag||!window.nexus)return;
+  window.nexus.docsOpenLocal(docTag).then(function(r){
+    if(r&&r.needFolder){docMsg('Choose your docs folder first.');return pickDocsFolder();}
+    docMsg(r&&r.error?r.error:'Opened from your docs folder.');
+  });
+}
+function pickDocsFolder(){
+  return window.nexus.docsChooseFolder().then(function(r){
+    if(!r||r.canceled)return;
+    if(r.error){docMsg(r.error);return;}
+    docMsg('Docs folder set: '+r.folder);openLocalDoc();
+  });
+}
+$('#docLocal').addEventListener('click',openLocalDoc);
+$('#docFolder').addEventListener('click',function(){if(window.nexus)pickDocsFolder();});
+
 /* move cursor and a small "Drag to move" hint while the pointer is over an element that can be dragged */
 var hoverMove=null,moveHintEl=$('#moveHint');
 function clearMoveHint(){if(hoverMove){hoverMove.classList.remove('nx-move');hoverMove=null;}moveHintEl.hidden=true;}

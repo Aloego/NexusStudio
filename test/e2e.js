@@ -440,6 +440,25 @@ page.on('console', function (m) {
   ok(!(await mvPage.evaluate(function () { return window.NexusAPI.call('get_full_html', {}); }).then(function (r) { return JSON.stringify(r).indexOf('nx-move') >= 0; })), 'the move cursor class does not leak into the page code');
   await mvCtx.close();
 
+  console.log('Element documentation (click the tag on the canvas)');
+  const docTags = await defPage.evaluate(function () { return window.HTML_DOCS ? Object.keys(window.HTML_DOCS) : []; });
+  const palTags = await defPage.evaluate(function () { return [].slice.call(document.querySelectorAll('#palette .it em')).map(function (e) { return e.textContent; }); });
+  const noDoc = palTags.filter(function (t) { return docTags.indexOf(t) < 0; });
+  ok(palTags.length >= 98 && noDoc.length === 0, 'every element in the Elements tab has a built-in guide entry ' + JSON.stringify(noDoc));
+  await addPalette('div');
+  ok((await defPage.getAttribute('#ovLab', 'role')) === 'button', 'the tag on the canvas is a button');
+  await defPage.evaluate(function () { document.querySelector('#ovLab').click(); });
+  ok(!(await defPage.$eval('#docDlg', function (d) { return d.hidden; })) && (await defPage.textContent('#docTitle')) === '<div>' && /box/i.test(await defPage.textContent('#docWhat')), 'clicking the tag opens the built-in guide for the element');
+  ok((await defPage.evaluate(function () { return document.querySelector('#docLocal').hidden && document.querySelector('#docFolder').hidden; })), 'in a plain browser the docs-folder buttons are hidden');
+  await defPage.evaluate(function () { window.__opened = []; window.open = function (u) { window.__opened.push(u); return null; }; });
+  await defPage.click('#docMdn');
+  const opened = await defPage.evaluate(function () { return window.__opened; });
+  ok(opened.length === 1 && opened[0] === 'https://developer.mozilla.org/en-US/docs/Web/HTML/Element/div', 'the MDN button opens the MDN page for the element ' + JSON.stringify(opened));
+  await defPage.keyboard.press('Escape');
+  ok(await defPage.$eval('#docDlg', function (d) { return d.hidden; }), 'Escape closes the guide');
+  await addPalette('h3'); await defPage.evaluate(function () { document.querySelector('#ovLab').click(); });
+  ok((await defPage.textContent('#docTitle')) === '<h3>', 'the guide follows the selected element');
+  await defPage.click('#docClose');
   console.log('Device size dropdown');
   ok((await defPage.$$('#devs [data-w]')).length === 0, 'the Mobile / Tablet / Desktop tab buttons are gone');
   ok((await defPage.textContent('#devBtn')).trim() === 'Responsive', 'the dropdown starts as Responsive');
@@ -502,7 +521,10 @@ page.on('console', function (m) {
       mcpInfo: async function () { return { running: true, url: 'http://127.0.0.1:39517/mcp', token: 'abc', tools: [{ name: 'get_tree', title: 'Read' }], desktopConfig: '{"mcpServers":{}}', claudeCodeCommand: 'claude mcp add x' }; },
       mcpSetEnabled: async function () { return null; }, mcpInstallClaudeDesktop: async function () { return { ok: true, message: 'Added to Claude Desktop.' }; },
       onAiRequest: function (cb) { window.__aiCb = cb; }, aiRespond: function (id, ok, p) { (window.__aiResp = window.__aiResp || []).push({ id: id, ok: ok, p: p }); },
-      onAiActivity: function (cb) { window.__actCb = cb; }
+      onAiActivity: function (cb) { window.__actCb = cb; },
+      docsOpenOnline: async function (t) { (window.__docs = window.__docs || []).push(['online', t]); return { ok: true }; },
+      docsOpenLocal: async function (t) { (window.__docs = window.__docs || []).push(['local', t]); return window.__docNeed ? { needFolder: true } : { ok: true }; },
+      docsChooseFolder: async function () { (window.__docs = window.__docs || []).push(['choose']); window.__docNeed = false; return { ok: true, folder: 'C:/docs' }; }
     };
   });
   await dpage.goto(url); await dpage.waitForSelector('#page h1');
@@ -535,6 +557,14 @@ page.on('console', function (m) {
   await dpage.screenshot({ path: '/tmp/nx-ai-dialog.png' });
   await dpage.keyboard.press('Escape');
   ok(!(await dpage.isVisible('#aiModal')), 'Escape closes the dialog');
+  await dpage.evaluate(function () { window.__docNeed = true; });
+  await dpage.evaluate(function () { document.querySelector('#ovLab').click(); });
+  ok((await dpage.isVisible('#docLocal')) && (await dpage.isVisible('#docFolder')), 'in the desktop app the docs-folder buttons show');
+  await dpage.click('#docMdn');
+  await dpage.click('#docLocal'); await dpage.waitForTimeout(150);
+  const docCalls = await dpage.evaluate(function () { return window.__docs; });
+  ok(JSON.stringify(docCalls.map(function (c) { return c[0]; })) === '["online","local","choose","local"]' && docCalls[0][1] === docCalls[1][1], 'desktop: MDN button, then local button asks for a folder, then opens the page after choosing ' + JSON.stringify(docCalls));
+  await dpage.keyboard.press('Escape');
   ok(derr.length === 0, 'no errors in the desktop-wired page ' + (derr.length ? JSON.stringify(derr) : ''));
 
   ok(errors.length === 0, 'no console or page errors ' + (errors.length ? JSON.stringify(errors.slice(0, 5)) : ''));

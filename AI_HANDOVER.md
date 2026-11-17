@@ -4,7 +4,19 @@
 
 Drag positioned elements on the canvas: elements whose position is not static can be dragged to move them (state: Awaiting User Approval once pushed). Earlier on 2026-11-17: viewport number spinner fields and device size dropdown approved; "add every element blank" rejected and reverted.
 
-## Latest Session (2026-11-17, twelfth request)
+## Latest Session (2026-11-17, thirteenth request)
+
+- User request: make the small blue element-name tag on the canvas clickable and open documentation for that element, offline (Zeal or any HTML docs), with an option to open MDN online or a locally downloaded documentation. User chose: built-in guide + MDN + user's own docs folder.
+- Done in `renderer/docs.js` (new): built-in offline guide for all 98 palette elements plus `body` (what it is, where it goes, key attributes, example). Loaded before `app.js`.
+- Done in `renderer/index.html` / `styles.css` / `app.js`: `#ovLab` is now a button; clicking it opens the `#docDlg` dialog with the guide and three buttons: Open on MDN (online), Open from my docs folder, Choose docs folder… (the two folder buttons show only in the desktop app). Escape/Close/backdrop close it.
+- Done in `main/main.js` and `main/preload.js`: IPC `docs:openOnline` (opens `https://developer.mozilla.org/en-US/docs/Web/HTML/Element/<tag>` in the browser; tag checked with a strict pattern), `docs:chooseFolder` (folder dialog, saved in `settings.json` as `docsFolder`), `docs:openLocal` (searches the chosen folder, up to 14 levels / 20000 entries, for `.../element/<tag>/index.html` (MDN copy, Zeal) or `<tag>.html` (DevDocs) and opens it with `shell.openPath`). All three check the sender with `fromEditor`. No security setting weakened.
+- Done in `test/e2e.js`: "Element documentation" checks (every palette element has an entry; tag is a button; dialog opens; MDN link; Escape; desktop stand-in IPC flow).
+- Tests: `node test/e2e.js` gives 168 passed, 3 failed (the same 3 as before). The docs-folder search was also tried on sample MDN, Zeal and DevDocs folder layouts and found the right pages.
+- Not verified: the MDN address was not opened (no internet here); real Electron window; a real downloaded MDN/Zeal/DevDocs copy. `node test/main-smoke.js` crashes in this sandbox (`screen.getPrimaryDisplay` is undefined in the test's Electron stand-in) with or without these changes; not caused by this task.
+- Known limits: SVG shapes (circle, path…) have no built-in entry (the dialog says so and offers MDN). Folder search can miss pages if the docs use another layout.
+- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+
+## Earlier Session (2026-11-17, twelfth request)
 
 - User request: before approving drag-to-move, add a move cursor and a hint over draggable elements.
 - Done in `renderer/app.js`: a `mousemove` handler on the stage adds class `nx-move` to the hovered element when it is draggable (same rule as the drag: not static, not the root, not the selection box, not text being edited) and shows `#moveHint`; both clear on leave, on mouse press and while dragging.

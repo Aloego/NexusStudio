@@ -71,7 +71,7 @@
             <div class="frh frh-se" data-dir="se" title="Drag to resize"></div>
           </div>
           <div class="sel" id="ov" hidden>
-            <div class="lab" id="ovLab"></div>
+            <div class="lab" id="ovLab" role="button" tabindex="0" title="Click to read about this element"></div>
             <div class="sz" id="ovSz"></div>
             <div class="h" data-dir="e"></div><div class="h" data-dir="s"></div><div class="h" data-dir="se"></div>
           </div>
@@ -150,8 +150,20 @@
 
 <div id="modal" hidden><div class="box"><h3 id="mTitle"></h3><p class="note" id="mNote" style="margin:0"></p><textarea id="mText" spellcheck="false" aria-label="Code"></textarea><div class="acts"><button class="sbtn" id="mClose">Close</button><button class="primary" id="mOk" hidden>Import</button></div></div></div>
 <div id="devEdit" hidden><div class="box" role="dialog" aria-label="Edit devices"><h3>Edit devices</h3><p class="note" style="margin:0">Change a name or size, add a device to any group, or remove one. Sizes are CSS pixels (width × height). Changes are saved automatically.</p><div id="devList"></div><div class="acts"><button class="sbtn" id="devReset" type="button">Reset to defaults</button><button class="primary" id="devDone" type="button">Done</button></div></div></div>
+<div id="docDlg" hidden><div class="box" role="dialog" aria-label="Element documentation">
+  <h3 id="docTitle"></h3>
+  <p class="note" id="docWhat" style="margin:0"></p>
+  <h4>Where it goes</h4><p class="note" id="docWhere" style="margin:0"></p>
+  <h4>Key attributes</h4><p class="note" id="docAttrs" style="margin:0"></p>
+  <h4>Example</h4><pre id="docEx"></pre>
+  <p class="note" style="margin:0">This short guide is built in and works offline. For the full reference, pick one:</p>
+  <div class="aibtns"><button class="primary" id="docMdn" type="button">Open on MDN (online)</button><button class="sbtn" id="docLocal" type="button">Open from my docs folder</button><button class="sbtn" id="docFolder" type="button">Choose docs folder…</button></div>
+  <p class="note" id="docMsg" style="margin:0" role="status"></p>
+  <div class="acts"><button class="sbtn" id="docClose" type="button">Close</button></div>
+</div></div>
 <div id="moveHint" hidden>Drag to move</div>
 <div id="toast" hidden></div>
+<script src="docs.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
