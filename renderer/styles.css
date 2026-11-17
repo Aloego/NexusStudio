@@ -215,20 +215,10 @@ iframe.pv{flex:1;border:0;background:#fff;width:100%;min-height:0}
 .dim input[type=number]::-webkit-inner-spin-button,.dim input[type=number]::-webkit-outer-spin-button{opacity:1;cursor:pointer}
 .dim input:focus{outline:none;background:var(--hi);border-radius:3px}
 .dim span{color:var(--dim);font-size:9.5px}
-.dev{position:relative;display:flex;gap:2px;background:rgba(24,24,27,.8);border:1px solid var(--line);border-radius:8px;padding:2px}
-.ddv{display:flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:3px 8px;color:var(--dim);font-size:11px;font-family:var(--ui);cursor:pointer;min-width:110px}
-.ddv:hover{color:#e4e4e7}
-.ddv-lbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ddv-arr{flex-shrink:0;color:var(--dim)}
-.ddv-menu{position:absolute;left:0;top:calc(100% + 4px);min-width:220px;background:var(--alt);border:1px solid var(--line);border-radius:8px;padding:4px;box-shadow:0 12px 32px rgba(0,0,0,.5);z-index:10;max-height:340px;overflow-y:auto}
-.ddv-grp{margin-bottom:6px}
-.ddv-grp>span{display:block;font:600 9px var(--ui);color:var(--dim);text-transform:uppercase;letter-spacing:.05em;padding:6px 10px 2px}
-.ddv-grp button{display:flex;justify-content:space-between;gap:10px;width:100%;text-align:left;background:none;border:0;border-radius:5px;padding:6px 10px;color:#e4e4e7;font-size:11px;cursor:pointer}
-.ddv-grp button:hover{background:var(--accent);color:#fff}
-.ddv-grp button .m{font-size:9.5px;color:var(--dim)}
-.ddv-foot{padding-top:4px;border-top:1px solid var(--line)}
-.ddv-foot button{width:100%;text-align:left;background:none;border:0;border-radius:5px;padding:6px 10px;color:var(--dim);font-size:11px;cursor:pointer}
-.ddv-foot button:hover{background:var(--hi);color:#fff}
+.dev{display:flex;gap:2px;background:rgba(24,24,27,.8);border:1px solid var(--line);border-radius:8px;padding:2px;margin:0 auto}
+.dev button{background:none;border:1px solid transparent;border-radius:5px;padding:3px 10px;color:var(--dim);font-size:11px}
+.dev button:hover{color:#e4e4e7}
+.dev button.on{border-color:var(--accent);background:var(--accent-soft);color:#60a5fa}
 .zoom{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:4px}
 .zoom button{background:none;border:0;padding:1px 9px;font:700 12px var(--mono);color:#d4d4d8}
 .zoom button:first-child{border-right:1px solid var(--line)}

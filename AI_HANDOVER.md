@@ -4,7 +4,15 @@
 
 Drag positioned elements on the canvas: elements whose position is not static can be dragged to move them (state: Awaiting User Approval once pushed). Earlier on 2026-11-17: viewport number spinner fields and device size dropdown approved; "add every element blank" rejected and reverted.
 
-## Latest Session (2026-11-17, eighteenth request)
+## Latest Session (2026-11-17, nineteenth request: restore after Dyad)
+
+- User report: Dyad was asked to make elements draggable individually; the user rejected its changes and asked Dyad to revert, but the result was not the state before. Dyad reported a conflict in the renderer files.
+- Finding: the branch had 3 Dyad commits on top of `b5859fa` (the last commit by Claude): `39f77e7` (new drag that sets `position:absolute` and re-renders on every move, full document in HTML view), `47cb633` (a merge that re-applied a large mix of changes) and `6383716` (a partial undo). The final state had lost the element documentation dialog and `docs.js` wiring, the device-size dropdown (replaced by a different `#ddv` control), the move cursor and hint, the click-adds-after rule and the canvas drag.
+- Done: restored every file to exactly how it was at `b5859fa` with a new commit (no force-push, history kept). Tree identical to `b5859fa`; `node test/e2e.js` should give 180 passed, 3 failed (same 3 as before).
+- My own unfinished work for the earlier request (independent dragging with taking an element in or out of a box, "Move out of box" button, HTML tab showing a full document) is saved on the local branch `wip-independent-drag` / stash and is NOT pushed.
+- Next action: wait for the user. Do not merge into `main`.
+
+## Earlier Session (2026-11-17, eighteenth request)
 
 - User report: after adding a div and then an h1, the h1 could not be dragged independently of the div, "even if the h1 is not placed inside the div"; wants every element draggable independently, in or out of any element, without dragging its container or everything on the canvas.
 - Investigation (reproduced in a browser): clicking an Elements-tab item added it INSIDE the selected element whenever that element was a container (div, section and so on), so the h1 really was the div's child (`body(div(h1))`). Dragging the h1 itself moved only the h1 (the earlier drag feature works per element); but moving the div would carry the h1 with it, and every new element kept nesting into the previous one.
