@@ -606,3 +606,59 @@ Screenshot of the footer with 400 and 512 entered: shows `400 ⬍ × 512 ⬍` wi
 ### Approval
 
 Approved (user said "Approved" on 2026-11-17).
+
+---
+
+## Add every element blank
+
+### Date
+
+2026-11-17
+
+### Branch
+
+feature/ai-development-workflow
+
+### Scope
+
+Files changed: `renderer/app.js`, `main/tools.js` (text only), `test/e2e.js`.
+
+- User request: layout elements such as header and footer already had content inside; every element should open blank until the user adds content.
+- Confirmed in the code: before this change, adding `header` also added "Brand" and "Menu", `footer` added "© Your company", and many others came with starter text or child elements: `nav`, `article`, `aside`, `details`, `form`, `select`, `ul`, `ol`, `table`, `dialog`, `hgroup`, `search`, `picture`, `figure`, `fieldset`, `map`, `dl`, `menu`, `optgroup`, `datalist`, `ruby`, `svg`, the table parts, and every text element (`h1` to `h6`, `p`, `span`, `a`, `button`, formatting and quote elements and so on). The new test run against the old code listed them (for example `header:2`, `nav:3`, `footer:1`).
+- Change: `make()` now clears `text` and `children` from the element it builds. Starter styles (boxes keep their grey background and minimum height; the browser-default styles from the earlier task still apply) and attributes are kept. The same function is used by clicking an element in the Elements tab, dragging one onto the Layers tree, and the MCP `add_element` option `use_preset`, so all three give blank elements. Text or children passed explicitly in an MCP call still apply. The `use_preset` description in `main/tools.js` now says the preset has no starter text or child elements.
+- Not changed (attributes, not content): `img` and `picture/source` still carry the placeholder picture and alt text; `input` and `textarea` still carry placeholder text ("Type here", "Write a message"); `a` keeps `href="#"`; `video`/`audio` keep `controls`; `progress` and `meter` keep their `value`/`max`; `canvas` keeps its size; `dialog` keeps `open`. The sample page that opens at first start and `new_document` are unchanged (new_document was already blank).
+- Side effect to know: an element with no text and no size (for example `p`, `span`, `h1`, `strong`) takes no visible space on the canvas, so select it in the Layers tree or the breadcrumb and type its text in the Properties panel.
+
+### Static check
+
+`node --check` on `renderer/app.js`, `main/tools.js` and `test/e2e.js` — all passed.
+
+### Automated tests
+
+Command: `node test/e2e.js` (run in the AI sandbox)
+
+Result: 146 passed, 3 failed.
+
+New checks that passed: "every element is added blank, with no starter text or child elements" (adds each of the 98 Elements-tab items to an empty page and checks the element has no child nodes); "header and footer are added with nothing inside". Run against the previous `renderer/app.js`, both new checks fail (144 passed, 5 failed), so they do detect the old behaviour.
+
+The 3 failures are the same ones that already failed before: `get_window_state`, `get_app_state`, `get_process_info`. Cause not investigated. All earlier Elements-tab, browser-default and device-dropdown checks still pass.
+
+### Inspected in a browser
+
+Screenshot of an empty page after adding header, main and footer: the page HTML is `<header></header><main></main><footer></footer>` (ids aside), and the canvas shows the three grey boxes touching each other as one block. No page errors.
+
+### Could not be run
+
+- The real Electron window. Not run in this sandbox.
+- `node test/main-smoke.js`. Not run (no main-process change).
+
+### Manual testing for the user
+
+- Add header, footer, nav, article, aside, form, ul, table and a few text elements from the Elements tab and check each arrives with nothing inside.
+- Drag an element from the Elements tab onto the Layers tree and check it is blank too.
+- Check you can still add content: select an element, type text in the Properties panel, or add other elements inside it.
+
+### Approval
+
+Awaiting User Approval
+

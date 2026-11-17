@@ -166,7 +166,9 @@ function applyUA(n){
   return n;
 }
 var FIELDSTY={padding:'8px 12px',border:'1px solid #475569','border-radius':'6px',background:'transparent',color:'inherit','font-family':'inherit','font-size':'14px'};
-function make(tag){return applyUA(makeRaw(tag));}
+/* Every element is added blank: no starter text and no starter child elements. Its style and attributes stay,
+   so it still looks like itself on the canvas; the person adds the content. */
+function make(tag){var n=makeRaw(tag);n.text='';n.children=[];return applyUA(n);}
 function makeRaw(tag){
   var soft={background:'rgba(148,163,184,.12)'};
   function cell(t,h){return N(h?'th':'td',{text:t,style:{padding:'8px 12px',border:'1px solid #475569','text-align':'left'}});}

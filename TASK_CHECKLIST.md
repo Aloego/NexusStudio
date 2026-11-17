@@ -178,6 +178,18 @@
 
 **Status:** Approved (user said "Approved" on 2026-11-17)
 
+## Add every element blank
+
+- [x] Confirm which Elements-tab items came with starter content (header "Brand"/"Menu", footer "© Your company", nav, article, aside, details, form, select, lists, tables, dialog, hgroup, search, picture, figure, fieldset, text elements and more)
+- [x] `make()` in `renderer/app.js` now returns every element with no starter text and no starter child elements; starter styles and attributes are kept
+- [x] Same behaviour for palette click, drag onto the Layers tree, and the MCP `add_element` `use_preset` option (explicit `text` / `children` from an MCP call still apply); `use_preset` tool text updated in `main/tools.js`
+- [x] Add automated tests (all 98 elements are added blank; header and footer have nothing inside)
+- [x] Run automated tests (same 3 failures as before; see `TEST_RESULTS.md`) and look at the canvas in a browser
+- [x] Commit and push changes to feature branch
+- [ ] User personally tests adding elements from the Elements tab
+
+**Status:** Awaiting User Approval
+
 ## Phase 8 — End-to-End Workflow Verification
 
 - [ ] Test the complete AI workflow

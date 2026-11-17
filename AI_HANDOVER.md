@@ -2,9 +2,22 @@
 
 ## Current Task
 
-Show the Viewport width and height as number spinner fields (`400 ⬍ × 512 ⬍`), per the user's screenshot. Approved by the user on 2026-11-17. The device size dropdown task before it was also approved by the user on 2026-11-17.
+Add every element blank: Elements-tab items no longer come with starter text or child elements (state: Awaiting User Approval once pushed). The viewport number spinner fields and the device size dropdown were approved by the user on 2026-11-17.
 
-## Latest Session (2026-11-17, eighth request)
+## Latest Session (2026-11-17, ninth request)
+
+- User request: confirm that layout elements such as header and footer already contain content, and remove it; every element should open blank until the user adds content.
+- Confirmed: header had "Brand" and "Menu", footer had "© Your company", and many other elements had starter text or children (list in `TEST_RESULTS.md`).
+- Done in `renderer/app.js`: `make()` clears `text` and `children` after `makeRaw()` builds the element, then applies the browser-default styles. Used by palette click, drag onto the Layers tree and MCP `use_preset`.
+- Done in `main/tools.js`: `use_preset` description now says no starter text or child elements.
+- Done in `test/e2e.js`: "Every element is added blank" checks (all 98 elements; header and footer).
+- Not changed: attributes (`img` placeholder picture and alt, `input`/`textarea` placeholder text, `href="#"`, `controls`, `value`/`max`, canvas size, dialog `open`), starter styles (boxes keep their grey look and minimum height), the sample page, `new_document`. `makeRaw()` still contains the old starter content but it is discarded; it can be removed later if wanted.
+- Tests: `node test/e2e.js` gives 146 passed, 3 failed (the same 3 as before: `get_window_state`, `get_app_state`, `get_process_info`). The two new checks fail on the old code.
+- Not run: real Electron window testing and `test/main-smoke.js`. The user must test it.
+- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+
+## Earlier Session (2026-11-17, eighth request, approved)
+
 
 - User request: on the branch that is not `main`, make the viewport display values look like the supplied screenshot (`400 ⬍ × 512 ⬍`). `feature/ai-development-workflow` is the only non-main branch.
 - Done in `renderer/index.html`: `#vw` and `#vh` are `type="number"` with min/max/step; the "W" and "H" spans are removed.
@@ -158,10 +171,10 @@ Result: 98 passed, 0 failed
 
 ## Next Action
 
-Wait for the user's next instruction. A separate approval is required before merging into `main` or releasing the application.
+Wait for the user to test adding elements from the Elements tab and say `APPROVE` or `REJECT`. A separate approval is required before merging into `main` or releasing the application.
 
 ## Approval Status
 
-Nothing is awaiting approval. Approved on 2026-11-17: viewport number spinner fields and the device size dropdown. Earlier tasks (SVG / Drawing removal, add missing elements, browser-default styles, CSS tab gaps with margin and padding per-side fields, window sizing fix) were approved by the user.
+Awaiting User Approval (add every element blank). Approved on 2026-11-17: viewport number spinner fields and the device size dropdown. Earlier tasks (SVG / Drawing removal, add missing elements, browser-default styles, CSS tab gaps with margin and padding per-side fields, window sizing fix) were approved by the user.
 
 > Note: No approval here authorizes merging into `main` or releasing the application.
