@@ -209,9 +209,9 @@
 - [x] Add automated tests (10 checks), run all tests, confirm the new move tests fail on the old code
 - [x] Commit and push changes to feature branch
 - [x] User asked (before approving) for a move cursor and hint over draggable elements: the pointer becomes the move cursor and a small "Drag to move" label follows it over any element that can be dragged; nothing shows over static elements; hidden while pressing/dragging; not saved into the page code (5 new checks)
-- [ ] User personally tests dragging elements on the canvas and the move cursor / hint
+- [x] User personally tests dragging elements on the canvas and the move cursor / hint
 
-**Status:** Awaiting User Approval
+**Status:** Approved (user said "Approved" on 2026-11-17)
 
 ## Phase 8 — End-to-End Workflow Verification
 

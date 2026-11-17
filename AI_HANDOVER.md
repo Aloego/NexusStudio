@@ -11,7 +11,7 @@ Drag positioned elements on the canvas: elements whose position is not static ca
 - Done in `renderer/index.html` / `renderer/styles.css`: `#moveHint` ("Drag to move") and `.page .nx-move` (cursor: move, also for children).
 - Done in `test/e2e.js`: 5 checks (cursor and hint show; hide on leave; hide while pressing; none on static elements; class not in the exported page).
 - Tests: `node test/e2e.js` gives 159 passed, 3 failed (the same 3 as before). Not run: real Electron window.
-- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+- Result: approved by the user on 2026-11-17 (covers drag-to-move and the move cursor / hint). Do not merge into `main` without separate approval.
 
 ## Earlier Session (2026-11-17, eleventh request)
 
