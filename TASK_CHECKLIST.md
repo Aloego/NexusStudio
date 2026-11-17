@@ -191,6 +191,15 @@
 
 **Status:** Rejected — reverted; the prefilled elements stay as they were. No further work on this task unless the user asks.
 
+## Check whether canvas elements can be moved (read-only)
+
+- [x] Read the canvas mouse handling in `renderer/app.js` (a press on the canvas only selects; no drag-to-move)
+- [x] Test in a browser: mouse-drag a box on the canvas, in normal flow and with `position: absolute` (nothing moved either time)
+- [x] Record findings in `TEST_RESULTS.md`; no application code changed
+- [ ] User decides whether to add drag-to-move on the canvas
+
+**Status:** Completed (investigation only). Waiting for the user's decision.
+
 ## Phase 8 — End-to-End Workflow Verification
 
 - [ ] Test the complete AI workflow

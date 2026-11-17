@@ -666,3 +666,40 @@ Rejected by the user on 2026-11-17: "Reject. i wish to leave the prefilled eleme
 
 `renderer/app.js`, `main/tools.js` and `test/e2e.js` were restored to their state before this task (commit `c9739fc`), so elements are added with their starter text and child elements again, and the two "added blank" checks are removed. Automated tests after the revert (`node test/e2e.js`, AI sandbox): 144 passed, 3 failed. The 3 failures are the same ones as before: `get_window_state`, `get_app_state`, `get_process_info`. Not run: the real Electron window and `test/main-smoke.js`.
 
+---
+
+## Canvas element movement check (read-only)
+
+### Date
+
+2026-11-17
+
+### Branch
+
+feature/ai-development-workflow
+
+### Scope
+
+No files changed except these tracking files. User question: elements placed on the canvas seem restricted and cannot be moved around the canvas area; confirm this.
+
+### Finding
+
+Confirmed. In this version an element cannot be moved by dragging it on the canvas.
+
+- Code: the canvas `mousedown` handler in `renderer/app.js` (the "selection and editing on the canvas" block) only selects the element under the pointer; double-click edits its text. There is no pointer-move handling that changes an element's position. The only drag-on-canvas actions are the selection box's resize handles (right, bottom and bottom-right, which change width and height, never position) and dropping a new element from the Elements tab. The selection outline itself has `pointer-events:none`.
+- Browser test (AI sandbox, a scratch script, not part of `npm test`): added a `div` to an empty page and dragged it 200 px right and 150 px down with the mouse. Position before and after: x 284, y 110, unchanged. Then set it to `position:absolute; left:20px; top:20px` through the editor's own `update_element` call and dragged it again: still x 280, y 106, `left` 20px and `top` 20px, unchanged. So dragging does not move it even when absolute positioning is on.
+- Ways to move or place an element that do work today: Alt+Up / Alt+Down moves it one place among its siblings; dragging its row in the Layers tab reorders it or moves it into another element; the CSS tab's Position and Inset (top / right / bottom / left) fields place it once `position` is not `static`; the Properties and Elements tabs add new elements into the selected container. The page is a normal document flow, so elements stack in order unless given a position.
+- Earlier history of this branch was not checked (the sandbox clone is shallow), so it is not known whether drag-to-move ever existed.
+
+### Automated tests
+
+Not run (no application code changed).
+
+### Could not be run
+
+- The real Electron window. Not run in this sandbox.
+
+### Approval
+
+Not applicable (investigation only). Any change, such as drag-to-move on the canvas, would need the user's explicit request first.
+

@@ -2,9 +2,17 @@
 
 ## Current Task
 
-No task in progress. The last task, "add every element blank", was rejected by the user on 2026-11-17 and reverted: the prefilled starter content stays. The viewport number spinner fields and the device size dropdown were approved by the user on 2026-11-17.
+No code task in progress. The last request (tenth) was a read-only check, finished: elements cannot be moved by dragging on the canvas. The last code task, "add every element blank", was rejected by the user on 2026-11-17 and reverted: the prefilled starter content stays. The viewport number spinner fields and the device size dropdown were approved by the user on 2026-11-17.
 
-## Latest Session (2026-11-17, ninth request, rejected and reverted)
+## Latest Session (2026-11-17, tenth request, read-only)
+
+- User request: confirm that elements placed on the canvas are restricted and cannot be moved around the canvas area.
+- Finding: confirmed. A mouse press on the canvas only selects; there is no drag-to-move. Resize handles change only width/height. Tested with a real mouse drag in a browser, both in normal flow and with `position:absolute`: nothing moved. Details and the ways to move or place elements that do work (Alt+Up/Down, Layers drag, Position and Inset fields) are in `TEST_RESULTS.md`.
+- No application code changed. No tests run.
+- Next action: wait for the user's decision. If they ask for drag-to-move on the canvas, that is a new feature request (design choices such as free-positioning with `position:absolute` versus reordering in the flow should be settled by the user). Do not merge into `main`.
+
+## Earlier Session (2026-11-17, ninth request, rejected and reverted)
+
 
 - User request: confirm that layout elements such as header and footer already contain content, and remove it so every element opens blank.
 - Confirmed and implemented (commit `3c86e45`): `make()` in `renderer/app.js` cleared starter text and children.
@@ -168,7 +176,7 @@ Result: 98 passed, 0 failed
 
 ## Next Action
 
-Wait for the user's next instruction. A separate approval is required before merging into `main` or releasing the application.
+Wait for the user's decision about drag-to-move on the canvas. A separate approval is required before merging into `main` or releasing the application.
 
 ## Approval Status
 
