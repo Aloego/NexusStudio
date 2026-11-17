@@ -388,10 +388,17 @@ page.on('console', function (m) {
   const SIZE = { width: '120px', height: '60px' };
   await mvFresh();
   const stBefore = await mvBox(); await mvDrag(120, 80); const stAfter = await mvBox();
-  ok(stBefore.position === 'static' && stAfter.x === stBefore.x && stAfter.y === stBefore.y && stAfter.left === '' && stAfter.top === '', 'an element that is static by default does not move when dragged ' + JSON.stringify(stAfter));
+  ok(stBefore.position === 'static' && stAfter.position === 'relative' && stAfter.left === '120px' && stAfter.top === '80px' && stAfter.x - stBefore.x === 120 && stAfter.y - stBefore.y === 80, 'an element that is static by default can be dragged: it becomes relative and follows the mouse ' + JSON.stringify(stAfter));
   await mvFresh({ position: 'static', width: '120px', height: '60px' });
   const st2 = await mvBox(); await mvDrag(120, 80); const st2a = await mvBox();
-  ok(st2a.x === st2.x && st2a.y === st2.y && st2a.left === '', 'an element set to static does not move when dragged');
+  ok(st2a.position === 'relative' && st2a.left === '120px' && st2a.top === '80px' && st2a.x - st2.x === 120, 'an element set to static can be dragged too');
+  await mvPage.keyboard.press('Control+z');
+  const st2u = await mvBox();
+  ok(st2u.position === 'static' && st2u.left === '' && st2u.x === st2.x && st2u.y === st2.y, 'one undo puts a dragged static element fully back (position and offsets) ' + JSON.stringify(st2u));
+  await mvFresh({ width: '120px', height: '60px' });
+  const clk = await mvPage.locator('#page > div').boundingBox(); await mvPage.mouse.click(clk.x + 20, clk.y + 20);
+  const clkBox = await mvBox();
+  ok(clkBox.position === 'static' && clkBox.left === '', 'a plain click on a static element does not change its position ' + JSON.stringify(clkBox));
   await mvFresh({ position: 'absolute', left: '20px', top: '30px', width: SIZE.width, height: SIZE.height });
   const abBefore = await mvBox(); await mvDrag(100, 60); const abAfter = await mvBox();
   ok(abAfter.left === '120px' && abAfter.top === '90px' && abAfter.x - abBefore.x === 100 && abAfter.y - abBefore.y === 60, 'an absolute element follows the mouse and its left and top are updated ' + JSON.stringify(abAfter));
@@ -434,7 +441,7 @@ page.on('console', function (m) {
   ok(mh3.hintHidden === true, 'the hint hides while pressing/dragging');
   await mvFresh({ width: '120px', height: '60px' });
   await mvHover(); const mh4 = await mvInfo();
-  ok(mh4.cursor !== 'move' && mh4.hintHidden === true, 'a static element shows no move cursor or hint ' + JSON.stringify(mh4));
+  ok(mh4.cursor === 'move' && mh4.hintHidden === false, 'a static element also shows the move cursor and hint ' + JSON.stringify(mh4));
   await mvFresh({ position: 'absolute', left: '20px', top: '20px', width: '120px', height: '60px' });
   await mvHover();
   ok(!(await mvPage.evaluate(function () { return window.NexusAPI.call('get_full_html', {}); }).then(function (r) { return JSON.stringify(r).indexOf('nx-move') >= 0; })), 'the move cursor class does not leak into the page code');

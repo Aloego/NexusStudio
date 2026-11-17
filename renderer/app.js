@@ -560,10 +560,10 @@ Array.prototype.forEach.call(ov.querySelectorAll('.h'),function(h){
   });
 });
 
-/* drag a positioned element to move it around the canvas.
-   Only elements whose position is not static (relative, absolute, fixed, sticky) move; an element that is set to
-   static, or is static by default, stays where the normal page flow puts it. Moving writes left/top, or
-   right/bottom when the element already uses those instead. */
+/* drag any element to move it around the canvas.
+   An element that is static (the default for most elements) is first switched to position:relative, so it moves
+   visually but keeps its place in the page flow; elements that are already positioned keep their position type.
+   Moving writes left/top, or right/bottom when the element already uses those instead. */
 stage.addEventListener('mousedown',function(e){
   if(e.button!==0||e.target.closest('.sel')||e.target.closest('[contenteditable="true"]'))return;
   var t=e.target.closest('[data-nid]');
@@ -571,14 +571,14 @@ stage.addEventListener('mousedown',function(e){
   var id=t.getAttribute('data-nid'),f=find(id);
   if(!f||id===S.root.id)return;
   var cs=getComputedStyle(t);
-  if(cs.position==='static')return;
+  var wasStatic=cs.position==='static';
   var sx=e.clientX,sy=e.clientY,z=S.zoom,started=false,node=f.node;
   function isSet(v){return v!=null&&v!==''&&v!=='auto';}
   var hRight=!isSet(node.style.left)&&isSet(node.style.right),vBottom=!isSet(node.style.top)&&isSet(node.style.bottom);
   var b0={l:parseFloat(cs.left)||0,t:parseFloat(cs.top)||0,r:parseFloat(cs.right)||0,b:parseFloat(cs.bottom)||0};
   function mv(ev){
     var dx=(ev.clientX-sx)/z,dy=(ev.clientY-sy)/z;
-    if(!started){if(Math.abs(dx*z)<3&&Math.abs(dy*z)<3)return;started=true;}
+    if(!started){if(Math.abs(dx*z)<3&&Math.abs(dy*z)<3)return;started=true;if(wasStatic)setStyle('position','relative');}
     if(S.sel!==id)return;
     if(hRight)setStyle('right',Math.round(b0.r-dx)+'px');else setStyle('left',Math.round(b0.l+dx)+'px');
     if(vBottom)setStyle('bottom',Math.round(b0.b-dy)+'px');else setStyle('top',Math.round(b0.t+dy)+'px');
@@ -661,7 +661,7 @@ function clearMoveHint(){if(hoverMove){hoverMove.classList.remove('nx-move');hov
 stage.addEventListener('mousemove',function(e){
   if(e.buttons){clearMoveHint();return;}
   var t=(e.target.closest('.sel')||e.target.closest('[contenteditable="true"]'))?null:e.target.closest('[data-nid]');
-  if(t&&(t===page||!page.contains(t)||t.getAttribute('data-nid')===S.root.id||getComputedStyle(t).position==='static'))t=null;
+  if(t&&(t===page||!page.contains(t)||t.getAttribute('data-nid')===S.root.id))t=null;
   if(t!==hoverMove){if(hoverMove)hoverMove.classList.remove('nx-move');hoverMove=t;if(t)t.classList.add('nx-move');}
   if(t){moveHintEl.hidden=false;moveHintEl.style.left=(e.clientX+14)+'px';moveHintEl.style.top=(e.clientY+16)+'px';}else moveHintEl.hidden=true;
 });

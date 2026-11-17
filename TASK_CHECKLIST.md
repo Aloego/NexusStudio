@@ -234,6 +234,17 @@
 
 **Status:** Approved (user said "Approved" on 2026-11-17)
 
+## Every element draggable on the canvas
+
+- [x] Remove the "static elements do not move" rule: any element (except the page itself) can be dragged
+- [x] A static element becomes `position:relative` when dragging starts, then `left`/`top` are written (keeps its place in the flow); positioned elements keep their type
+- [x] Move cursor and hint show on every element; click still only selects; one Undo reverses the whole drag
+- [x] Update and add automated tests, run them
+- [x] Commit and push changes to feature branch
+- [ ] User personally tests dragging ordinary (static) elements
+
+**Status:** Awaiting User Approval
+
 ## Phase 8 — End-to-End Workflow Verification
 
 - [ ] Test the complete AI workflow

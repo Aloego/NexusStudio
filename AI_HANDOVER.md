@@ -4,7 +4,16 @@
 
 Drag positioned elements on the canvas: elements whose position is not static can be dragged to move them (state: Awaiting User Approval once pushed). Earlier on 2026-11-17: viewport number spinner fields and device size dropdown approved; "add every element blank" rejected and reverted.
 
-## Latest Session (2026-11-17, sixteenth request)
+## Latest Session (2026-11-17, seventeenth request)
+
+- User request: every element must be draggable around the canvas regardless of its default position (earlier rule excluded static elements, but nearly every element is static by default).
+- Done in `renderer/app.js`: the drag handler no longer stops at `position:static`. When a static element starts to move (after 3 px) it is switched to `position:relative` and `left`/`top` are written, so it moves visually but keeps its place in the page flow (neighbours do not shift). Already positioned elements keep their position type (absolute, fixed, sticky, relative; right/bottom handled as before). The move cursor and "Drag to move" hint now show over every element except the page itself. A plain click still only selects; one Undo reverses the whole drag including the position change.
+- Design choice to confirm with the user: `relative` (not `absolute`) was used because it does not pull the element out of the layout.
+- Done in `test/e2e.js`: the two old "static does not move" checks and the "no cursor on static" check now expect the opposite; new checks for undo and plain click.
+- Tests: `node test/e2e.js` gives 175 passed, 3 failed (the same 3 as before). Not run: real Electron window.
+- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+
+## Earlier Session (2026-11-17, sixteenth request, approved)
 
 - User approved the MDN/Zeal documentation work (fifteenth request) and asked for an extra button that opens the element on the W3Schools website.
 - Done: `Open on W3Schools (online)` button in the documentation dialog (`renderer/index.html`, `app.js`); `docs:openOnline` in `main/main.js` takes an optional site (`mdn` or `w3schools`; anything else means MDN) and builds `https://www.w3schools.com/tags/tag_<tag>.asp` (svg: `/graphics/svg_intro.asp`); `main/preload.js` passes the site. Same browser-opening method, link display and Copy link as the MDN button.
