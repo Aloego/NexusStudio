@@ -154,6 +154,19 @@
 
 **Status:** Approved (user said "Approved" on 2026-11-14, after the rejection fix)
 
+## Device size dropdown replaces the Mobile / Tablet / Desktop buttons
+
+- [x] Replace the three buttons beside the Viewport fields with a dropdown (shows "Responsive" or the chosen device's name)
+- [x] Dropdown groups: Mobile, Foldables, Tablets, Desktops, Smart Displays; each device shows its width × height
+- [x] Choosing a device sets the Viewport width and height; typing your own size switches back to "Responsive"; Rotate keeps the device name
+- [x] "Edit…" opens an editor: change any name, width or height, add a device to a group, remove a device, reset to defaults; changes are saved on this computer
+- [x] Allow widths up to 3840 (was 1600) so desktop sizes such as 1920 and 2560 fit; MCP tool text updated
+- [x] Add automated tests, run them, look at the app in a browser
+- [x] Commit and push changes to feature branch
+- [ ] User personally tests the device dropdown
+
+**Status:** Awaiting User Approval
+
 ## Phase 8 — End-to-End Workflow Verification
 
 - [ ] Test the complete AI workflow

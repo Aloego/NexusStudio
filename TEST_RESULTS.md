@@ -508,3 +508,58 @@ Screenshot of the Box Model & Spacing section: the two new rows of four fields s
 
 Approved (user said "Approved" on 2026-11-14)
 
+
+## Device size dropdown (replaces the Mobile / Tablet / Desktop buttons)
+
+### Date
+
+2026-11-17
+
+### Branch
+
+feature/ai-development-workflow
+
+### Scope
+
+Files changed: `renderer/index.html`, `renderer/styles.css`, `renderer/app.js`, `main/tools.js` (text only), `test/e2e.js`.
+
+- The three buttons (Mobile 390, Tablet 768, Desktop 880) beside the Viewport fields are replaced by a dropdown in the same spot. It shows "Responsive", or the name of the device whose size is currently set (either way round, so Rotate keeps the name).
+- The menu opens upward and lists Responsive, then Mobile, Foldables, Tablets, Desktops and Smart Displays, each device with its width × height, then "Edit…".
+- Choosing a device sets the Viewport width and height. The W and H boxes still work; typing a size that matches no device switches the label back to "Responsive".
+- "Edit…" opens a dialog listing every device. Name, width and height can be changed, a device can be added to any group or removed, and "Reset to defaults" restores the original list. Changes are saved automatically in the app's local storage (`nexusstudio.devices.v1`). Escape or Done closes it.
+- Default sizes (CSS pixels): iPhone SE 375×667, iPhone 16 393×852, iPhone 16 Pro Max 440×956, Pixel 9 / 9 Pro / 10 412×923, Samsung Galaxy A55 412×915, Pixel 9 Pro Fold 791×820 (unfolded), Galaxy Z Fold 6 344×882 (folded), iPad Mini 768×1024, iPad Air 11 820×1180, iPad Pro 13 1032×1376, Surface Pro 10 912×1368, Laptop 1280×800, Laptop HiDPI 1440×900, Desktop HD 1920×1080, Desktop QHD 2560×1440, Nest Hub 1024×600, Nest Hub Max 1280×800. These are my best estimates of the usual CSS sizes, not official figures, which is why they can be edited. The Samsung Galaxy A55 and the two foldables are the least certain.
+- The largest allowed width is now 3840 (was 1600), so 1920 and 2560 desktops fit. The `set_viewport` MCP tool description was updated to match. Smallest width (280) and height limits (200 to 4000) are unchanged.
+- Not changed: the page opens at 880 × 640 as before and shows "Responsive".
+
+### Static check
+
+`node --check renderer/app.js`, `main/tools.js` and `test/e2e.js` — all passed.
+
+### Automated tests
+
+Command: `npm test` (run in the AI sandbox)
+
+Result: 144 passed, 3 failed.
+
+New checks that passed: old tab buttons are gone; dropdown starts as Responsive; groups listed in order; every device shows its size; choosing a device sets width, height and the canvas; the label shows the device and the menu closes; Rotate swaps the size and keeps the name; typing a width switches back to Responsive; 1920 wide is accepted; Edit… opens the editor; the editor lists all 19 devices; edit name and width; add and remove a device; edits are saved; Escape closes the editor; the menu shows edited values and choosing one uses them; Reset to defaults restores the original sizes.
+
+The 3 failures are the same ones that already failed before these changes: `get_window_state`, `get_app_state`, `get_process_info`. Cause not investigated.
+
+### Inspected in a browser
+
+Screenshots of the open dropdown, the Edit devices dialog and the footer bar. The dropdown opens upward over the canvas without moving anything, the long list scrolls, and the footer keeps its layout (Viewport boxes left, dropdown centre, Zoom right). No page errors.
+
+### Could not be run
+
+- The real Electron window. Not run in this sandbox.
+
+### Manual testing for the user
+
+- Click the dropdown in the bottom bar, pick a few devices, and check the Viewport boxes and the canvas follow.
+- Click Rotate, then type your own width, and check the label changes as described.
+- Open Edit…, change a size, add and remove a device, close the app and reopen it, and check your changes are still there.
+
+### Approval
+
+Awaiting User Approval
+

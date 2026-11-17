@@ -2,9 +2,22 @@
 
 ## Current Task
 
-No task is in progress. The CSS tab gap-filling task (including the margin and padding per-side fields added after the user's rejection) was approved by the user on 2026-11-14.
+Replace the Mobile / Tablet / Desktop buttons with a device size dropdown that has an editable device list (state: Awaiting User Approval once pushed). The earlier task, per-side margin and padding fields, was approved by the user on 2026-11-14.
 
-## Latest Session (2026-11-14, sixth request)
+## Latest Session (2026-11-16 and 2026-11-17, seventh request)
+
+- User request: change the Mobile / Tablet / Desktop tabs into a viewport dropdown like Chrome's device toolbar (screenshot supplied): groups for mobile, tablet and desktop with the dimensions of each device, and the dimensions must be editable.
+- Done in `renderer/index.html`: `#devs` is now a `.menu.devm` holding `#devBtn` and `#devDrop`; new `#devEdit` dialog.
+- Done in `renderer/styles.css`: `.devm`, `.devdrop`, editor styles; `#modal` rules also apply to `#devEdit`.
+- Done in `renderer/app.js`: `DEVICES` (stored in localStorage key `nexusstudio.devices.v1`, cleaned by `cleanDevices()`), `defaultDevices()`, `renderDevMenu()`, `renderDevButton()`, `openDevEdit()`, `renderDevList()`. `setDevice()` now updates the dropdown label and allows widths up to 3840. The menu uses the existing `data-menu` / `.drop` mechanism.
+- Done in `main/tools.js`: `set_viewport` width description now says 280 to 3840.
+- Done in `test/e2e.js`: new "Device size dropdown" checks.
+- Device sizes are estimates and editable. Groups are fixed (Mobile, Foldables, Tablets, Desktops, Smart Displays); devices inside them can be added, renamed, resized and removed.
+- Tests: `npm test` gives 144 passed, 3 failed (the same 3 as before: `get_window_state`, `get_app_state`, `get_process_info`).
+- Not run: real Electron window testing. The user must test it.
+- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+
+## Earlier Session (2026-11-14, sixth request, approved)
 
 - User said "Rejected. The margin used to have its individual field for top, right, bottom and left. They are no longer there."
 - Finding: no earlier version on the branch had per-side margin fields (only the single "Margin (T R B L)" shorthand); the per-side boxes that exist are the Inset coordinates. Added per-side fields for margin and padding anyway.
@@ -120,7 +133,7 @@ Result: 98 passed, 0 failed
 ## Git Status
 
 - Branch: `feature/ai-development-workflow`
-- Latest code commit: see `git log` (the commit titled "Fill the gaps in the CSS tab")
+- Latest code commit: see `git log` (the commit titled "Replace viewport buttons with a device size dropdown")
 - Changes pushed: Yes
 - Working tree: Clean
 
@@ -133,10 +146,10 @@ Result: 98 passed, 0 failed
 
 ## Next Action
 
-Wait for the user's next instruction. A separate approval is required before merging into `main` or releasing the application.
+Wait for the user to test the device size dropdown and say `APPROVE` or `REJECT`. A separate approval is required before merging into `main` or releasing the application.
 
 ## Approval Status
 
-Approved (CSS tab gaps, including the margin and padding per-side fields). Earlier tasks (SVG / Drawing removal, add missing elements, browser-default styles, window sizing fix) were approved by the user.
+Awaiting User Approval (device size dropdown). Earlier tasks (SVG / Drawing removal, add missing elements, browser-default styles, CSS tab gaps with margin and padding per-side fields, window sizing fix) were approved by the user.
 
 > Note: No approval here authorizes merging into `main` or releasing the application.

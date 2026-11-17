@@ -124,7 +124,7 @@
       <div class="dim"><input id="vw" type="text" inputmode="numeric" aria-label="Width"><span>W</span></div><span style="color:var(--dim)">×</span>
       <div class="dim"><input id="vh" type="text" inputmode="numeric" aria-label="Minimum height"><span>H</span></div>
       <button class="tg" id="rotate">⟳ Rotate</button></div>
-    <div class="dev" id="devs"><button data-w="390">Mobile</button><button data-w="768">Tablet</button><button data-w="880" class="on">Desktop</button></div>
+    <div class="menu devm" id="devs"><button data-menu="device" id="devBtn" aria-haspopup="menu" title="Choose a device size">Responsive</button><div class="drop devdrop" id="devDrop" hidden></div></div>
     <div class="grp2"><span style="color:var(--muted)">Zoom</span><b style="font:500 11px var(--mono)" id="zoomVal">100%</b>
       <div class="zoom"><button id="zOut" title="Zoom out" aria-label="Zoom out">−</button><button id="zIn" title="Zoom in" aria-label="Zoom in">+</button></div>
       <button class="tg on" id="tgGrid" title="Toggle dot grid">Grid</button><button class="tg on" id="tgRuler" title="Toggle position bar">Position</button></div>
@@ -149,6 +149,7 @@
 </div></div>
 
 <div id="modal" hidden><div class="box"><h3 id="mTitle"></h3><p class="note" id="mNote" style="margin:0"></p><textarea id="mText" spellcheck="false" aria-label="Code"></textarea><div class="acts"><button class="sbtn" id="mClose">Close</button><button class="primary" id="mOk" hidden>Import</button></div></div></div>
+<div id="devEdit" hidden><div class="box" role="dialog" aria-label="Edit devices"><h3>Edit devices</h3><p class="note" style="margin:0">Change a name or size, add a device to any group, or remove one. Sizes are CSS pixels (width × height). Changes are saved automatically.</p><div id="devList"></div><div class="acts"><button class="sbtn" id="devReset" type="button">Reset to defaults</button><button class="primary" id="devDone" type="button">Done</button></div></div></div>
 <div id="toast" hidden></div>
 <script src="app.js"></script>
 </body>
