@@ -528,7 +528,7 @@ Files changed: `renderer/index.html`, `renderer/styles.css`, `renderer/app.js`, 
 - Choosing a device sets the Viewport width and height. The W and H boxes still work; typing a size that matches no device switches the label back to "Responsive".
 - "Edit…" opens a dialog listing every device. Name, width and height can be changed, a device can be added to any group or removed, and "Reset to defaults" restores the original list. Changes are saved automatically in the app's local storage (`nexusstudio.devices.v1`). Escape or Done closes it.
 - Default sizes (CSS pixels): iPhone SE 375×667, iPhone 16 393×852, iPhone 16 Pro Max 440×956, Pixel 9 / 9 Pro / 10 412×923, Samsung Galaxy A55 412×915, Pixel 9 Pro Fold 791×820 (unfolded), Galaxy Z Fold 6 344×882 (folded), iPad Mini 768×1024, iPad Air 11 820×1180, iPad Pro 13 1032×1376, Surface Pro 10 912×1368, Laptop 1280×800, Laptop HiDPI 1440×900, Desktop HD 1920×1080, Desktop QHD 2560×1440, Nest Hub 1024×600, Nest Hub Max 1280×800. These are my best estimates of the usual CSS sizes, not official figures, which is why they can be edited. The Samsung Galaxy A55 and the two foldables are the least certain.
-- The largest allowed width is now 3840 (was 1600), so 1920 and 2560 desktops fit. The `set_viewport` MCP tool description was updated to match. Smallest width (280) and height limits (200 to 4000) are unchanged.
+- Width and height limits are 120 to 10000 wide and 120 to 20000 high (set by another tool's pushed commits; merged without force-push), so 1920 and 2560 desktops fit. The `set_viewport` MCP tool description says 120 to 10000. After the merge: `npm test` 144 passed, 3 failed (same 3 as before).
 - Not changed: the page opens at 880 × 640 as before and shows "Responsive".
 
 ### Static check
