@@ -138,7 +138,7 @@ const TOOLS = [
   {
     name: 'set_viewport', title: 'Change the preview size',
     description: 'Sets the width and minimum height of the page canvas, and the zoom. Use 390 for a phone, 768 for a tablet, 880 or more for a desktop.',
-    inputSchema: obj({ width: num('Width in pixels (280 to 1600).'), height: num('Minimum height in pixels.'), zoom: num('Zoom from 0.3 to 2.') })
+    inputSchema: obj({ width: num('Width in pixels (120 to 10000).'), height: num('Minimum height in pixels.'), zoom: num('Zoom from 0.3 to 2.') })
   },
   {
     name: 'undo', title: 'Undo',

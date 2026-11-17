@@ -508,3 +508,285 @@ Screenshot of the Box Model & Spacing section: the two new rows of four fields s
 
 Approved (user said "Approved" on 2026-11-14)
 
+
+## Device size dropdown (replaces the Mobile / Tablet / Desktop buttons)
+
+### Date
+
+2026-11-17
+
+### Branch
+
+feature/ai-development-workflow
+
+### Scope
+
+Files changed: `renderer/index.html`, `renderer/styles.css`, `renderer/app.js`, `main/tools.js` (text only), `test/e2e.js`.
+
+- The three buttons (Mobile 390, Tablet 768, Desktop 880) beside the Viewport fields are replaced by a dropdown in the same spot. It shows "Responsive", or the name of the device whose size is currently set (either way round, so Rotate keeps the name).
+- The menu opens upward and lists Responsive, then Mobile, Foldables, Tablets, Desktops and Smart Displays, each device with its width × height, then "Edit…".
+- Choosing a device sets the Viewport width and height. The W and H boxes still work; typing a size that matches no device switches the label back to "Responsive".
+- "Edit…" opens a dialog listing every device. Name, width and height can be changed, a device can be added to any group or removed, and "Reset to defaults" restores the original list. Changes are saved automatically in the app's local storage (`nexusstudio.devices.v1`). Escape or Done closes it.
+- Default sizes (CSS pixels): iPhone SE 375×667, iPhone 16 393×852, iPhone 16 Pro Max 440×956, Pixel 9 / 9 Pro / 10 412×923, Samsung Galaxy A55 412×915, Pixel 9 Pro Fold 791×820 (unfolded), Galaxy Z Fold 6 344×882 (folded), iPad Mini 768×1024, iPad Air 11 820×1180, iPad Pro 13 1032×1376, Surface Pro 10 912×1368, Laptop 1280×800, Laptop HiDPI 1440×900, Desktop HD 1920×1080, Desktop QHD 2560×1440, Nest Hub 1024×600, Nest Hub Max 1280×800. These are my best estimates of the usual CSS sizes, not official figures, which is why they can be edited. The Samsung Galaxy A55 and the two foldables are the least certain.
+- Width and height limits are 120 to 10000 wide and 120 to 20000 high (set by another tool's pushed commits; merged without force-push), so 1920 and 2560 desktops fit. The `set_viewport` MCP tool description says 120 to 10000. After the merge: `npm test` 144 passed, 3 failed (same 3 as before).
+- Not changed: the page opens at 880 × 640 as before and shows "Responsive".
+
+### Static check
+
+`node --check renderer/app.js`, `main/tools.js` and `test/e2e.js` — all passed.
+
+### Automated tests
+
+Command: `npm test` (run in the AI sandbox)
+
+Result: 144 passed, 3 failed.
+
+New checks that passed: old tab buttons are gone; dropdown starts as Responsive; groups listed in order; every device shows its size; choosing a device sets width, height and the canvas; the label shows the device and the menu closes; Rotate swaps the size and keeps the name; typing a width switches back to Responsive; 1920 wide is accepted; Edit… opens the editor; the editor lists all 19 devices; edit name and width; add and remove a device; edits are saved; Escape closes the editor; the menu shows edited values and choosing one uses them; Reset to defaults restores the original sizes.
+
+The 3 failures are the same ones that already failed before these changes: `get_window_state`, `get_app_state`, `get_process_info`. Cause not investigated.
+
+### Inspected in a browser
+
+Screenshots of the open dropdown, the Edit devices dialog and the footer bar. The dropdown opens upward over the canvas without moving anything, the long list scrolls, and the footer keeps its layout (Viewport boxes left, dropdown centre, Zoom right). No page errors.
+
+### Could not be run
+
+- The real Electron window. Not run in this sandbox.
+
+### Manual testing for the user
+
+- Click the dropdown in the bottom bar, pick a few devices, and check the Viewport boxes and the canvas follow.
+- Click Rotate, then type your own width, and check the label changes as described.
+- Open Edit…, change a size, add and remove a device, close the app and reopen it, and check your changes are still there.
+
+### Approval
+
+Approved (user said "I approve the dropdowns task too" on 2026-11-17).
+
+---
+
+## Viewport fields as number spinners
+
+### Date
+
+2026-11-17
+
+### Branch
+
+feature/ai-development-workflow
+
+### Scope
+
+Files changed: `renderer/index.html`, `renderer/styles.css`.
+
+- User request (screenshot supplied): make the Viewport values look like `400 ⬍ × 512 ⬍`.
+- The Width and Height boxes beside "Viewport" are now number fields (`type="number"`, min 120 / max 10000 wide, min 120 / max 20000 high, step 1) with up/down spinner arrows that stay visible. The "W" and "H" letters inside the boxes are removed. The values are right-aligned next to the arrows and the box is a little wider (60px, was 52px) to fit them.
+- Not changed: `renderer/app.js` (typing, spinner clicks, Enter and drag-handle behaviour use the same `input` / `change` handlers and the same limits), the × between the boxes, the Rotate button, the device dropdown, Zoom.
+
+### Automated tests
+
+Command: `node test/e2e.js` (run in the AI sandbox, using the sandbox's Chromium build)
+
+Result: 144 passed, 3 failed. Identical to the run without these changes. The 3 failures are the same ones as before: `get_window_state`, `get_app_state`, `get_process_info`. Cause not investigated.
+
+### Inspected in a browser
+
+Screenshot of the footer with 400 and 512 entered: shows `400 ⬍ × 512 ⬍` with visible spinner arrows and no W/H letters, matching the supplied screenshot. Exact font and colours come from the existing theme, so they may differ slightly from the screenshot.
+
+### Could not be run
+
+- The real Electron window. Not run in this sandbox.
+- `node test/main-smoke.js`. Not run (main-process change: none).
+
+### Manual testing for the user
+
+- Click the up/down arrows on each box and check the canvas width/min-height follows and the dropdown label changes to Responsive or the matching device.
+- Type a value, press Enter or Tab, and check it still applies. Try Rotate.
+
+### Approval
+
+Approved (user said "Approved" on 2026-11-17).
+
+---
+
+## Add every element blank
+
+### Date
+
+2026-11-17
+
+### Branch
+
+feature/ai-development-workflow
+
+### Scope
+
+Files changed: `renderer/app.js`, `main/tools.js` (text only), `test/e2e.js`.
+
+- User request: layout elements such as header and footer already had content inside; every element should open blank until the user adds content.
+- Confirmed in the code: before this change, adding `header` also added "Brand" and "Menu", `footer` added "© Your company", and many others came with starter text or child elements: `nav`, `article`, `aside`, `details`, `form`, `select`, `ul`, `ol`, `table`, `dialog`, `hgroup`, `search`, `picture`, `figure`, `fieldset`, `map`, `dl`, `menu`, `optgroup`, `datalist`, `ruby`, `svg`, the table parts, and every text element (`h1` to `h6`, `p`, `span`, `a`, `button`, formatting and quote elements and so on). The new test run against the old code listed them (for example `header:2`, `nav:3`, `footer:1`).
+- Change: `make()` now clears `text` and `children` from the element it builds. Starter styles (boxes keep their grey background and minimum height; the browser-default styles from the earlier task still apply) and attributes are kept. The same function is used by clicking an element in the Elements tab, dragging one onto the Layers tree, and the MCP `add_element` option `use_preset`, so all three give blank elements. Text or children passed explicitly in an MCP call still apply. The `use_preset` description in `main/tools.js` now says the preset has no starter text or child elements.
+- Not changed (attributes, not content): `img` and `picture/source` still carry the placeholder picture and alt text; `input` and `textarea` still carry placeholder text ("Type here", "Write a message"); `a` keeps `href="#"`; `video`/`audio` keep `controls`; `progress` and `meter` keep their `value`/`max`; `canvas` keeps its size; `dialog` keeps `open`. The sample page that opens at first start and `new_document` are unchanged (new_document was already blank).
+- Side effect to know: an element with no text and no size (for example `p`, `span`, `h1`, `strong`) takes no visible space on the canvas, so select it in the Layers tree or the breadcrumb and type its text in the Properties panel.
+
+### Static check
+
+`node --check` on `renderer/app.js`, `main/tools.js` and `test/e2e.js` — all passed.
+
+### Automated tests
+
+Command: `node test/e2e.js` (run in the AI sandbox)
+
+Result: 146 passed, 3 failed.
+
+New checks that passed: "every element is added blank, with no starter text or child elements" (adds each of the 98 Elements-tab items to an empty page and checks the element has no child nodes); "header and footer are added with nothing inside". Run against the previous `renderer/app.js`, both new checks fail (144 passed, 5 failed), so they do detect the old behaviour.
+
+The 3 failures are the same ones that already failed before: `get_window_state`, `get_app_state`, `get_process_info`. Cause not investigated. All earlier Elements-tab, browser-default and device-dropdown checks still pass.
+
+### Inspected in a browser
+
+Screenshot of an empty page after adding header, main and footer: the page HTML is `<header></header><main></main><footer></footer>` (ids aside), and the canvas shows the three grey boxes touching each other as one block. No page errors.
+
+### Could not be run
+
+- The real Electron window. Not run in this sandbox.
+- `node test/main-smoke.js`. Not run (no main-process change).
+
+### Manual testing for the user
+
+- Add header, footer, nav, article, aside, form, ul, table and a few text elements from the Elements tab and check each arrives with nothing inside.
+- Drag an element from the Elements tab onto the Layers tree and check it is blank too.
+- Check you can still add content: select an element, type text in the Properties panel, or add other elements inside it.
+
+### Approval
+
+Rejected by the user on 2026-11-17: "Reject. i wish to leave the prefilled elements as it is".
+
+### Revert
+
+`renderer/app.js`, `main/tools.js` and `test/e2e.js` were restored to their state before this task (commit `c9739fc`), so elements are added with their starter text and child elements again, and the two "added blank" checks are removed. Automated tests after the revert (`node test/e2e.js`, AI sandbox): 144 passed, 3 failed. The 3 failures are the same ones as before: `get_window_state`, `get_app_state`, `get_process_info`. Not run: the real Electron window and `test/main-smoke.js`.
+
+---
+
+## Canvas element movement check (read-only)
+
+### Date
+
+2026-11-17
+
+### Branch
+
+feature/ai-development-workflow
+
+### Scope
+
+No files changed except these tracking files. User question: elements placed on the canvas seem restricted and cannot be moved around the canvas area; confirm this.
+
+### Finding
+
+Confirmed. In this version an element cannot be moved by dragging it on the canvas.
+
+- Code: the canvas `mousedown` handler in `renderer/app.js` (the "selection and editing on the canvas" block) only selects the element under the pointer; double-click edits its text. There is no pointer-move handling that changes an element's position. The only drag-on-canvas actions are the selection box's resize handles (right, bottom and bottom-right, which change width and height, never position) and dropping a new element from the Elements tab. The selection outline itself has `pointer-events:none`.
+- Browser test (AI sandbox, a scratch script, not part of `npm test`): added a `div` to an empty page and dragged it 200 px right and 150 px down with the mouse. Position before and after: x 284, y 110, unchanged. Then set it to `position:absolute; left:20px; top:20px` through the editor's own `update_element` call and dragged it again: still x 280, y 106, `left` 20px and `top` 20px, unchanged. So dragging does not move it even when absolute positioning is on.
+- Ways to move or place an element that do work today: Alt+Up / Alt+Down moves it one place among its siblings; dragging its row in the Layers tab reorders it or moves it into another element; the CSS tab's Position and Inset (top / right / bottom / left) fields place it once `position` is not `static`; the Properties and Elements tabs add new elements into the selected container. The page is a normal document flow, so elements stack in order unless given a position.
+- Earlier history of this branch was not checked (the sandbox clone is shallow), so it is not known whether drag-to-move ever existed.
+
+### Automated tests
+
+Not run (no application code changed).
+
+### Could not be run
+
+- The real Electron window. Not run in this sandbox.
+
+### Approval
+
+Not applicable (investigation only). Any change, such as drag-to-move on the canvas, would need the user's explicit request first.
+
+---
+
+## Drag positioned elements on the canvas
+
+### Date
+
+2026-11-17
+
+### Branch
+
+feature/ai-development-workflow
+
+### Scope
+
+Files changed: `renderer/app.js`, `test/e2e.js`.
+
+- User request: in addition to Alt+Up / Alt+Down and the other existing ways, let an element be dragged around the canvas unless it is set to static or has default static properties.
+- Rule: dragging works only when the element's computed `position` is not `static`, so `relative`, `absolute`, `fixed` and `sticky` elements can be moved. An element that is set to static, or is static by default (every element added from the Elements tab starts as static), does not move. The page body does not move.
+- How it moves: the drag writes `left` and `top`; if the element has `right` or `bottom` set and no `left` or `top`, it writes `right` and `bottom` instead (moving the mouse right lowers `right`). The start point is the element's current computed offset, and the mouse distance is divided by the zoom, so it follows the pointer at any zoom. Values are written in px (a `%` or `calc()` value on `left` or `top` is replaced by a px value once the element is dragged). The element must move at least 3 px before a drag starts, so a click, a double-click to edit text, and selecting still work. The CSS tab fields, the selection box and the code tabs update, and a drag is one Undo step.
+- Not changed: Alt+Up / Alt+Down, drag-and-drop in the Layers tab, the resize handles, the Elements tab drag onto the canvas, keyboard shortcuts, the MCP tools.
+- Things to know: a static child inside a positioned parent does not move (pressing on the child tries to drag the child; select the parent in the Layers tab or the breadcrumb to drag it); a `sticky` element is written to `left` and `top`, which for sticky shifts its stick offset and may show little or no movement; there is no mouse-pointer hint (such as a move cursor) over elements that can be dragged, because none was requested.
+
+### Static check
+
+`node --check renderer/app.js` and `test/e2e.js` — passed.
+
+### Automated tests
+
+Command: `node test/e2e.js` (run in the AI sandbox)
+
+Result: 154 passed, 3 failed.
+
+New checks that passed (section "Dragging an element on the canvas"): a default-static element does not move; an element set to static does not move; an absolute element follows the mouse and `left`/`top` change by the dragged amount; the CSS tab shows the new `left` and `top`; one Undo restores the old position; a relative element is moved by `left`/`top`; an element placed with `right`/`bottom` moves through those; a fixed element can be dragged; dragging at 80% zoom moves it by the right amount; a plain click selects without moving. Run against the previous `renderer/app.js`, the seven move checks fail (147 passed, 10 failed), so they detect the missing behaviour; the static and plain-click checks pass either way, as they should.
+
+The 3 failures are the same ones that already failed before: `get_window_state`, `get_app_state`, `get_process_info`. Cause not investigated.
+
+### Could not be run
+
+- The real Electron window. Not run in this sandbox (the tests use a browser with mouse input).
+- `node test/main-smoke.js`. Not run (no main-process change).
+
+### Manual testing for the user
+
+- In the CSS tab set `position` to `absolute` (or `relative`) on a box, then drag it around the canvas; check the `left` and `top` fields change and Ctrl+Z puts it back.
+- Drag a box that is still static and check it stays put.
+- Try at a zoom other than 100%, and double-click a positioned text element to edit its text.
+
+### Approval
+
+Awaiting User Approval
+
+
+## Move cursor and hint for draggable elements (2026-11-17)
+
+- `node test/e2e.js`: 159 passed, 3 failed (`get_window_state`, `get_app_state`, `get_process_info`, same as before). New checks: move cursor and "Drag to move" hint over a draggable element; gone on leaving and while pressing; absent on static elements; not in the exported page code.
+- Not run: real Electron window; user must test.
+
+## Element documentation from the canvas tag (2026-11-17)
+
+- `node test/e2e.js`: 168 passed, 3 failed (`get_window_state`, `get_app_state`, `get_process_info`, same as before).
+- Docs-folder search tried on sample MDN-copy, Zeal and DevDocs folder layouts: found the right page each time.
+- Real-click screenshot in a browser: the tag opens the guide dialog.
+- `node test/main-smoke.js` crashes in the sandbox (`screen.getPrimaryDisplay` undefined in the Electron stand-in), also without these changes.
+- Not run: real Electron window, opening MDN online, a real downloaded docs copy; user must test.
+
+### Approval
+
+Awaiting User Approval
+
+## Element documentation: MDN and Zeal buttons (fix after rejection, 2026-11-17)
+
+- `node test/e2e.js`: 169 passed, 3 failed (same 3 as before).
+- Zeal launcher tried with a fake `zeal` program: it received `html:div`; a missing program was reported as not found.
+- Not run: real Zeal, MDN opening, real Electron window; user must test.
+
+### Approval
+
+Awaiting User Approval
+
+## Element documentation: browser opening and Zeal discovery (second fix, 2026-11-17)
+
+- `node test/e2e.js`: 172 passed, 3 failed (same 3 as before). New checks: address shown, Copy link, step-by-step Zeal help.
+- Not run: real Windows/WSL browser opening, real Zeal; user must test.
+
+### Approval
+
+Awaiting User Approval

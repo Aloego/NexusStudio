@@ -2,9 +2,132 @@
 
 ## Current Task
 
-No task is in progress. The CSS tab gap-filling task (including the margin and padding per-side fields added after the user's rejection) was approved by the user on 2026-11-14.
+Drag positioned elements on the canvas: elements whose position is not static can be dragged to move them (state: Awaiting User Approval once pushed). Earlier on 2026-11-17: viewport number spinner fields and device size dropdown approved; "add every element blank" rejected and reverted.
 
-## Latest Session (2026-11-14, sixth request)
+## Latest Session (2026-11-17, eighteenth request)
+
+- User report: after adding a div and then an h1, the h1 could not be dragged independently of the div, "even if the h1 is not placed inside the div"; wants every element draggable independently, in or out of any element, without dragging its container or everything on the canvas.
+- Investigation (reproduced in a browser): clicking an Elements-tab item added it INSIDE the selected element whenever that element was a container (div, section and so on), so the h1 really was the div's child (`body(div(h1))`). Dragging the h1 itself moved only the h1 (the earlier drag feature works per element); but moving the div would carry the h1 with it, and every new element kept nesting into the previous one.
+- Done in `renderer/app.js`: `clickZone()` and `NEEDS` table. A clicked palette element is now added as a sibling right AFTER the selected element (page root: inside). Parts that need a parent (li, dt/dd, tr, td/th, thead/tbody/tfoot, caption, colgroup, col, option, optgroup, source, track, area, figcaption, legend, summary, rt/rp) still go inside a valid selected parent, or next to a selected sibling of the same kind. Dragging a palette item onto a box on the canvas, and dragging in the Layers panel, still place it inside (that is how to nest on purpose). The tooltip on palette items says so. Dragging on the canvas moves any element on its own (relative offset), as before.
+- Done in `test/e2e.js`: checks that div, h1, p are siblings; dragging the h1 leaves the div and p in place; list items and table parts nest correctly; dropping from the palette onto a box nests.
+- Tests: `node test/e2e.js` gives 180 passed, 3 failed (the same 3 as before). Not run: real Electron window.
+- Not done / limits: dragging on the canvas moves an element visually with left/top; it does not change which element is its parent. Re-parenting is done by dragging in the Layers panel or dropping from the palette. Elements already nested in an existing page still move with their parent.
+- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+
+## Earlier Session (2026-11-17, seventeenth request)
+
+- User request: every element must be draggable around the canvas regardless of its default position (earlier rule excluded static elements, but nearly every element is static by default).
+- Done in `renderer/app.js`: the drag handler no longer stops at `position:static`. When a static element starts to move (after 3 px) it is switched to `position:relative` and `left`/`top` are written, so it moves visually but keeps its place in the page flow (neighbours do not shift). Already positioned elements keep their position type (absolute, fixed, sticky, relative; right/bottom handled as before). The move cursor and "Drag to move" hint now show over every element except the page itself. A plain click still only selects; one Undo reverses the whole drag including the position change.
+- Design choice to confirm with the user: `relative` (not `absolute`) was used because it does not pull the element out of the layout.
+- Done in `test/e2e.js`: the two old "static does not move" checks and the "no cursor on static" check now expect the opposite; new checks for undo and plain click.
+- Tests: `node test/e2e.js` gives 175 passed, 3 failed (the same 3 as before). Not run: real Electron window.
+- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+
+## Earlier Session (2026-11-17, sixteenth request, approved)
+
+- User approved the MDN/Zeal documentation work (fifteenth request) and asked for an extra button that opens the element on the W3Schools website.
+- Done: `Open on W3Schools (online)` button in the documentation dialog (`renderer/index.html`, `app.js`); `docs:openOnline` in `main/main.js` takes an optional site (`mdn` or `w3schools`; anything else means MDN) and builds `https://www.w3schools.com/tags/tag_<tag>.asp` (svg: `/graphics/svg_intro.asp`); `main/preload.js` passes the site. Same browser-opening method, link display and Copy link as the MDN button.
+- Tests: `node test/e2e.js` gives 173 passed, 3 failed (the same 3 as before).
+- Not verified: the W3Schools pages were not opened (no internet here). A few newer elements (for example hgroup, search) may have no W3Schools page; the link would then show W3Schools' not-found page and MDN can be used instead.
+- Result: approved by the user on 2026-11-17. Do not merge into `main` without separate approval.
+
+## Earlier Session (2026-11-17, fifteenth request, approved)
+
+- User rejected again: "Open on MDN" showed "opened in your browser" but no browser opened (4 browsers installed, one default); and the Zeal path box was not understandable (Zeal is an application, not a folder).
+- Causes found: (1) `shell.openExternal` resolves with no value, so success was reported even when nothing opened, and the real environment (Windows or WSL) was unknown; (2) the Zeal launch treated the resolved `dash://` call as failure, so the path box could appear even when it worked; (3) Zeal was only looked for in a few fixed places and the path box gave no guidance.
+- Done in `main/main.js`: `openUrl()` (uses `wslview` or `cmd.exe /c start` when Electron runs inside WSL, otherwise `shell.openExternal`; returns the method used); `docs:openOnline` returns url, method and platform; `findZeal()` looks at Start Menu and Desktop shortcuts (resolved with `shell.readShortcutLink`), Program Files, Local AppData, scoop, Downloads/Desktop/Documents and WSL `/mnt/c` paths; `docs:openZeal` treats the `dash://` fallback as success; `docs:setZealPath` accepts a folder, `zeal.exe` or a shortcut (.lnk), converts `C:\` paths in WSL, and saves the real exe path.
+- Done in `renderer/`: the MDN address is always shown with a "Copy link" button; the message now says which method and platform were used and tells the user what to do if no window appears; when Zeal is not found, the box asks for the Zeal folder and step-by-step help is shown (Start, type Zeal, right-click, Open file location, copy the address-bar path).
+- Tests: `node test/e2e.js` gives 172 passed, 3 failed (the same 3 as before); file search helper tried on a sample folder.
+- Not verified: real browsers/Windows/WSL behaviour (none available here), real Zeal. If MDN still does not open, ask the user to read the method and platform shown in the dialog message.
+- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+
+## Earlier Session (2026-11-17, fourteenth request, rejected)
+
+- User rejected the docs-folder design: the dialog opening from the tag is fine, but the buttons should either take the user online to the MDN page or open the Zeal application on the element page (user has Zeal and an HTML docset installed). The folder-chooser Explorer window also extended beyond the screen so it could not be minimised or closed.
+- Done: removed the docs-folder buttons, `docs:chooseFolder`, `docs:openLocal` and the folder search. No file dialog is used any more.
+- Done in `renderer/index.html` / `app.js`: buttons are now "Open on MDN (online)" and "Open in Zeal (offline)" (Zeal button only in the desktop app). If Zeal is not found, a text box appears to type the path of `zeal.exe` (checked: absolute path, file name zeal/zeal.exe, file exists), then Zeal opens.
+- Done in `main/main.js` and `main/preload.js`: `docs:openZeal` looks for Zeal in the usual Windows places (Program Files, Program Files (x86), %LOCALAPPDATA%\Programs\Zeal, %LOCALAPPDATA%\Zeal, scoop, C:\Zeal) and common Linux paths, runs `zeal html:<tag>` (svg uses `svg:<tag>`), then tries `zeal` on PATH (Linux), then the `dash://html:<tag>` address; otherwise asks for the path. `docs:setZealPath` saves it in `settings.json` as `zealPath`. `docs:openOnline` unchanged (MDN in the default browser). Executable is never taken from page text except the checked path; the tag is checked with a strict pattern; sender checked with `fromEditor`.
+- Tests: `node test/e2e.js` gives 169 passed, 3 failed (the same 3 as before). The launcher was also tried here with a fake `zeal` program (received `html:div`; missing program reported as not found).
+- Not verified: real Zeal on Windows (the Zeal docset keyword must be `html`, which is Zeal's default for the HTML docset); real MDN opening (no internet here); real Electron window.
+- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+
+## Earlier Session (2026-11-17, thirteenth request, rejected)
+
+- User request: make the small blue element-name tag on the canvas clickable and open documentation for that element, offline (Zeal or any HTML docs), with an option to open MDN online or a locally downloaded documentation. User chose: built-in guide + MDN + user's own docs folder.
+- Done in `renderer/docs.js` (new): built-in offline guide for all 98 palette elements plus `body` (what it is, where it goes, key attributes, example). Loaded before `app.js`.
+- Done in `renderer/index.html` / `styles.css` / `app.js`: `#ovLab` is now a button; clicking it opens the `#docDlg` dialog with the guide and three buttons: Open on MDN (online), Open from my docs folder, Choose docs folder… (the two folder buttons show only in the desktop app). Escape/Close/backdrop close it.
+- Done in `main/main.js` and `main/preload.js`: IPC `docs:openOnline` (opens `https://developer.mozilla.org/en-US/docs/Web/HTML/Element/<tag>` in the browser; tag checked with a strict pattern), `docs:chooseFolder` (folder dialog, saved in `settings.json` as `docsFolder`), `docs:openLocal` (searches the chosen folder, up to 14 levels / 20000 entries, for `.../element/<tag>/index.html` (MDN copy, Zeal) or `<tag>.html` (DevDocs) and opens it with `shell.openPath`). All three check the sender with `fromEditor`. No security setting weakened.
+- Done in `test/e2e.js`: "Element documentation" checks (every palette element has an entry; tag is a button; dialog opens; MDN link; Escape; desktop stand-in IPC flow).
+- Tests: `node test/e2e.js` gives 168 passed, 3 failed (the same 3 as before). The docs-folder search was also tried on sample MDN, Zeal and DevDocs folder layouts and found the right pages.
+- Not verified: the MDN address was not opened (no internet here); real Electron window; a real downloaded MDN/Zeal/DevDocs copy. `node test/main-smoke.js` crashes in this sandbox (`screen.getPrimaryDisplay` is undefined in the test's Electron stand-in) with or without these changes; not caused by this task.
+- Known limits: SVG shapes (circle, path…) have no built-in entry (the dialog says so and offers MDN). Folder search can miss pages if the docs use another layout.
+- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+
+## Earlier Session (2026-11-17, twelfth request)
+
+- User request: before approving drag-to-move, add a move cursor and a hint over draggable elements.
+- Done in `renderer/app.js`: a `mousemove` handler on the stage adds class `nx-move` to the hovered element when it is draggable (same rule as the drag: not static, not the root, not the selection box, not text being edited) and shows `#moveHint`; both clear on leave, on mouse press and while dragging.
+- Done in `renderer/index.html` / `renderer/styles.css`: `#moveHint` ("Drag to move") and `.page .nx-move` (cursor: move, also for children).
+- Done in `test/e2e.js`: 5 checks (cursor and hint show; hide on leave; hide while pressing; none on static elements; class not in the exported page).
+- Tests: `node test/e2e.js` gives 159 passed, 3 failed (the same 3 as before). Not run: real Electron window.
+- Result: approved by the user on 2026-11-17 (covers drag-to-move and the move cursor / hint). Do not merge into `main` without separate approval.
+
+## Earlier Session (2026-11-17, eleventh request)
+
+- User request: in addition to Alt+Up/Down and the other ways to move elements, allow dragging an element on the canvas unless it is set to static or has default static properties.
+- Done in `renderer/app.js`: a capture `mousedown` handler on the stage (after the selection handler) starts a drag when the pressed element's computed `position` is not `static`; after 3 px it writes `left`/`top` (or `right`/`bottom` when those are the element's own offsets) through `setStyle`, divides by `S.zoom`, and on mouse-up calls `commit()`, `renderProps()` and `renderCodeIfOpen()` (one Undo step).
+- Done in `test/e2e.js`: "Dragging an element on the canvas" (10 checks).
+- Not changed: resize handles, Layers drag-and-drop, Alt+Up/Down, Elements tab drops, `main/` files, MCP tools. No move cursor or other visual hint was added (not requested).
+- Known limits: a static child of a positioned parent does not move (select the parent); sticky elements get `left`/`top` written but may barely move; `%`/`calc()` offsets become px after a drag.
+- Tests: `node test/e2e.js` gives 154 passed, 3 failed (the same 3 as before: `get_window_state`, `get_app_state`, `get_process_info`). The seven move checks fail on the old code.
+- Not run: real Electron window testing and `test/main-smoke.js`. The user must test it.
+- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+
+## Earlier Session (2026-11-17, tenth request, read-only)
+
+
+- User request: confirm that elements placed on the canvas are restricted and cannot be moved around the canvas area.
+- Finding: confirmed. A mouse press on the canvas only selects; there is no drag-to-move. Resize handles change only width/height. Tested with a real mouse drag in a browser, both in normal flow and with `position:absolute`: nothing moved. Details and the ways to move or place elements that do work (Alt+Up/Down, Layers drag, Position and Inset fields) are in `TEST_RESULTS.md`.
+- No application code changed. No tests run.
+- Next action: wait for the user's decision. If they ask for drag-to-move on the canvas, that is a new feature request (design choices such as free-positioning with `position:absolute` versus reordering in the flow should be settled by the user). Do not merge into `main`.
+
+## Earlier Session (2026-11-17, ninth request, rejected and reverted)
+
+
+- User request: confirm that layout elements such as header and footer already contain content, and remove it so every element opens blank.
+- Confirmed and implemented (commit `3c86e45`): `make()` in `renderer/app.js` cleared starter text and children.
+- Result: rejected by the user ("Reject. i wish to leave the prefilled elements as it is"). Reverted by restoring `renderer/app.js`, `main/tools.js` and `test/e2e.js` to commit `c9739fc`; the starter content (header "Brand"/"Menu", footer "© Your company" and the rest) is back. The history keeps both commits; nothing was force-pushed.
+- Tests after the revert: `node test/e2e.js` gives 144 passed, 3 failed (the same 3 as before: `get_window_state`, `get_app_state`, `get_process_info`).
+- Not run: real Electron window testing and `test/main-smoke.js`.
+- Next action: wait for the user's next instruction. Do not merge into `main`.
+
+## Earlier Session (2026-11-17, eighth request, approved)
+
+
+- User request: on the branch that is not `main`, make the viewport display values look like the supplied screenshot (`400 ⬍ × 512 ⬍`). `feature/ai-development-workflow` is the only non-main branch.
+- Done in `renderer/index.html`: `#vw` and `#vh` are `type="number"` with min/max/step; the "W" and "H" spans are removed.
+- Done in `renderer/styles.css`: `.dim input` is 60px wide, right-aligned; the spinner arrows are always visible (`::-webkit-inner-spin-button` opacity 1).
+- Not changed: `renderer/app.js` (existing `input` / `change` / Enter handlers and limits still apply).
+- Tests: `node test/e2e.js` gives 144 passed, 3 failed (the same 3 as before: `get_window_state`, `get_app_state`, `get_process_info`). Verified the footer in a browser screenshot.
+- Not run: real Electron window testing and `test/main-smoke.js`. The user must test it.
+- Result: approved by the user on 2026-11-17 (commit `c0f0570`, pushed). Do not merge into `main`.
+
+## Earlier Session (2026-11-16 and 2026-11-17, seventh request)
+
+
+- User request: change the Mobile / Tablet / Desktop tabs into a viewport dropdown like Chrome's device toolbar (screenshot supplied): groups for mobile, tablet and desktop with the dimensions of each device, and the dimensions must be editable.
+- Done in `renderer/index.html`: `#devs` is now a `.menu.devm` holding `#devBtn` and `#devDrop`; new `#devEdit` dialog.
+- Done in `renderer/styles.css`: `.devm`, `.devdrop`, editor styles; `#modal` rules also apply to `#devEdit`.
+- Done in `renderer/app.js`: `DEVICES` (stored in localStorage key `nexusstudio.devices.v1`, cleaned by `cleanDevices()`), `defaultDevices()`, `renderDevMenu()`, `renderDevButton()`, `openDevEdit()`, `renderDevList()`. `setDevice()` now updates the dropdown label and allows the wider limits (120 to 10000). The menu uses the existing `data-menu` / `.drop` mechanism.
+- Done in `main/tools.js`: `set_viewport` width description now says 120 to 10000.
+- Done in `test/e2e.js`: new "Device size dropdown" checks.
+- Device sizes are estimates and editable. Groups are fixed (Mobile, Foldables, Tablets, Desktops, Smart Displays); devices inside them can be added, renamed, resized and removed.
+- Tests: `npm test` gives 144 passed, 3 failed (the same 3 as before: `get_window_state`, `get_app_state`, `get_process_info`).
+- Not run: real Electron window testing. The user must test it.
+- Merge note: another tool (Dyad) had pushed 2 commits to this branch (live width/height typing, frame-edge drag handles, `server.js`, `dev` script, limits 120 to 10000 wide / 120 to 20000 high). My commit was rebased on top without force-push; the dropdown label now follows typing and dragging, and the limits are Dyad's (not 280 to 3840).
+- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+
+## Earlier Session (2026-11-14, sixth request, approved)
 
 - User said "Rejected. The margin used to have its individual field for top, right, bottom and left. They are no longer there."
 - Finding: no earlier version on the branch had per-side margin fields (only the single "Margin (T R B L)" shorthand); the per-side boxes that exist are the Inset coordinates. Added per-side fields for margin and padding anyway.
@@ -120,23 +243,23 @@ Result: 98 passed, 0 failed
 ## Git Status
 
 - Branch: `feature/ai-development-workflow`
-- Latest code commit: see `git log` (the commit titled "Fill the gaps in the CSS tab")
+- Latest code commit: see `git log` (the commit titled "Replace viewport buttons with a device size dropdown")
 - Changes pushed: Yes
 - Working tree: Clean
 
 ## Known Issues
 
 - `get_window_state`, `get_app_state` and `get_process_info` fail in `npm test` in the AI sandbox, both before and after the latest changes. Cause not investigated.
-- Elements that only make sense inside a parent (li, td, option, source and similar) are added inside the selected element only if it can hold children; otherwise they are added after it. Nothing enforces valid nesting.
+- Clicking an element in the Elements tab adds it after the selected element (not inside it). Parts that need a parent (li, td, option, source and similar) go inside a valid selected parent. Nothing enforces valid nesting for drag-and-drop.
 - Elements carry more inline CSS than before, so Copy page code is longer.
 - Properties added through search (other than the margin and padding sides) show under "Custom properties", not next to related fields.
 
 ## Next Action
 
-Wait for the user's next instruction. A separate approval is required before merging into `main` or releasing the application.
+Wait for the user to test dragging positioned elements on the canvas and say `APPROVE` or `REJECT`. A separate approval is required before merging into `main` or releasing the application.
 
 ## Approval Status
 
-Approved (CSS tab gaps, including the margin and padding per-side fields). Earlier tasks (SVG / Drawing removal, add missing elements, browser-default styles, window sizing fix) were approved by the user.
+Awaiting User Approval (drag positioned elements on the canvas). Rejected and reverted on 2026-11-17: add every element blank. Approved on 2026-11-17: viewport number spinner fields and the device size dropdown. Earlier tasks (SVG / Drawing removal, add missing elements, browser-default styles, CSS tab gaps with margin and padding per-side fields, window sizing fix) were approved by the user.
 
 > Note: No approval here authorizes merging into `main` or releasing the application.

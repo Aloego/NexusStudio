@@ -353,6 +353,194 @@ page.on('console', function (m) {
   ok((await sideVal('margin-top')) === '1em' && (await sideVal('margin-right')) === '0' && (await sideVal('margin-bottom')) === '1em', 'a heading shows its default vertical margin per side');
   await defPage.fill('#propSearch', 'margin-left'); await defPage.press('#propSearch', 'Enter');
   ok((await defPage.$$('#f-margin-left')).length === 1, 'searching margin-left jumps to the side field instead of adding a second one');
+  console.log('Dragging an element on the canvas');
+  // a separate browser context with an empty page; each case adds a fresh box
+  const mvCtx = await browser.newContext({ viewport: { width: 1480, height: 920 } });
+  const mvPage = await mvCtx.newPage();
+  await mvPage.goto(url);
+  await mvPage.waitForSelector('#page h1');
+  await mvPage.click('#tabEl');
+  const mvFresh = async function (style) {
+    await mvPage.evaluate(function () { return window.NexusAPI.call('new_document', {}); });
+    await mvPage.evaluate(function () {
+      const em = [].slice.call(document.querySelectorAll('#palette .it em')).filter(function (e) { return e.textContent === 'div'; })[0];
+      em.closest('button').click();
+    });
+    if (style) {
+      await mvPage.evaluate(function (st) {
+        const sel = window.NexusAPI.call('get_selection', {});
+        return window.NexusAPI.call('update_element', { id: sel.id, style: st });
+      }, style);
+    }
+  };
+  const mvBox = function () {
+    return mvPage.evaluate(function () {
+      const el = document.querySelector('#page > div'), r = el.getBoundingClientRect();
+      return { x: Math.round(r.left), y: Math.round(r.top), left: el.style.left, top: el.style.top, right: el.style.right, bottom: el.style.bottom, position: el.style.position };
+    });
+  };
+  const mvDrag = async function (dx, dy) {
+    const b = await mvPage.locator('#page > div').boundingBox();
+    const x = b.x + b.width / 2, y = b.y + b.height / 2;
+    await mvPage.mouse.move(x, y); await mvPage.mouse.down();
+    await mvPage.mouse.move(x + dx, y + dy, { steps: 10 }); await mvPage.mouse.up();
+  };
+  const SIZE = { width: '120px', height: '60px' };
+  await mvFresh();
+  const stBefore = await mvBox(); await mvDrag(120, 80); const stAfter = await mvBox();
+  ok(stBefore.position === 'static' && stAfter.position === 'relative' && stAfter.left === '120px' && stAfter.top === '80px' && stAfter.x - stBefore.x === 120 && stAfter.y - stBefore.y === 80, 'an element that is static by default can be dragged: it becomes relative and follows the mouse ' + JSON.stringify(stAfter));
+  await mvFresh({ position: 'static', width: '120px', height: '60px' });
+  const st2 = await mvBox(); await mvDrag(120, 80); const st2a = await mvBox();
+  ok(st2a.position === 'relative' && st2a.left === '120px' && st2a.top === '80px' && st2a.x - st2.x === 120, 'an element set to static can be dragged too');
+  await mvPage.keyboard.press('Control+z');
+  const st2u = await mvBox();
+  ok(st2u.position === 'static' && st2u.left === '' && st2u.x === st2.x && st2u.y === st2.y, 'one undo puts a dragged static element fully back (position and offsets) ' + JSON.stringify(st2u));
+  await mvFresh({ width: '120px', height: '60px' });
+  const clk = await mvPage.locator('#page > div').boundingBox(); await mvPage.mouse.click(clk.x + 20, clk.y + 20);
+  const clkBox = await mvBox();
+  ok(clkBox.position === 'static' && clkBox.left === '', 'a plain click on a static element does not change its position ' + JSON.stringify(clkBox));
+  await mvFresh({ position: 'absolute', left: '20px', top: '30px', width: SIZE.width, height: SIZE.height });
+  const abBefore = await mvBox(); await mvDrag(100, 60); const abAfter = await mvBox();
+  ok(abAfter.left === '120px' && abAfter.top === '90px' && abAfter.x - abBefore.x === 100 && abAfter.y - abBefore.y === 60, 'an absolute element follows the mouse and its left and top are updated ' + JSON.stringify(abAfter));
+  const abFields = await mvPage.evaluate(function () { return [document.querySelector('#f-left') && document.querySelector('#f-left').value, document.querySelector('#f-top') && document.querySelector('#f-top').value]; });
+  ok(abFields[0] === '120px' && abFields[1] === '90px', 'the CSS tab shows the new left and top after the drag ' + JSON.stringify(abFields));
+  await mvPage.keyboard.press('Control+z');
+  const abUndo = await mvBox();
+  ok(abUndo.left === '20px' && abUndo.top === '30px', 'one undo puts the element back where it was before the drag ' + JSON.stringify(abUndo));
+  await mvFresh({ position: 'relative', width: SIZE.width, height: SIZE.height });
+  await mvDrag(40, 25); const reBox = await mvBox();
+  ok(reBox.left === '40px' && reBox.top === '25px', 'a relative element is moved from its normal place by left and top ' + JSON.stringify(reBox));
+  await mvFresh({ position: 'absolute', right: '50px', bottom: '40px', width: SIZE.width, height: SIZE.height });
+  await mvDrag(-10, -20); const rbBox = await mvBox();
+  ok(rbBox.right === '60px' && rbBox.bottom === '60px' && rbBox.left === '' && rbBox.top === '', 'an element placed with right and bottom is moved through right and bottom ' + JSON.stringify(rbBox));
+  await mvFresh({ position: 'fixed', left: '10px', top: '10px', width: SIZE.width, height: SIZE.height });
+  const fxBefore = await mvBox(); await mvDrag(30, 30); const fxAfter = await mvBox();
+  ok(fxAfter.left === '40px' && fxAfter.top === '40px' && fxAfter.x - fxBefore.x === 30, 'a fixed element can be dragged too ' + JSON.stringify(fxAfter));
+  await mvFresh({ position: 'absolute', left: '20px', top: '20px', width: SIZE.width, height: SIZE.height });
+  await mvPage.click('#zOut'); await mvPage.click('#zOut');
+  const zoomNow = parseInt(await mvPage.textContent('#zoomVal'), 10);
+  await mvDrag(80, 40); const zmBox = await mvBox();
+  const wantL = 20 + Math.round(80 / (zoomNow / 100)), wantT = 20 + Math.round(40 / (zoomNow / 100));
+  ok(zoomNow < 100 && zmBox.left === wantL + 'px' && zmBox.top === wantT + 'px', 'dragging at ' + zoomNow + '% zoom moves the element by the right amount ' + JSON.stringify({ zoomNow: zoomNow, left: zmBox.left, top: zmBox.top, wantL: wantL, wantT: wantT }));
+  await mvPage.click('#zIn'); await mvPage.click('#zIn');
+  await mvFresh({ position: 'absolute', left: '20px', top: '20px', width: SIZE.width, height: SIZE.height });
+  const clBefore = await mvBox();
+  const clb = await mvPage.locator('#page > div').boundingBox();
+  await mvPage.mouse.click(clb.x + clb.width / 2, clb.y + clb.height / 2);
+  const clAfter = await mvBox();
+  ok(clAfter.left === clBefore.left && clAfter.top === clBefore.top, 'a plain click on a positioned element selects it without moving it');
+  // adding by click does not trap the new element inside the previous one
+  const mvAdd = function (t) { return mvPage.evaluate(function (t) { const em = [].slice.call(document.querySelectorAll('#palette .it em')).filter(function (e) { return e.textContent === t; })[0]; em.closest('button').click(); }, t); };
+  const mvShape = function () { return mvPage.evaluate(function () { return window.NexusAPI.call('get_tree', { max_depth: 6 }); }).then(function (t) { return (function r(n) { return n.tag + (n.children && n.children.length ? '(' + n.children.map(r).join(',') + ')' : ''); })(t); }); };
+  await mvPage.evaluate(function () { return window.NexusAPI.call('new_document', {}); });
+  await mvAdd('div'); await mvAdd('h1'); await mvAdd('p');
+  const sh1 = await mvShape();
+  ok(sh1 === 'body(div,h1,p)', 'clicking div, h1, p adds them side by side, not inside each other ' + sh1);
+  const posBefore = await mvPage.evaluate(function () { return [].slice.call(document.querySelectorAll('#page > *:not(style)')).map(function (e) { const r = e.getBoundingClientRect(); return Math.round(r.left) + ',' + Math.round(r.top); }); });
+  const hb = await mvPage.locator('#page > h1').boundingBox();
+  await mvPage.mouse.move(hb.x + 30, hb.y + hb.height / 2); await mvPage.mouse.down(); await mvPage.mouse.move(hb.x + 230, hb.y + hb.height / 2 + 120, { steps: 8 }); await mvPage.mouse.up();
+  const posAfter = await mvPage.evaluate(function () { return [].slice.call(document.querySelectorAll('#page > *:not(style)')).map(function (e) { const r = e.getBoundingClientRect(); return Math.round(r.left) + ',' + Math.round(r.top); }); });
+  ok(posAfter[0] === posBefore[0] && posAfter[2] === posBefore[2] && posAfter[1] !== posBefore[1], 'dragging the h1 moves only the h1; the div and the paragraph stay put ' + JSON.stringify([posBefore, posAfter]));
+  await mvPage.evaluate(function () { return window.NexusAPI.call('new_document', {}); });
+  await mvAdd('ul'); await mvAdd('li'); await mvAdd('li');
+  const sh2 = await mvShape();
+  ok(sh2 === 'body(ul(li,li,li,li,li))', 'list items go inside the list (3 starters + 2 added) and stay next to each other ' + sh2);
+  await mvPage.evaluate(function () { return window.NexusAPI.call('new_document', {}); });
+  await mvAdd('table'); await mvAdd('tr'); await mvAdd('td'); await mvAdd('td');
+  const sh3 = await mvShape();
+  ok(/^body\(table\(.*tr\(td,td\)/.test(sh3), 'table parts nest properly: row in table, cells in the row ' + sh3);
+  await mvPage.evaluate(function () { return window.NexusAPI.call('new_document', {}); });
+  await mvAdd('div');
+  const divId = await mvPage.evaluate(function () { return window.NexusAPI.call('get_selection', {}).id; });
+  await mvPage.evaluate(function (id) { const el = document.querySelector('[data-nid="' + id + '"]'); const dt = new DataTransfer(); dt.setData('text/x-nx-tag', 'h2'); el.dispatchEvent(new DragEvent('drop', { dataTransfer: dt, bubbles: true, cancelable: true })); }, divId);
+  const sh4 = await mvShape();
+  ok(sh4 === 'body(div(h2))', 'dropping an element from the palette onto a box still places it inside the box ' + sh4);
+  // move cursor and hint
+  const mvHover = async function () { const b = await mvPage.locator('#page > div').boundingBox(); await mvPage.mouse.move(b.x + b.width / 2, b.y + b.height / 2); await mvPage.mouse.move(b.x + b.width / 2 + 2, b.y + b.height / 2 + 2); };
+  const mvInfo = function () { return mvPage.evaluate(function () { const el = document.querySelector('#page > div'), h = document.querySelector('#moveHint'); return { cursor: getComputedStyle(el).cursor, hintHidden: h.hidden, hint: h.textContent }; }); };
+  await mvFresh({ position: 'absolute', left: '20px', top: '20px', width: '120px', height: '60px' });
+  await mvHover(); const mh1 = await mvInfo();
+  ok(mh1.cursor === 'move' && mh1.hintHidden === false && mh1.hint === 'Drag to move', 'a draggable element shows the move cursor and the hint ' + JSON.stringify(mh1));
+  await mvPage.mouse.move(5, 5); const mh2 = await mvInfo();
+  ok(mh2.cursor !== 'move' && mh2.hintHidden === true, 'cursor and hint go away when the pointer leaves ' + JSON.stringify(mh2));
+  await mvHover(); await mvPage.mouse.down(); const mh3 = await mvInfo(); await mvPage.mouse.up();
+  ok(mh3.hintHidden === true, 'the hint hides while pressing/dragging');
+  await mvFresh({ width: '120px', height: '60px' });
+  await mvHover(); const mh4 = await mvInfo();
+  ok(mh4.cursor === 'move' && mh4.hintHidden === false, 'a static element also shows the move cursor and hint ' + JSON.stringify(mh4));
+  await mvFresh({ position: 'absolute', left: '20px', top: '20px', width: '120px', height: '60px' });
+  await mvHover();
+  ok(!(await mvPage.evaluate(function () { return window.NexusAPI.call('get_full_html', {}); }).then(function (r) { return JSON.stringify(r).indexOf('nx-move') >= 0; })), 'the move cursor class does not leak into the page code');
+  await mvCtx.close();
+
+  console.log('Element documentation (click the tag on the canvas)');
+  const docTags = await defPage.evaluate(function () { return window.HTML_DOCS ? Object.keys(window.HTML_DOCS) : []; });
+  const palTags = await defPage.evaluate(function () { return [].slice.call(document.querySelectorAll('#palette .it em')).map(function (e) { return e.textContent; }); });
+  const noDoc = palTags.filter(function (t) { return docTags.indexOf(t) < 0; });
+  ok(palTags.length >= 98 && noDoc.length === 0, 'every element in the Elements tab has a built-in guide entry ' + JSON.stringify(noDoc));
+  await addPalette('div');
+  ok((await defPage.getAttribute('#ovLab', 'role')) === 'button', 'the tag on the canvas is a button');
+  await defPage.evaluate(function () { document.querySelector('#ovLab').click(); });
+  ok(!(await defPage.$eval('#docDlg', function (d) { return d.hidden; })) && (await defPage.textContent('#docTitle')) === '<div>' && /box/i.test(await defPage.textContent('#docWhat')), 'clicking the tag opens the built-in guide for the element');
+  ok(await defPage.evaluate(function () { return document.querySelector('#docZeal').hidden; }), 'in a plain browser the Zeal button is hidden (it needs the desktop app)');
+  await defPage.evaluate(function () { window.__opened = []; window.open = function (u) { window.__opened.push(u); return null; }; });
+  await defPage.click('#docMdn');
+  const opened = await defPage.evaluate(function () { return window.__opened; });
+  ok(opened.length === 1 && opened[0] === 'https://developer.mozilla.org/en-US/docs/Web/HTML/Element/div', 'the MDN button opens the MDN page for the element ' + JSON.stringify(opened));
+  ok((await defPage.textContent('#docLink')) === 'https://developer.mozilla.org/en-US/docs/Web/HTML/Element/div' && !(await defPage.$eval('#docLinkRow', function (d) { return d.hidden; })), 'the page address is shown so it can be copied if no browser opens');
+  await defPage.evaluate(function () { window.__clip = null; Object.defineProperty(navigator, 'clipboard', { value: { writeText: function (t) { window.__clip = t; return Promise.resolve(); } }, configurable: true }); });
+  await defPage.click('#docCopy'); await defPage.waitForTimeout(100);
+  ok((await defPage.evaluate(function () { return window.__clip; })) === 'https://developer.mozilla.org/en-US/docs/Web/HTML/Element/div', 'Copy link puts the address on the clipboard');
+  await defPage.click('#docW3');
+  const opened2 = await defPage.evaluate(function () { return window.__opened; });
+  ok(opened2.length === 2 && opened2[1] === 'https://www.w3schools.com/tags/tag_div.asp' && (await defPage.textContent('#docLink')) === opened2[1], 'the W3Schools button opens the W3Schools page for the element ' + JSON.stringify(opened2));
+  await defPage.keyboard.press('Escape');
+  ok(await defPage.$eval('#docDlg', function (d) { return d.hidden; }), 'Escape closes the guide');
+  await addPalette('h3'); await defPage.evaluate(function () { document.querySelector('#ovLab').click(); });
+  ok((await defPage.textContent('#docTitle')) === '<h3>', 'the guide follows the selected element');
+  await defPage.click('#docClose');
+  console.log('Device size dropdown');
+  ok((await defPage.$$('#devs [data-w]')).length === 0, 'the Mobile / Tablet / Desktop tab buttons are gone');
+  ok((await defPage.textContent('#devBtn')).trim() === 'Responsive', 'the dropdown starts as Responsive');
+  await defPage.click('#devBtn');
+  const menuInfo = await defPage.evaluate(function () {
+    const box = document.querySelector('#devDrop');
+    return { shown: !box.hidden, heads: [].slice.call(box.querySelectorAll('.dh')).map(function (x) { return x.textContent; }), items: [].slice.call(box.querySelectorAll('button')).map(function (b) { return b.textContent; }) };
+  });
+  ok(menuInfo.shown && menuInfo.heads.join() === 'Mobile,Foldables,Tablets,Desktops,Smart Displays', 'the dropdown lists Mobile, Foldables, Tablets, Desktops and Smart Displays ' + JSON.stringify(menuInfo.heads));
+  ok(menuInfo.items.some(function (t) { return /iPhone 16\s*393 × 852/.test(t); }) && menuInfo.items.some(function (t) { return /iPad Pro 13\s*1032 × 1376/.test(t); }) && menuInfo.items.some(function (t) { return /Desktop HD\s*1920 × 1080/.test(t); }), 'every device shows its dimensions');
+  await defPage.click('#devDrop button:has-text("iPhone 16 Pro Max")');
+  const pick = await defPage.evaluate(function () { return { vw: document.querySelector('#vw').value, vh: document.querySelector('#vh').value, pageW: document.querySelector('#page').offsetWidth, label: document.querySelector('#devBtn').textContent, hidden: document.querySelector('#devDrop').hidden }; });
+  ok(pick.vw === '440' && pick.vh === '956' && pick.pageW === 440, 'choosing a device sets the viewport width and height ' + JSON.stringify(pick));
+  ok(pick.label === 'iPhone 16 Pro Max' && pick.hidden, 'the button shows the chosen device and the menu closes');
+  await defPage.click('#rotate');
+  ok((await defPage.inputValue('#vw')) === '956' && (await defPage.textContent('#devBtn')) === 'iPhone 16 Pro Max', 'Rotate swaps width and height and keeps the device name');
+  await defPage.fill('#vw', '500'); await defPage.press('#vw', 'Tab');
+  ok((await defPage.textContent('#devBtn')) === 'Responsive', 'typing your own width switches back to Responsive');
+  await defPage.click('#devBtn'); await defPage.click('#devDrop button:has-text("Desktop HD")');
+  ok((await defPage.inputValue('#vw')) === '1920' && (await defPage.evaluate(function () { return document.querySelector('#page').offsetWidth; })) === 1920, 'wide desktop sizes such as 1920 are accepted');
+  await defPage.click('#devBtn'); await defPage.click('#devDrop button:has-text("Edit…")');
+  ok(await defPage.isVisible('#devEdit') && !(await defPage.isVisible('#devDrop')), 'Edit… opens the device editor and closes the menu');
+  const rows = await defPage.$$eval('#devList .dr', function (n) { return n.length; });
+  ok(rows === 19, 'the editor lists every device ' + rows);
+  await defPage.fill('#devList input[aria-label="Width of iPhone 16"]', '400'); await defPage.press('#devList input[aria-label="Width of iPhone 16"]', 'Tab');
+  await defPage.fill('#devList input[aria-label="Name of Pixel 10"]', 'Pixel 10 Test'); await defPage.press('#devList input[aria-label="Name of Pixel 10"]', 'Tab');
+  await defPage.click('#devList .dh:has-text("Smart Displays") button');
+  ok((await defPage.$$eval('#devList .dr', function (n) { return n.length; })) === 20, 'a device can be added to a group');
+  await defPage.click('#devList button[aria-label="Remove New device"]');
+  ok((await defPage.$$eval('#devList .dr', function (n) { return n.length; })) === 19, 'a device can be removed');
+  const savedDev = await defPage.evaluate(function () { return JSON.parse(localStorage.getItem('nexusstudio.devices.v1') || '[]').map(function (d) { return d.n + ':' + d.w; }); });
+  ok(savedDev.indexOf('iPhone 16:400') >= 0 && savedDev.indexOf('Pixel 10 Test:412') >= 0, 'edits are saved ' + JSON.stringify(savedDev.slice(0, 6)));
+  await defPage.keyboard.press('Escape');
+  ok(!(await defPage.isVisible('#devEdit')), 'Escape closes the device editor');
+  await defPage.click('#devBtn');
+  ok(/iPhone 16\s*400 × 852/.test(await defPage.textContent('#devDrop')) && /Pixel 10 Test/.test(await defPage.textContent('#devDrop')), 'the dropdown shows the edited sizes and names');
+  await defPage.click('#devDrop button:has-text("iPhone 16"):not(:has-text("Pro"))');
+  ok((await defPage.inputValue('#vw')) === '400', 'choosing an edited device uses its new width');
+  await defPage.click('#devBtn'); await defPage.click('#devDrop button:has-text("Edit…")'); await defPage.click('#devReset'); await defPage.click('#devDone');
+  await defPage.click('#devBtn');
+  ok(/iPhone 16\s*393 × 852/.test(await defPage.textContent('#devDrop')), 'Reset to defaults restores the original list');
+  await defPage.keyboard.press('Escape'); await defPage.click('#propSearch').catch(function () {});
   await defCtx.close();
 
   console.log('Desktop wiring with a stand-in for the Electron window');
@@ -373,7 +561,10 @@ page.on('console', function (m) {
       mcpInfo: async function () { return { running: true, url: 'http://127.0.0.1:39517/mcp', token: 'abc', tools: [{ name: 'get_tree', title: 'Read' }], desktopConfig: '{"mcpServers":{}}', claudeCodeCommand: 'claude mcp add x' }; },
       mcpSetEnabled: async function () { return null; }, mcpInstallClaudeDesktop: async function () { return { ok: true, message: 'Added to Claude Desktop.' }; },
       onAiRequest: function (cb) { window.__aiCb = cb; }, aiRespond: function (id, ok, p) { (window.__aiResp = window.__aiResp || []).push({ id: id, ok: ok, p: p }); },
-      onAiActivity: function (cb) { window.__actCb = cb; }
+      onAiActivity: function (cb) { window.__actCb = cb; },
+      docsOpenOnline: async function (t, site) { (window.__docs = window.__docs || []).push(['online', t, site]); return { ok: true }; },
+      docsOpenZeal: async function (t) { (window.__docs = window.__docs || []).push(['zeal', t]); return window.__zealMissing ? { needPath: true, error: 'Zeal was not found on this computer.' } : { ok: true }; },
+      docsSetZealPath: async function (p) { (window.__docs = window.__docs || []).push(['path', p]); if (!/zeal/i.test(p)) return { error: 'bad' }; window.__zealMissing = false; return { ok: true }; }
     };
   });
   await dpage.goto(url); await dpage.waitForSelector('#page h1');
@@ -406,6 +597,18 @@ page.on('console', function (m) {
   await dpage.screenshot({ path: '/tmp/nx-ai-dialog.png' });
   await dpage.keyboard.press('Escape');
   ok(!(await dpage.isVisible('#aiModal')), 'Escape closes the dialog');
+  await dpage.evaluate(function () { window.__zealMissing = true; });
+  await dpage.evaluate(function () { document.querySelector('#ovLab').click(); });
+  ok((await dpage.isVisible('#docZeal')) && !(await dpage.isVisible('#docZealRow')), 'in the desktop app the Zeal button shows and the path box is hidden');
+  await dpage.click('#docMdn');
+  await dpage.click('#docW3');
+  await dpage.click('#docZeal'); await dpage.waitForTimeout(150);
+  ok(await dpage.isVisible('#docZealRow'), 'if Zeal is not found, a box to type its path appears (no file dialog)')
+  ok(await dpage.isVisible('#docZealHelp') && /Open file location/.test(await dpage.textContent('#docZealHelp')), 'step-by-step help for finding Zeal is shown with the box');
+  await dpage.fill('#docZealPath', 'C:\\Zeal\\zeal.exe'); await dpage.click('#docZealSave'); await dpage.waitForTimeout(150);
+  const docCalls = await dpage.evaluate(function () { return window.__docs; });
+  ok(JSON.stringify(docCalls.map(function (c) { return c[0]; })) === '["online","online","zeal","path","zeal"]' && docCalls[0][1] === docCalls[2][1] && docCalls[0][2] === 'mdn' && docCalls[1][2] === 'w3schools' && !(await dpage.isVisible('#docZealRow')), 'desktop: MDN button, Zeal button asks for the path, saving it opens Zeal ' + JSON.stringify(docCalls));
+  await dpage.keyboard.press('Escape');
   ok(derr.length === 0, 'no errors in the desktop-wired page ' + (derr.length ? JSON.stringify(derr) : ''));
 
   ok(errors.length === 0, 'no console or page errors ' + (errors.length ? JSON.stringify(errors.slice(0, 5)) : ''));

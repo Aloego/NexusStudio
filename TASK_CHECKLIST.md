@@ -154,6 +154,108 @@
 
 **Status:** Approved (user said "Approved" on 2026-11-14, after the rejection fix)
 
+## Device size dropdown replaces the Mobile / Tablet / Desktop buttons
+
+- [x] Replace the three buttons beside the Viewport fields with a dropdown (shows "Responsive" or the chosen device's name)
+- [x] Dropdown groups: Mobile, Foldables, Tablets, Desktops, Smart Displays; each device shows its width × height
+- [x] Choosing a device sets the Viewport width and height; typing your own size switches back to "Responsive"; Rotate keeps the device name
+- [x] "Edit…" opens an editor: change any name, width or height, add a device to a group, remove a device, reset to defaults; changes are saved on this computer
+- [x] Merged with another tool's (Dyad) pushed commits (live typing in width/height, drag-handles on the frame edges, `server.js`, `dev` script); the old `data-w` button syncing was replaced by updating the dropdown label
+- [x] Width/height limits follow the Dyad commits (120 to 10000 wide, 120 to 20000 high) so desktop sizes such as 1920 and 2560 fit; MCP tool text updated
+- [x] Add automated tests, run them, look at the app in a browser
+- [x] Commit and push changes to feature branch
+- [x] User personally tests the device dropdown
+
+**Status:** Approved (user said "I approve the dropdowns task too" on 2026-11-17)
+
+## Viewport fields as number spinners
+
+- [x] Change the Viewport width and height boxes to number fields with visible up/down arrows, no W/H letters, to match the user's screenshot (`400 ⬍ × 512 ⬍`)
+- [x] Keep the existing limits (120 to 10000 wide, 120 to 20000 high), typing, Enter, Rotate and the device dropdown unchanged
+- [x] Run automated tests (same 3 failures as before; see `TEST_RESULTS.md`) and look at the footer in a browser
+- [x] Commit and push changes to feature branch
+- [x] User personally tests the Viewport fields
+
+**Status:** Approved (user said "Approved" on 2026-11-17)
+
+## Add every element blank
+
+- [x] Confirm which Elements-tab items came with starter content (header "Brand"/"Menu", footer "© Your company", nav, article, aside, details, form, select, lists, tables, dialog, hgroup, search, picture, figure, fieldset, text elements and more)
+- [x] `make()` in `renderer/app.js` now returns every element with no starter text and no starter child elements; starter styles and attributes are kept
+- [x] Same behaviour for palette click, drag onto the Layers tree, and the MCP `add_element` `use_preset` option (explicit `text` / `children` from an MCP call still apply); `use_preset` tool text updated in `main/tools.js`
+- [x] Add automated tests (all 98 elements are added blank; header and footer have nothing inside)
+- [x] Run automated tests (same 3 failures as before; see `TEST_RESULTS.md`) and look at the canvas in a browser
+- [x] Commit and push changes to feature branch
+- [x] User rejected on 2026-11-17: "Reject. i wish to leave the prefilled elements as it is"
+- [x] Reverted `renderer/app.js`, `main/tools.js` and `test/e2e.js` to their state before this task (commit `c9739fc`); the prefilled starter content is back. Tests after the revert: 144 passed, 3 failed (same 3 as before)
+
+**Status:** Rejected — reverted; the prefilled elements stay as they were. No further work on this task unless the user asks.
+
+## Check whether canvas elements can be moved (read-only)
+
+- [x] Read the canvas mouse handling in `renderer/app.js` (a press on the canvas only selects; no drag-to-move)
+- [x] Test in a browser: mouse-drag a box on the canvas, in normal flow and with `position: absolute` (nothing moved either time)
+- [x] Record findings in `TEST_RESULTS.md`; no application code changed
+- [x] User decided: add drag-to-move for elements that are not static (next task)
+
+**Status:** Completed (investigation only)
+
+## Drag positioned elements on the canvas
+
+- [x] Inspect how the canvas handles the mouse (a press only selected the element)
+- [x] Let the user drag an element on the canvas when its position is not static (relative, absolute, fixed, sticky); elements set to static, or static by default, do not move
+- [x] Dragging writes `left`/`top` (or `right`/`bottom` when the element already uses those); works at any zoom; the CSS tab fields update; one Undo reverses a whole drag; a plain click still only selects
+- [x] Keep Alt+Up / Alt+Down, Layers drag-and-drop and the resize handles as they were
+- [x] Add automated tests (10 checks), run all tests, confirm the new move tests fail on the old code
+- [x] Commit and push changes to feature branch
+- [x] User asked (before approving) for a move cursor and hint over draggable elements: the pointer becomes the move cursor and a small "Drag to move" label follows it over any element that can be dragged; nothing shows over static elements; hidden while pressing/dragging; not saved into the page code (5 new checks)
+- [x] User personally tests dragging elements on the canvas and the move cursor / hint
+
+**Status:** Approved (user said "Approved" on 2026-11-17)
+
+## Element documentation from the blue tag on the canvas
+
+- [x] Make the blue element-name tag on the canvas clickable
+- [x] Built-in offline guide for all 98 palette elements plus body (`renderer/docs.js`)
+- [x] Option to open the MDN page online
+- [x] (Rejected 2026-11-17: folder chooser window went beyond the screen; user wants MDN online or the Zeal app.) Replaced with an "Open in Zeal" button that starts the installed Zeal on the element page; no file dialog; a box to type the Zeal path appears only if Zeal is not found
+- [x] Add automated tests, run them, look at the dialog in a browser
+- [x] Commit and push changes to feature branch
+- [x] User personally tests the tag, the guide, the MDN button and the Zeal button
+
+**Status:** Approved (user said "Approved" on 2026-11-17, after two rejections and fixes)
+
+## W3Schools button in the element documentation dialog
+
+- [x] Add an "Open on W3Schools (online)" button beside the MDN button (`https://www.w3schools.com/tags/tag_<tag>.asp`; svg goes to the SVG intro page); the address is shown with Copy link
+- [x] Add automated tests, run them
+- [x] Commit and push changes to feature branch
+- [x] User personally tests the W3Schools button
+
+**Status:** Approved (user said "Approved" on 2026-11-17)
+
+## Every element draggable on the canvas
+
+- [x] Remove the "static elements do not move" rule: any element (except the page itself) can be dragged
+- [x] A static element becomes `position:relative` when dragging starts, then `left`/`top` are written (keeps its place in the flow); positioned elements keep their type
+- [x] Move cursor and hint show on every element; click still only selects; one Undo reverses the whole drag
+- [x] Update and add automated tests, run them
+- [x] Commit and push changes to feature branch
+- [ ] User personally tests dragging ordinary (static) elements
+
+**Status:** Awaiting User Approval
+
+## New elements no longer get trapped inside the previous element
+
+- [x] Investigate why an h1 added after a div could not be moved on its own (it was added inside the div)
+- [x] Clicking an element in the Elements tab adds it after the selected element, not inside it; parts that need a parent still nest correctly
+- [x] Dropping on a box (canvas or Layers) still puts the element inside
+- [x] Add automated tests, run them
+- [x] Commit and push changes to feature branch
+- [ ] User personally tests adding div, h1, p and dragging each on its own
+
+**Status:** Awaiting User Approval
+
 ## Phase 8 — End-to-End Workflow Verification
 
 - [ ] Test the complete AI workflow
