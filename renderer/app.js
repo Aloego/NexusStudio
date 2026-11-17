@@ -691,8 +691,24 @@ function insertNode(n,targetId,zone){
   if(zone==='inside'){tn.children.push(n);}
   else{var i=f.index+(zone==='after'?1:0);f.parent.children.splice(i,0,n);}
 }
-function addByTag(tag,targetId){
-  var n=make(tag);insertNode(n,targetId||S.sel);
+/* Elements that only make sense inside a particular parent. */
+var NEEDS={li:['ul','ol','menu'],dt:['dl'],dd:['dl'],tr:['table','thead','tbody','tfoot'],td:['tr'],th:['tr'],thead:['table'],tbody:['table'],tfoot:['table'],caption:['table'],colgroup:['table'],col:['colgroup'],
+  option:['select','optgroup','datalist'],optgroup:['select'],source:['picture','video','audio'],track:['video','audio'],area:['map'],figcaption:['figure'],legend:['fieldset'],summary:['details'],rt:['ruby'],rp:['ruby']};
+/* Where a clicked palette element goes. By default it becomes a sibling right after the selected element, so it is
+   never trapped inside the previous element. Parts that need a particular parent (li, td, option...) go inside a
+   valid selected parent, or next to a selected sibling of the same kind. */
+function clickZone(tag,targetId){
+  var f=find(targetId||S.sel);if(!f||f.node.id===S.root.id)return 'inside';
+  var need=NEEDS[tag];
+  if(need){
+    if(need.indexOf(f.node.tag)>=0)return 'inside';
+    if(f.parent&&need.indexOf(f.parent.tag)>=0)return 'after';
+    return CONT[f.node.tag]?'inside':'after';
+  }
+  return 'after';
+}
+function addByTag(tag,targetId,zone){
+  var n=make(tag);insertNode(n,targetId||S.sel,zone);
   S.sel=(tag!=='svg'&&n.tag==='svg'&&n.children[0])?n.children[0].id:n.id;
   changed();selectNode(S.sel);toast('Added <'+tag+'>');
 }
@@ -713,9 +729,9 @@ function renderPalette(){
     d.innerHTML='<summary><span>'+esc(g.g)+'</span><span class="cnt">'+items.length+'</span></summary>';
     var w=document.createElement('div');w.className='items';
     items.forEach(function(it){
-      var b=document.createElement('button');b.className='it';b.draggable=true;b.type='button';b.title='Click to add, or drag onto the canvas';
+      var b=document.createElement('button');b.className='it';b.draggable=true;b.type='button';b.title='Click to add after the selected element, or drag onto a box to put it inside';
       b.innerHTML='<b class="'+g.c+'">'+esc(g.b[it[0]]||it[0])+'</b><span><em>'+esc(it[0])+'</em><small>'+esc(it[1])+'</small></span>';
-      b.addEventListener('click',function(){addByTag(it[0],S.sel);});
+      b.addEventListener('click',function(){addByTag(it[0],S.sel,clickZone(it[0],S.sel));});
       b.addEventListener('dragstart',function(e){e.dataTransfer.setData('text/x-nx-tag',it[0]);e.dataTransfer.effectAllowed='copy';});
       w.appendChild(b);
     });

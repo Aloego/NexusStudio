@@ -245,6 +245,17 @@
 
 **Status:** Awaiting User Approval
 
+## New elements no longer get trapped inside the previous element
+
+- [x] Investigate why an h1 added after a div could not be moved on its own (it was added inside the div)
+- [x] Clicking an element in the Elements tab adds it after the selected element, not inside it; parts that need a parent still nest correctly
+- [x] Dropping on a box (canvas or Layers) still puts the element inside
+- [x] Add automated tests, run them
+- [x] Commit and push changes to feature branch
+- [ ] User personally tests adding div, h1, p and dragging each on its own
+
+**Status:** Awaiting User Approval
+
 ## Phase 8 — End-to-End Workflow Verification
 
 - [ ] Test the complete AI workflow

@@ -429,6 +429,32 @@ page.on('console', function (m) {
   await mvPage.mouse.click(clb.x + clb.width / 2, clb.y + clb.height / 2);
   const clAfter = await mvBox();
   ok(clAfter.left === clBefore.left && clAfter.top === clBefore.top, 'a plain click on a positioned element selects it without moving it');
+  // adding by click does not trap the new element inside the previous one
+  const mvAdd = function (t) { return mvPage.evaluate(function (t) { const em = [].slice.call(document.querySelectorAll('#palette .it em')).filter(function (e) { return e.textContent === t; })[0]; em.closest('button').click(); }, t); };
+  const mvShape = function () { return mvPage.evaluate(function () { return window.NexusAPI.call('get_tree', { max_depth: 6 }); }).then(function (t) { return (function r(n) { return n.tag + (n.children && n.children.length ? '(' + n.children.map(r).join(',') + ')' : ''); })(t); }); };
+  await mvPage.evaluate(function () { return window.NexusAPI.call('new_document', {}); });
+  await mvAdd('div'); await mvAdd('h1'); await mvAdd('p');
+  const sh1 = await mvShape();
+  ok(sh1 === 'body(div,h1,p)', 'clicking div, h1, p adds them side by side, not inside each other ' + sh1);
+  const posBefore = await mvPage.evaluate(function () { return [].slice.call(document.querySelectorAll('#page > *:not(style)')).map(function (e) { const r = e.getBoundingClientRect(); return Math.round(r.left) + ',' + Math.round(r.top); }); });
+  const hb = await mvPage.locator('#page > h1').boundingBox();
+  await mvPage.mouse.move(hb.x + 30, hb.y + hb.height / 2); await mvPage.mouse.down(); await mvPage.mouse.move(hb.x + 230, hb.y + hb.height / 2 + 120, { steps: 8 }); await mvPage.mouse.up();
+  const posAfter = await mvPage.evaluate(function () { return [].slice.call(document.querySelectorAll('#page > *:not(style)')).map(function (e) { const r = e.getBoundingClientRect(); return Math.round(r.left) + ',' + Math.round(r.top); }); });
+  ok(posAfter[0] === posBefore[0] && posAfter[2] === posBefore[2] && posAfter[1] !== posBefore[1], 'dragging the h1 moves only the h1; the div and the paragraph stay put ' + JSON.stringify([posBefore, posAfter]));
+  await mvPage.evaluate(function () { return window.NexusAPI.call('new_document', {}); });
+  await mvAdd('ul'); await mvAdd('li'); await mvAdd('li');
+  const sh2 = await mvShape();
+  ok(sh2 === 'body(ul(li,li,li,li,li))', 'list items go inside the list (3 starters + 2 added) and stay next to each other ' + sh2);
+  await mvPage.evaluate(function () { return window.NexusAPI.call('new_document', {}); });
+  await mvAdd('table'); await mvAdd('tr'); await mvAdd('td'); await mvAdd('td');
+  const sh3 = await mvShape();
+  ok(/^body\(table\(.*tr\(td,td\)/.test(sh3), 'table parts nest properly: row in table, cells in the row ' + sh3);
+  await mvPage.evaluate(function () { return window.NexusAPI.call('new_document', {}); });
+  await mvAdd('div');
+  const divId = await mvPage.evaluate(function () { return window.NexusAPI.call('get_selection', {}).id; });
+  await mvPage.evaluate(function (id) { const el = document.querySelector('[data-nid="' + id + '"]'); const dt = new DataTransfer(); dt.setData('text/x-nx-tag', 'h2'); el.dispatchEvent(new DragEvent('drop', { dataTransfer: dt, bubbles: true, cancelable: true })); }, divId);
+  const sh4 = await mvShape();
+  ok(sh4 === 'body(div(h2))', 'dropping an element from the palette onto a box still places it inside the box ' + sh4);
   // move cursor and hint
   const mvHover = async function () { const b = await mvPage.locator('#page > div').boundingBox(); await mvPage.mouse.move(b.x + b.width / 2, b.y + b.height / 2); await mvPage.mouse.move(b.x + b.width / 2 + 2, b.y + b.height / 2 + 2); };
   const mvInfo = function () { return mvPage.evaluate(function () { const el = document.querySelector('#page > div'), h = document.querySelector('#moveHint'); return { cursor: getComputedStyle(el).cursor, hintHidden: h.hidden, hint: h.textContent }; }); };

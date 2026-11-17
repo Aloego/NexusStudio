@@ -4,7 +4,17 @@
 
 Drag positioned elements on the canvas: elements whose position is not static can be dragged to move them (state: Awaiting User Approval once pushed). Earlier on 2026-11-17: viewport number spinner fields and device size dropdown approved; "add every element blank" rejected and reverted.
 
-## Latest Session (2026-11-17, seventeenth request)
+## Latest Session (2026-11-17, eighteenth request)
+
+- User report: after adding a div and then an h1, the h1 could not be dragged independently of the div, "even if the h1 is not placed inside the div"; wants every element draggable independently, in or out of any element, without dragging its container or everything on the canvas.
+- Investigation (reproduced in a browser): clicking an Elements-tab item added it INSIDE the selected element whenever that element was a container (div, section and so on), so the h1 really was the div's child (`body(div(h1))`). Dragging the h1 itself moved only the h1 (the earlier drag feature works per element); but moving the div would carry the h1 with it, and every new element kept nesting into the previous one.
+- Done in `renderer/app.js`: `clickZone()` and `NEEDS` table. A clicked palette element is now added as a sibling right AFTER the selected element (page root: inside). Parts that need a parent (li, dt/dd, tr, td/th, thead/tbody/tfoot, caption, colgroup, col, option, optgroup, source, track, area, figcaption, legend, summary, rt/rp) still go inside a valid selected parent, or next to a selected sibling of the same kind. Dragging a palette item onto a box on the canvas, and dragging in the Layers panel, still place it inside (that is how to nest on purpose). The tooltip on palette items says so. Dragging on the canvas moves any element on its own (relative offset), as before.
+- Done in `test/e2e.js`: checks that div, h1, p are siblings; dragging the h1 leaves the div and p in place; list items and table parts nest correctly; dropping from the palette onto a box nests.
+- Tests: `node test/e2e.js` gives 180 passed, 3 failed (the same 3 as before). Not run: real Electron window.
+- Not done / limits: dragging on the canvas moves an element visually with left/top; it does not change which element is its parent. Re-parenting is done by dragging in the Layers panel or dropping from the palette. Elements already nested in an existing page still move with their parent.
+- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+
+## Earlier Session (2026-11-17, seventeenth request)
 
 - User request: every element must be draggable around the canvas regardless of its default position (earlier rule excluded static elements, but nearly every element is static by default).
 - Done in `renderer/app.js`: the drag handler no longer stops at `position:static`. When a static element starts to move (after 3 px) it is switched to `position:relative` and `left`/`top` are written, so it moves visually but keeps its place in the page flow (neighbours do not shift). Already positioned elements keep their position type (absolute, fixed, sticky, relative; right/bottom handled as before). The move cursor and "Drag to move" hint now show over every element except the page itself. A plain click still only selects; one Undo reverses the whole drag including the position change.
@@ -240,7 +250,7 @@ Result: 98 passed, 0 failed
 ## Known Issues
 
 - `get_window_state`, `get_app_state` and `get_process_info` fail in `npm test` in the AI sandbox, both before and after the latest changes. Cause not investigated.
-- Elements that only make sense inside a parent (li, td, option, source and similar) are added inside the selected element only if it can hold children; otherwise they are added after it. Nothing enforces valid nesting.
+- Clicking an element in the Elements tab adds it after the selected element (not inside it). Parts that need a parent (li, td, option, source and similar) go inside a valid selected parent. Nothing enforces valid nesting for drag-and-drop.
 - Elements carry more inline CSS than before, so Copy page code is longer.
 - Properties added through search (other than the margin and padding sides) show under "Custom properties", not next to related fields.
 
