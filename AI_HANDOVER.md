@@ -4,7 +4,16 @@
 
 Drag positioned elements on the canvas: elements whose position is not static can be dragged to move them (state: Awaiting User Approval once pushed). Earlier on 2026-11-17: viewport number spinner fields and device size dropdown approved; "add every element blank" rejected and reverted.
 
-## Latest Session (2026-11-17, eleventh request)
+## Latest Session (2026-11-17, twelfth request)
+
+- User request: before approving drag-to-move, add a move cursor and a hint over draggable elements.
+- Done in `renderer/app.js`: a `mousemove` handler on the stage adds class `nx-move` to the hovered element when it is draggable (same rule as the drag: not static, not the root, not the selection box, not text being edited) and shows `#moveHint`; both clear on leave, on mouse press and while dragging.
+- Done in `renderer/index.html` / `renderer/styles.css`: `#moveHint` ("Drag to move") and `.page .nx-move` (cursor: move, also for children).
+- Done in `test/e2e.js`: 5 checks (cursor and hint show; hide on leave; hide while pressing; none on static elements; class not in the exported page).
+- Tests: `node test/e2e.js` gives 159 passed, 3 failed (the same 3 as before). Not run: real Electron window.
+- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+
+## Earlier Session (2026-11-17, eleventh request)
 
 - User request: in addition to Alt+Up/Down and the other ways to move elements, allow dragging an element on the canvas unless it is set to static or has default static properties.
 - Done in `renderer/app.js`: a capture `mousedown` handler on the stage (after the selection handler) starts a drag when the pressed element's computed `position` is not `static`; after 3 px it writes `left`/`top` (or `right`/`bottom` when those are the element's own offsets) through `setStyle`, divides by `S.zoom`, and on mouse-up calls `commit()`, `renderProps()` and `renderCodeIfOpen()` (one Undo step).

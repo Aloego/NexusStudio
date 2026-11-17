@@ -590,6 +590,19 @@ stage.addEventListener('mousedown',function(e){
   document.addEventListener('mousemove',mv,true);document.addEventListener('mouseup',up,true);
 });
 
+/* move cursor and a small "Drag to move" hint while the pointer is over an element that can be dragged */
+var hoverMove=null,moveHintEl=$('#moveHint');
+function clearMoveHint(){if(hoverMove){hoverMove.classList.remove('nx-move');hoverMove=null;}moveHintEl.hidden=true;}
+stage.addEventListener('mousemove',function(e){
+  if(e.buttons){clearMoveHint();return;}
+  var t=(e.target.closest('.sel')||e.target.closest('[contenteditable="true"]'))?null:e.target.closest('[data-nid]');
+  if(t&&(t===page||!page.contains(t)||t.getAttribute('data-nid')===S.root.id||getComputedStyle(t).position==='static'))t=null;
+  if(t!==hoverMove){if(hoverMove)hoverMove.classList.remove('nx-move');hoverMove=t;if(t)t.classList.add('nx-move');}
+  if(t){moveHintEl.hidden=false;moveHintEl.style.left=(e.clientX+14)+'px';moveHintEl.style.top=(e.clientY+16)+'px';}else moveHintEl.hidden=true;
+});
+stage.addEventListener('mouseleave',clearMoveHint);
+stage.addEventListener('mousedown',clearMoveHint,true);
+
 /* drag from palette onto the canvas */
 var lastDrop=null;
 function clearDrop(){if(lastDrop){lastDrop.classList.remove('nx-drop');lastDrop=null;}}

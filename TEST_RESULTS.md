@@ -754,3 +754,8 @@ The 3 failures are the same ones that already failed before: `get_window_state`,
 
 Awaiting User Approval
 
+
+## Move cursor and hint for draggable elements (2026-11-17)
+
+- `node test/e2e.js`: 159 passed, 3 failed (`get_window_state`, `get_app_state`, `get_process_info`, same as before). New checks: move cursor and "Drag to move" hint over a draggable element; gone on leaving and while pressing; absent on static elements; not in the exported page code.
+- Not run: real Electron window; user must test.

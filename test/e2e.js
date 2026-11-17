@@ -422,6 +422,22 @@ page.on('console', function (m) {
   await mvPage.mouse.click(clb.x + clb.width / 2, clb.y + clb.height / 2);
   const clAfter = await mvBox();
   ok(clAfter.left === clBefore.left && clAfter.top === clBefore.top, 'a plain click on a positioned element selects it without moving it');
+  // move cursor and hint
+  const mvHover = async function () { const b = await mvPage.locator('#page > div').boundingBox(); await mvPage.mouse.move(b.x + b.width / 2, b.y + b.height / 2); await mvPage.mouse.move(b.x + b.width / 2 + 2, b.y + b.height / 2 + 2); };
+  const mvInfo = function () { return mvPage.evaluate(function () { const el = document.querySelector('#page > div'), h = document.querySelector('#moveHint'); return { cursor: getComputedStyle(el).cursor, hintHidden: h.hidden, hint: h.textContent }; }); };
+  await mvFresh({ position: 'absolute', left: '20px', top: '20px', width: '120px', height: '60px' });
+  await mvHover(); const mh1 = await mvInfo();
+  ok(mh1.cursor === 'move' && mh1.hintHidden === false && mh1.hint === 'Drag to move', 'a draggable element shows the move cursor and the hint ' + JSON.stringify(mh1));
+  await mvPage.mouse.move(5, 5); const mh2 = await mvInfo();
+  ok(mh2.cursor !== 'move' && mh2.hintHidden === true, 'cursor and hint go away when the pointer leaves ' + JSON.stringify(mh2));
+  await mvHover(); await mvPage.mouse.down(); const mh3 = await mvInfo(); await mvPage.mouse.up();
+  ok(mh3.hintHidden === true, 'the hint hides while pressing/dragging');
+  await mvFresh({ width: '120px', height: '60px' });
+  await mvHover(); const mh4 = await mvInfo();
+  ok(mh4.cursor !== 'move' && mh4.hintHidden === true, 'a static element shows no move cursor or hint ' + JSON.stringify(mh4));
+  await mvFresh({ position: 'absolute', left: '20px', top: '20px', width: '120px', height: '60px' });
+  await mvHover();
+  ok(!(await mvPage.evaluate(function () { return window.NexusAPI.call('get_full_html', {}); }).then(function (r) { return JSON.stringify(r).indexOf('nx-move') >= 0; })), 'the move cursor class does not leak into the page code');
   await mvCtx.close();
 
   console.log('Device size dropdown');

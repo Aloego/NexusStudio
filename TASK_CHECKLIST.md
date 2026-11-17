@@ -208,7 +208,8 @@
 - [x] Keep Alt+Up / Alt+Down, Layers drag-and-drop and the resize handles as they were
 - [x] Add automated tests (10 checks), run all tests, confirm the new move tests fail on the old code
 - [x] Commit and push changes to feature branch
-- [ ] User personally tests dragging elements on the canvas
+- [x] User asked (before approving) for a move cursor and hint over draggable elements: the pointer becomes the move cursor and a small "Drag to move" label follows it over any element that can be dragged; nothing shows over static elements; hidden while pressing/dragging; not saved into the page code (5 new checks)
+- [ ] User personally tests dragging elements on the canvas and the move cursor / hint
 
 **Status:** Awaiting User Approval
 
