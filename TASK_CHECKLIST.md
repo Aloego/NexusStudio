@@ -230,9 +230,9 @@
 - [x] Add an "Open on W3Schools (online)" button beside the MDN button (`https://www.w3schools.com/tags/tag_<tag>.asp`; svg goes to the SVG intro page); the address is shown with Copy link
 - [x] Add automated tests, run them
 - [x] Commit and push changes to feature branch
-- [ ] User personally tests the W3Schools button
+- [x] User personally tests the W3Schools button
 
-**Status:** Awaiting User Approval
+**Status:** Approved (user said "Approved" on 2026-11-17)
 
 ## Phase 8 — End-to-End Workflow Verification
 

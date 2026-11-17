@@ -10,7 +10,7 @@ Drag positioned elements on the canvas: elements whose position is not static ca
 - Done: `Open on W3Schools (online)` button in the documentation dialog (`renderer/index.html`, `app.js`); `docs:openOnline` in `main/main.js` takes an optional site (`mdn` or `w3schools`; anything else means MDN) and builds `https://www.w3schools.com/tags/tag_<tag>.asp` (svg: `/graphics/svg_intro.asp`); `main/preload.js` passes the site. Same browser-opening method, link display and Copy link as the MDN button.
 - Tests: `node test/e2e.js` gives 173 passed, 3 failed (the same 3 as before).
 - Not verified: the W3Schools pages were not opened (no internet here). A few newer elements (for example hgroup, search) may have no W3Schools page; the link would then show W3Schools' not-found page and MDN can be used instead.
-- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+- Result: approved by the user on 2026-11-17. Do not merge into `main` without separate approval.
 
 ## Earlier Session (2026-11-17, fifteenth request, approved)
 
