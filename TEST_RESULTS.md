@@ -605,5 +605,4 @@ Screenshot of the footer with 400 and 512 entered: shows `400 ⬍ × 512 ⬍` wi
 
 ### Approval
 
-Awaiting User Approval
-
+Approved (user said "Approved" on 2026-11-17).
