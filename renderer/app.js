@@ -521,11 +521,37 @@ function updateRuler(el){
 }
 
 /* ---------- selection and editing on the canvas ---------- */
+var dragMove=null;
 stage.addEventListener('mousedown',function(e){
   if(e.target.closest('.sel')||e.target.closest('[contenteditable="true"]'))return;
   var t=e.target.closest('[data-nid]');
-  if(t&&page.contains(t)){e.preventDefault();selectNode(t.getAttribute('data-nid'));}
+  if(t&&page.contains(t)){
+    e.preventDefault();
+    var id=t.getAttribute('data-nid');
+    selectNode(id);
+    if(e.button===0 && id!==S.root.id){
+      dragMove={id:id,startX:e.clientX,startY:e.clientY,el:elOf(id)};
+    }
+  }
 },true);
+stage.addEventListener('mousemove',function(e){
+  if(!dragMove)return;
+  e.preventDefault();
+  var dx=(e.clientX-dragMove.startX)/S.zoom;
+  var dy=(e.clientY-dragMove.startY)/S.zoom;
+  var f=find(dragMove.id);
+  if(!f||!f.parent)return;
+  var n=f.node;
+  n.style.left=(parseFloat(n.style.left||0)+dx)+'px';
+  n.style.top=(parseFloat(n.style.top||0)+dy)+'px';
+  n.style.position='absolute';
+  dragMove.startX=e.clientX;
+  dragMove.startY=e.clientY;
+  renderCanvas();placeOverlay();
+});
+stage.addEventListener('mouseup',function(){
+  if(dragMove){commit();dragMove=null;}
+});
 page.addEventListener('click',function(e){if(!e.target.closest('[contenteditable="true"]'))e.preventDefault();},true);
 page.addEventListener('submit',function(e){e.preventDefault();},true);
 page.addEventListener('dblclick',function(e){var t=e.target.closest('[data-nid]');if(t)startEdit(t.getAttribute('data-nid'));});
@@ -589,7 +615,13 @@ function addByTag(tag,targetId){
   changed();selectNode(S.sel);toast('Added <'+tag+'>');
 }
 function dupSel(){var f=find(S.sel);if(!f||!f.parent)return;var c=clone(f.node);f.parent.children.splice(f.index+1,0,c);S.sel=c.id;changed();}
-function delSel(){var f=find(S.sel);if(!f||!f.parent)return;S.sel=f.parent.id;f.parent.children.splice(f.index,1);changed();}
+function delSel(){
+  var f=find(S.sel);
+  if(!f||!f.parent)return;
+  S.sel=f.parent.id;
+  f.parent.children.splice(f.index,1);
+  changed();
+}
 function moveSel(d){var f=find(S.sel);if(!f||!f.parent)return;var j=f.index+d;if(j<0||j>=f.parent.children.length)return;var a=f.parent.children;a.splice(f.index,1);a.splice(j,0,f.node);changed();}
 function moveNode(id,targetId,zone){
   if(id===targetId||id===S.root.id)return;var f=find(id);if(!f||contains(f.node,targetId))return;
@@ -954,7 +986,7 @@ function refreshPreview(){
   else pv.srcdoc=html;
 }
 function renderCodeIfOpen(){
-  if(S.view==='html')$('#codeHtml').value=genBody();
+  if(S.view==='html')$('#codeHtml').value=fullDoc();
   else if(S.view==='css'){$('#codeCss').value=genCss();$('#codeCustom').value=S.css;}
   else if(S.view==='js')$('#codeJs').value=S.js;
   else if(S.view==='preview')refreshPreview();
@@ -1096,7 +1128,7 @@ $('#addbar').addEventListener('click',function(e){var b=e.target.closest('[data-
 
 /* code view buttons */
 $('#htmlCopy').addEventListener('click',function(){copyText($('#codeHtml').value,'HTML copied');});
-$('#htmlApply').addEventListener('click',function(){importHtml($('#codeHtml').value,false);changed();renderCodeIfOpen();toast('Design updated from code');});
+$('#htmlApply').addEventListener('click',function(){importHtml($('#codeHtml').value,true);changed();renderCodeIfOpen();toast('Design updated from code');});
 $('#cssCopy').addEventListener('click',function(){copyText(genCss()+(S.css.trim()?'\n\n'+S.css.trim():'')+'\n','CSS copied');});
 $('#codeCustom').addEventListener('input',function(){S.css=this.value;renderCanvas();save();});
 $('#codeCustom').addEventListener('change',function(){commit();});
@@ -1391,7 +1423,9 @@ API.duplicate_element=function(a){
 API.delete_element=function(a){
   var f=need(a.id);
   if(!f.parent)throw new Error('The page body cannot be deleted. Use replace_body_html to clear it.');
-  f.parent.children.splice(f.index,1);S.sel=f.parent.id;
+  var parentId=f.parent.id;
+  f.parent.children.splice(f.index,1);
+  S.sel=parentId;
   return {deleted:resolveId(a.id)};
 };
 API.replace_body_html=function(a){
