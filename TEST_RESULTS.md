@@ -660,5 +660,9 @@ Screenshot of an empty page after adding header, main and footer: the page HTML 
 
 ### Approval
 
-Awaiting User Approval
+Rejected by the user on 2026-11-17: "Reject. i wish to leave the prefilled elements as it is".
+
+### Revert
+
+`renderer/app.js`, `main/tools.js` and `test/e2e.js` were restored to their state before this task (commit `c9739fc`), so elements are added with their starter text and child elements again, and the two "added blank" checks are removed. Automated tests after the revert (`node test/e2e.js`, AI sandbox): 144 passed, 3 failed. The 3 failures are the same ones as before: `get_window_state`, `get_app_state`, `get_process_info`. Not run: the real Electron window and `test/main-smoke.js`.
 

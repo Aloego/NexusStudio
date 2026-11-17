@@ -259,32 +259,6 @@ page.on('console', function (m) {
   const fullHtml = JSON.stringify(await callRenderer('get_full_html', {}));
   ok(!/<\/(br|wbr|hr|img|input|source|track|col|area)>/.test(fullHtml), 'empty elements are written without a closing tag');
 
-  console.log('Every element is added blank');
-  // a separate browser context with an empty page, one fresh page per element
-  const blankCtx = await browser.newContext({ viewport: { width: 1480, height: 920 } });
-  const blankPage = await blankCtx.newPage();
-  await blankPage.goto(url);
-  await blankPage.waitForSelector('#page h1');
-  await blankPage.evaluate(function () { return window.NexusAPI.call('new_document', {}); });
-  await blankPage.click('#tabEl');
-  const notBlank = [], addedHtml = {};
-  for (const t of WANT) {
-    await blankPage.evaluate(function () { return window.NexusAPI.call('new_document', {}); });
-    await blankPage.evaluate(function (tag) {
-      const em = [].slice.call(document.querySelectorAll('#palette .it em')).filter(function (e) { return e.textContent === tag; })[0];
-      em.closest('button').click();
-    }, t);
-    const info = await blankPage.evaluate(function () {
-      const el = [].slice.call(document.querySelector('#page').children).filter(function (e) { return e.tagName.toLowerCase() !== 'style'; })[0];
-      return el ? { tag: el.tagName.toLowerCase(), nodes: el.childNodes.length, html: el.innerHTML } : null;
-    });
-    addedHtml[t] = info;
-    if (!info || info.tag !== t || info.nodes !== 0) notBlank.push(t + (info ? ':' + info.nodes : ':missing'));
-  }
-  ok(notBlank.length === 0, 'every element is added blank, with no starter text or child elements ' + JSON.stringify(notBlank));
-  ok(addedHtml.header && addedHtml.header.html === '' && addedHtml.footer && addedHtml.footer.html === '', 'header and footer are added with nothing inside');
-  await blankCtx.close();
-
   console.log('Elements start with their browser defaults');
   // a separate browser context, so clearing the page here cannot touch the saved draft the later tests load
   const defCtx = await browser.newContext({ viewport: { width: 1480, height: 920 } });

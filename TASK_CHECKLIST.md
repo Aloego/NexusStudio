@@ -186,9 +186,10 @@
 - [x] Add automated tests (all 98 elements are added blank; header and footer have nothing inside)
 - [x] Run automated tests (same 3 failures as before; see `TEST_RESULTS.md`) and look at the canvas in a browser
 - [x] Commit and push changes to feature branch
-- [ ] User personally tests adding elements from the Elements tab
+- [x] User rejected on 2026-11-17: "Reject. i wish to leave the prefilled elements as it is"
+- [x] Reverted `renderer/app.js`, `main/tools.js` and `test/e2e.js` to their state before this task (commit `c9739fc`); the prefilled starter content is back. Tests after the revert: 144 passed, 3 failed (same 3 as before)
 
-**Status:** Awaiting User Approval
+**Status:** Rejected — reverted; the prefilled elements stay as they were. No further work on this task unless the user asks.
 
 ## Phase 8 — End-to-End Workflow Verification
 

@@ -71,7 +71,7 @@ const TOOLS = [
       parent_id: id('The element to add next to or into. Defaults to the page.'),
       position, index: num('When position is "inside", the place among the existing children (0 is first). Defaults to the end.'),
       text: str('Text inside the element.'), attrs: attrMap, style: styleMap,
-      use_preset: bool('Start from the editor\'s ready-made look for this tag (its styles and attributes, never starter text or child elements) instead of a bare element.'),
+      use_preset: bool('Start from the editor\'s ready-made look for this tag instead of a blank element.'),
       children: { type: 'array', description: 'Nested elements, each with the same fields as this tool (tag, text, attrs, style, children).', items: { type: 'object' } }
     }, ['tag'])
   },
