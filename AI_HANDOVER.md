@@ -2,9 +2,20 @@
 
 ## Current Task
 
-Replace the Mobile / Tablet / Desktop buttons with a device size dropdown that has an editable device list (state: Awaiting User Approval once pushed). The earlier task, per-side margin and padding fields, was approved by the user on 2026-11-14.
+Show the Viewport width and height as number spinner fields (`400 ⬍ × 512 ⬍`), per the user's screenshot (state: Awaiting User Approval once pushed). The device size dropdown task before it is also still Awaiting User Approval.
 
-## Latest Session (2026-11-16 and 2026-11-17, seventh request)
+## Latest Session (2026-11-17, eighth request)
+
+- User request: on the branch that is not `main`, make the viewport display values look like the supplied screenshot (`400 ⬍ × 512 ⬍`). `feature/ai-development-workflow` is the only non-main branch.
+- Done in `renderer/index.html`: `#vw` and `#vh` are `type="number"` with min/max/step; the "W" and "H" spans are removed.
+- Done in `renderer/styles.css`: `.dim input` is 60px wide, right-aligned; the spinner arrows are always visible (`::-webkit-inner-spin-button` opacity 1).
+- Not changed: `renderer/app.js` (existing `input` / `change` / Enter handlers and limits still apply).
+- Tests: `node test/e2e.js` gives 144 passed, 3 failed (the same 3 as before: `get_window_state`, `get_app_state`, `get_process_info`). Verified the footer in a browser screenshot.
+- Not run: real Electron window testing and `test/main-smoke.js`. The user must test it.
+- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+
+## Earlier Session (2026-11-16 and 2026-11-17, seventh request)
+
 
 - User request: change the Mobile / Tablet / Desktop tabs into a viewport dropdown like Chrome's device toolbar (screenshot supplied): groups for mobile, tablet and desktop with the dimensions of each device, and the dimensions must be editable.
 - Done in `renderer/index.html`: `#devs` is now a `.menu.devm` holding `#devBtn` and `#devDrop`; new `#devEdit` dialog.
@@ -147,10 +158,10 @@ Result: 98 passed, 0 failed
 
 ## Next Action
 
-Wait for the user to test the device size dropdown and say `APPROVE` or `REJECT`. A separate approval is required before merging into `main` or releasing the application.
+Wait for the user to test the Viewport number fields and the device size dropdown and say `APPROVE` or `REJECT`. A separate approval is required before merging into `main` or releasing the application.
 
 ## Approval Status
 
-Awaiting User Approval (device size dropdown). Earlier tasks (SVG / Drawing removal, add missing elements, browser-default styles, CSS tab gaps with margin and padding per-side fields, window sizing fix) were approved by the user.
+Awaiting User Approval (viewport number spinner fields; device size dropdown). Earlier tasks (SVG / Drawing removal, add missing elements, browser-default styles, CSS tab gaps with margin and padding per-side fields, window sizing fix) were approved by the user.
 
 > Note: No approval here authorizes merging into `main` or releasing the application.

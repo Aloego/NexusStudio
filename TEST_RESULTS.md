@@ -563,3 +563,47 @@ Screenshots of the open dropdown, the Edit devices dialog and the footer bar. Th
 
 Awaiting User Approval
 
+---
+
+## Viewport fields as number spinners
+
+### Date
+
+2026-11-17
+
+### Branch
+
+feature/ai-development-workflow
+
+### Scope
+
+Files changed: `renderer/index.html`, `renderer/styles.css`.
+
+- User request (screenshot supplied): make the Viewport values look like `400 ⬍ × 512 ⬍`.
+- The Width and Height boxes beside "Viewport" are now number fields (`type="number"`, min 120 / max 10000 wide, min 120 / max 20000 high, step 1) with up/down spinner arrows that stay visible. The "W" and "H" letters inside the boxes are removed. The values are right-aligned next to the arrows and the box is a little wider (60px, was 52px) to fit them.
+- Not changed: `renderer/app.js` (typing, spinner clicks, Enter and drag-handle behaviour use the same `input` / `change` handlers and the same limits), the × between the boxes, the Rotate button, the device dropdown, Zoom.
+
+### Automated tests
+
+Command: `node test/e2e.js` (run in the AI sandbox, using the sandbox's Chromium build)
+
+Result: 144 passed, 3 failed. Identical to the run without these changes. The 3 failures are the same ones as before: `get_window_state`, `get_app_state`, `get_process_info`. Cause not investigated.
+
+### Inspected in a browser
+
+Screenshot of the footer with 400 and 512 entered: shows `400 ⬍ × 512 ⬍` with visible spinner arrows and no W/H letters, matching the supplied screenshot. Exact font and colours come from the existing theme, so they may differ slightly from the screenshot.
+
+### Could not be run
+
+- The real Electron window. Not run in this sandbox.
+- `node test/main-smoke.js`. Not run (main-process change: none).
+
+### Manual testing for the user
+
+- Click the up/down arrows on each box and check the canvas width/min-height follows and the dropdown label changes to Responsive or the matching device.
+- Type a value, press Enter or Tab, and check it still applies. Try Rotate.
+
+### Approval
+
+Awaiting User Approval
+
