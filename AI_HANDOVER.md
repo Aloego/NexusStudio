@@ -17,7 +17,7 @@ Drag positioned elements on the canvas: elements whose position is not static ca
 - Tests: `node test/e2e.js` gives 188 passed, 3 failed (the same 3 as before). Not run: real Electron window.
 - Known limits: an element dragged over a box by accident is moved into it (the outline and hint warn before release; Alt avoids it). MCP `get_html`/`get_full_html` unchanged.
 - Dyad's earlier attempt was reverted in commit `2da36d9`; only one tool should change the code at a time.
-- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+- Result: approved by the user on 2026-11-18 (also covers the earlier "drag every element" and "add after the selection" changes). Do not merge into `main` without separate approval.
 
 ## Earlier Session (2026-11-17, nineteenth request: restore after Dyad)
 

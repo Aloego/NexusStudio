@@ -241,9 +241,9 @@
 - [x] Move cursor and hint show on every element; click still only selects; one Undo reverses the whole drag
 - [x] Update and add automated tests, run them
 - [x] Commit and push changes to feature branch
-- [ ] User personally tests dragging ordinary (static) elements
+- [x] User personally tests dragging ordinary (static) elements
 
-**Status:** Awaiting User Approval
+**Status:** Approved (user said "Approved" on 2026-11-18)
 
 ## New elements no longer get trapped inside the previous element
 
@@ -252,9 +252,9 @@
 - [x] Dropping on a box (canvas or Layers) still puts the element inside
 - [x] Add automated tests, run them
 - [x] Commit and push changes to feature branch
-- [ ] User personally tests adding div, h1, p and dragging each on its own
+- [x] User personally tests adding div, h1, p and dragging each on its own
 
-**Status:** Awaiting User Approval
+**Status:** Approved (user said "Approved" on 2026-11-18)
 
 ## Independent dragging, moving elements in and out of boxes, full HTML document
 
@@ -265,9 +265,9 @@
 - [x] The HTML tab shows a complete document (doctype, html, head, body)
 - [x] Add automated tests, run them
 - [x] Commit and push changes to feature branch
-- [ ] User personally tests dragging, moving in and out, Move out of box and the HTML tab
+- [x] User personally tests dragging, moving in and out, Move out of box and the HTML tab
 
-**Status:** Awaiting User Approval
+**Status:** Approved (user said "Approved" on 2026-11-18)
 
 ## Phase 8 — End-to-End Workflow Verification
 
