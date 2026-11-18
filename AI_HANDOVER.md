@@ -4,7 +4,22 @@
 
 Drag positioned elements on the canvas: elements whose position is not static can be dragged to move them (state: Awaiting User Approval once pushed). Earlier on 2026-11-17: viewport number spinner fields and device size dropdown approved; "add every element blank" rejected and reverted.
 
-## Latest Session (2026-11-17, nineteenth request: restore after Dyad)
+## Latest Session (2026-11-18, twentieth request: independent dragging)
+
+- User request: drag any element independently (a div must not drag other elements along; those only follow if really placed inside it), be able to take an element out of a box without deleting it (Delete removed it from the page completely), and have the generated HTML wrapped in doctype, html, head and body.
+- Finding: a box carries only the elements that are really its children. Elements ended up as children because dropping from the Elements tab onto a box always nested inside it, and earlier clicks nested too (fixed in the earlier request). There was no way to take a child out except deleting it or the Layers panel.
+- Done in `renderer/app.js`:
+  - Canvas drag now also moves an element into or out of a box: while dragging, the box under the pointer is outlined (dashed) and the hint says "Release to put it inside <x>" / "Release to take it out of its box"; on release the element is re-parented and keeps its on-screen position (left/top recomputed). Holding Alt while dragging only moves it. Dropping on the page background takes it out to the top level. Never drops an element into itself or its own contents.
+  - New "Move out of box" button (Selection menu, Alt+Left) puts the selected element right after its box (`moveOut()`).
+  - Dropping a palette item on a box: top 20% or bottom 20% places it before/after the box, the middle places it inside.
+  - The HTML tab now shows a complete document (`genHtmlView()`): `<!DOCTYPE html>`, `<html lang="en">`, head (charset, viewport, title, comment that styles are in the CSS tab), `<body>`. Apply reads the full document (title included). Copy page code and Export already gave a full document.
+- Done in `renderer/index.html`: the Move out button. Done in `test/e2e.js`: 8 new checks plus the palette-drop check now drops in the middle of the box.
+- Tests: `node test/e2e.js` gives 188 passed, 3 failed (the same 3 as before). Not run: real Electron window.
+- Known limits: an element dragged over a box by accident is moved into it (the outline and hint warn before release; Alt avoids it). MCP `get_html`/`get_full_html` unchanged.
+- Dyad's earlier attempt was reverted in commit `2da36d9`; only one tool should change the code at a time.
+- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+
+## Earlier Session (2026-11-17, nineteenth request: restore after Dyad)
 
 - User report: Dyad was asked to make elements draggable individually; the user rejected its changes and asked Dyad to revert, but the result was not the state before. Dyad reported a conflict in the renderer files.
 - Finding: the branch had 3 Dyad commits on top of `b5859fa` (the last commit by Claude): `39f77e7` (new drag that sets `position:absolute` and re-renders on every move, full document in HTML view), `47cb633` (a merge that re-applied a large mix of changes) and `6383716` (a partial undo). The final state had lost the element documentation dialog and `docs.js` wiring, the device-size dropdown (replaced by a different `#ddv` control), the move cursor and hint, the click-adds-after rule and the canvas drag.

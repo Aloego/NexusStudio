@@ -790,3 +790,12 @@ Awaiting User Approval
 ### Approval
 
 Awaiting User Approval
+
+## Independent dragging, move in/out of boxes, full HTML document (2026-11-18)
+
+- `node test/e2e.js`: 188 passed, 3 failed (`get_window_state`, `get_app_state`, `get_process_info`, same as before). New checks: edge drops, drag into a box, no jump, drag out of a box, Alt only moves, Move out of box button, HTML tab is a complete document, Apply keeps the design.
+- Not run: real Electron window; user must test.
+
+### Approval
+
+Awaiting User Approval

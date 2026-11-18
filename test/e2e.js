@@ -452,9 +452,41 @@ page.on('console', function (m) {
   await mvPage.evaluate(function () { return window.NexusAPI.call('new_document', {}); });
   await mvAdd('div');
   const divId = await mvPage.evaluate(function () { return window.NexusAPI.call('get_selection', {}).id; });
-  await mvPage.evaluate(function (id) { const el = document.querySelector('[data-nid="' + id + '"]'); const dt = new DataTransfer(); dt.setData('text/x-nx-tag', 'h2'); el.dispatchEvent(new DragEvent('drop', { dataTransfer: dt, bubbles: true, cancelable: true })); }, divId);
+  await mvPage.evaluate(function (id) { const el = document.querySelector('[data-nid="' + id + '"]'); const dt = new DataTransfer(); dt.setData('text/x-nx-tag', 'h2'); const r = el.getBoundingClientRect(); el.dispatchEvent(new DragEvent('drop', { dataTransfer: dt, bubbles: true, cancelable: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); }, divId);
   const sh4 = await mvShape();
   ok(sh4 === 'body(div(h2))', 'dropping an element from the palette onto a box still places it inside the box ' + sh4);
+  // edges of a box: dropping near the top or bottom edge puts the element beside the box, the middle puts it inside
+  await mvPage.evaluate(function () { return window.NexusAPI.call('new_document', {}); });
+  await mvAdd('div');
+  const dropAt = async function (fy) { const id = await mvPage.evaluate(function () { return window.NexusAPI.call('get_selection', {}).id; }); await mvPage.evaluate(function (a) { const el = document.querySelector('[data-nid="' + a.id + '"]'); const r = el.getBoundingClientRect(); const dt = new DataTransfer(); dt.setData('text/x-nx-tag', 'h2'); el.dispatchEvent(new DragEvent('drop', { dataTransfer: dt, bubbles: true, cancelable: true, clientX: r.left + r.width / 2, clientY: r.top + r.height * a.fy })); }, { id: id, fy: fy }); };
+  await dropAt(0.95);
+  ok((await mvShape()) === 'body(div,h2)', 'dropping near the bottom edge of a box puts the element after the box ' + (await mvShape()));
+  // drag a box's child out, and a loose element into a box
+  await mvPage.evaluate(function () { return window.NexusAPI.call('new_document', {}); });
+  await mvPage.evaluate(function () { return window.NexusAPI.call('replace_body_html', { html: '<div id="box" style="height:200px;background:#ddd"><h2 id="kid">Kid</h2></div><p id="loose">Loose</p>' }); });
+  const centre = async function (sel) { const b = await mvPage.locator(sel).boundingBox(); return { x: b.x + b.width / 2, y: b.y + b.height / 2, b: b }; };
+  const dragTo = async function (from, to, opts) { const a = await centre(from), t = await centre(to); if (opts && opts.alt) await mvPage.keyboard.down('Alt'); await mvPage.mouse.move(a.x, a.y); await mvPage.mouse.down(); await mvPage.mouse.move((a.x + t.x) / 2, (a.y + t.y) / 2, { steps: 4 }); await mvPage.mouse.move(t.x, t.y, { steps: 4 }); await mvPage.mouse.up(); if (opts && opts.alt) await mvPage.keyboard.up('Alt'); };
+  await dragTo('#page p', '#page div');
+  ok((await mvShape()) === 'body(div(h2,p))', 'dragging a loose element over a box and releasing puts it inside that box ' + (await mvShape()));
+  const looseBox = await mvPage.locator('#page p').boundingBox(), boxBox = await mvPage.locator('#page div').boundingBox();
+  ok(Math.abs(looseBox.x + looseBox.width / 2 - (boxBox.x + boxBox.width / 2)) < 130 && looseBox.y > boxBox.y - 5 && looseBox.y < boxBox.y + boxBox.height, 'the element stays where it was released (it does not jump) ' + JSON.stringify([looseBox, boxBox]));
+  const pb = await mvPage.locator('#page').boundingBox(), kb = await mvPage.locator('#page h2').boundingBox();
+  await mvPage.mouse.move(kb.x + 10, kb.y + kb.height / 2); await mvPage.mouse.down(); await mvPage.mouse.move(pb.x + pb.width / 2, boxBox.y + boxBox.height + 120, { steps: 8 }); await mvPage.mouse.up();
+  ok(/^body\(div\(p\),h2\)$/.test(await mvShape()), 'dragging an element out of a box and releasing below it takes it out of the box ' + (await mvShape()));
+  await mvPage.evaluate(function () { return window.NexusAPI.call('replace_body_html', { html: '<div id="box" style="height:200px;background:#ddd"></div><p id="loose">Loose</p>' }); });
+  await dragTo('#page p', '#page div', { alt: true });
+  ok((await mvShape()) === 'body(div,p)', 'holding Alt while dragging only moves the element, it does not change the box it is in ' + (await mvShape()));
+  await mvPage.evaluate(function () { return window.NexusAPI.call('replace_body_html', { html: '<div id="box"><section id="inner"><h2 id="kid">Kid</h2></section></div>' }); });
+  await mvPage.evaluate(function () { return window.NexusAPI.call('select_element', { id: document.querySelector('#page h2').getAttribute('data-nid') }); });
+  await mvPage.evaluate(function () { document.querySelector('[data-act="out"]').click(); });
+  ok((await mvShape()) === 'body(div(section,h2))', 'the Move out of box button puts the selected element after its box ' + (await mvShape()));
+  // HTML tab is a complete document
+  await mvPage.evaluate(function () { document.querySelector('#views [data-v="html"]').click(); });
+  const code = await mvPage.inputValue('#codeHtml');
+  ok(/^<!DOCTYPE html>\n<html lang="en">\n<head>[\s\S]*<\/head>\n<body>\n[\s\S]*<\/body>\n<\/html>$/.test(code), 'the HTML tab shows a complete document with doctype, html, head and body');
+  await mvPage.evaluate(function () { document.querySelector('#htmlApply').click(); });
+  ok((await mvShape()) === 'body(div(section,h2))', 'Apply on the full document keeps the design as it was ' + (await mvShape()));
+  await mvPage.evaluate(function () { document.querySelector('#views [data-v="canvas"]').click(); });
   // move cursor and hint
   const mvHover = async function () { const b = await mvPage.locator('#page > div').boundingBox(); await mvPage.mouse.move(b.x + b.width / 2, b.y + b.height / 2); await mvPage.mouse.move(b.x + b.width / 2 + 2, b.y + b.height / 2 + 2); };
   const mvInfo = function () { return mvPage.evaluate(function () { const el = document.querySelector('#page > div'), h = document.querySelector('#moveHint'); return { cursor: getComputedStyle(el).cursor, hintHidden: h.hidden, hint: h.textContent }; }); };

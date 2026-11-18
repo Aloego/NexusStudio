@@ -256,6 +256,19 @@
 
 **Status:** Awaiting User Approval
 
+## Independent dragging, moving elements in and out of boxes, full HTML document
+
+- [x] Dragging an element on the canvas moves only that element (and what is really inside it)
+- [x] Drag an element into a box or out of a box; the box under the pointer is outlined with a hint; Alt only moves; the element does not jump
+- [x] "Move out of box" button and Alt+Left shortcut (so an element can leave a box without being deleted)
+- [x] Dropping from the Elements tab near a box's top/bottom edge puts the element beside the box, the middle puts it inside
+- [x] The HTML tab shows a complete document (doctype, html, head, body)
+- [x] Add automated tests, run them
+- [x] Commit and push changes to feature branch
+- [ ] User personally tests dragging, moving in and out, Move out of box and the HTML tab
+
+**Status:** Awaiting User Approval
+
 ## Phase 8 — End-to-End Workflow Verification
 
 - [ ] Test the complete AI workflow

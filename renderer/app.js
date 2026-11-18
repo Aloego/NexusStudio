@@ -576,16 +576,57 @@ stage.addEventListener('mousedown',function(e){
   function isSet(v){return v!=null&&v!==''&&v!=='auto';}
   var hRight=!isSet(node.style.left)&&isSet(node.style.right),vBottom=!isSet(node.style.top)&&isSet(node.style.bottom);
   var b0={l:parseFloat(cs.left)||0,t:parseFloat(cs.top)||0,r:parseFloat(cs.right)||0,b:parseFloat(cs.bottom)||0};
+  var curParent=f.parent.id,target=curParent,tEl=null;
+  /* the box under the pointer that the element would be dropped into (never itself or something inside it) */
+  function dropTarget(ev){
+    var el=elOf(id);if(!el)return curParent;
+    var pe=el.style.pointerEvents;el.style.pointerEvents='none';
+    var u=document.elementFromPoint(ev.clientX,ev.clientY);el.style.pointerEvents=pe;
+    var t=u&&u.closest?u.closest('[data-nid]'):null;
+    while(t){var nid=t.getAttribute('data-nid'),ff=find(nid);
+      if(ff&&(nid===S.root.id||(CONT[ff.node.tag]&&!contains(node,nid))))return nid;
+      t=t.parentElement?t.parentElement.closest('[data-nid]'):null;}
+    return S.root.id;
+  }
+  function showTarget(ev){
+    if(tEl){tEl.classList.remove('nx-drop');tEl=null;}
+    var change=target!==curParent&&!ev.altKey;
+    if(change){tEl=elOf(target);if(tEl)tEl.classList.add('nx-drop');}
+    moveHintEl.hidden=false;moveHintEl.style.left=(ev.clientX+14)+'px';moveHintEl.style.top=(ev.clientY+16)+'px';
+    var tf=find(target);
+    moveHintEl.textContent=!change?'Drag to move':(target===S.root.id?'Release to take it out of its box':'Release to put it inside <'+tf.node.tag+'> (hold Alt to only move)');
+  }
   function mv(ev){
     var dx=(ev.clientX-sx)/z,dy=(ev.clientY-sy)/z;
     if(!started){if(Math.abs(dx*z)<3&&Math.abs(dy*z)<3)return;started=true;if(wasStatic)setStyle('position','relative');}
     if(S.sel!==id)return;
     if(hRight)setStyle('right',Math.round(b0.r-dx)+'px');else setStyle('left',Math.round(b0.l+dx)+'px');
     if(vBottom)setStyle('bottom',Math.round(b0.b-dy)+'px');else setStyle('top',Math.round(b0.t+dy)+'px');
+    target=dropTarget(ev);showTarget(ev);
   }
-  function up(){
+  function up(ev){
     document.removeEventListener('mousemove',mv,true);document.removeEventListener('mouseup',up,true);
-    if(started){commit();renderProps();renderCodeIfOpen();}
+    if(tEl){tEl.classList.remove('nx-drop');tEl=null;}
+    moveHintEl.textContent='Drag to move';moveHintEl.hidden=true;
+    if(!started)return;
+    if(target!==curParent&&!ev.altKey&&S.sel===id){
+      /* take it out of (or put it into) another box without it jumping on screen */
+      var el0=elOf(id),old=el0?el0.getBoundingClientRect():null,cf=find(id),tf=find(target);
+      if(cf&&tf&&!contains(cf.node,target)){
+        cf.parent.children.splice(cf.index,1);tf.node.children.push(cf.node);
+        renderCanvas();
+        var el1=elOf(id);
+        if(el1&&old){
+          delete node.style.right;delete node.style.bottom;node.style.left='0px';node.style.top='0px';
+          el1.style.removeProperty('right');el1.style.removeProperty('bottom');el1.style.left='0px';el1.style.top='0px';
+          var nr=el1.getBoundingClientRect();
+          node.style.left=Math.round((old.left-nr.left)/z)+'px';node.style.top=Math.round((old.top-nr.top)/z)+'px';
+        }
+        commit();renderAll();toast(target===S.root.id?'Moved out to the page':'Moved inside <'+tf.node.tag+'>');
+        return;
+      }
+    }
+    commit();renderProps();renderCodeIfOpen();
   }
   document.addEventListener('mousemove',mv,true);document.addEventListener('mouseup',up,true);
 });
@@ -678,7 +719,10 @@ page.addEventListener('dragover',function(e){
 page.addEventListener('dragleave',function(e){if(!page.contains(e.relatedTarget))clearDrop();});
 page.addEventListener('drop',function(e){
   var tag=e.dataTransfer.getData('text/x-nx-tag');if(!tag)return;e.preventDefault();
-  var t=e.target.closest('[data-nid]');clearDrop();addByTag(tag,t?t.getAttribute('data-nid'):S.root.id);
+  var t=e.target.closest('[data-nid]');clearDrop();
+  var tid=t?t.getAttribute('data-nid'):S.root.id,zone;
+  if(t&&t!==page){var r=t.getBoundingClientRect(),fy=(e.clientY-r.top)/Math.max(1,r.height);zone=fy<0.2?'before':(fy>0.8?'after':undefined);}
+  addByTag(tag,tid,zone);
 });
 function hasType(e,t){var ty=e.dataTransfer&&e.dataTransfer.types;if(!ty)return false;for(var i=0;i<ty.length;i++)if(ty[i]===t)return true;return false;}
 
@@ -714,6 +758,14 @@ function addByTag(tag,targetId,zone){
 }
 function dupSel(){var f=find(S.sel);if(!f||!f.parent)return;var c=clone(f.node);f.parent.children.splice(f.index+1,0,c);S.sel=c.id;changed();}
 function delSel(){var f=find(S.sel);if(!f||!f.parent)return;S.sel=f.parent.id;f.parent.children.splice(f.index,1);changed();}
+/* take the selected element out of its box and put it right after that box */
+function moveOut(){
+  var f=find(S.sel);if(!f||!f.parent)return;
+  var gp=find(f.parent.id);
+  if(!gp||!gp.parent){toast('It is already at the top level of the page');return;}
+  f.parent.children.splice(f.index,1);gp.parent.children.splice(gp.index+1,0,f.node);
+  S.sel=f.node.id;changed();toast('Moved out of <'+f.parent.tag+'>');
+}
 function moveSel(d){var f=find(S.sel);if(!f||!f.parent)return;var j=f.index+d;if(j<0||j>=f.parent.children.length)return;var a=f.parent.children;a.splice(f.index,1);a.splice(j,0,f.node);changed();}
 function moveNode(id,targetId,zone){
   if(id===targetId||id===S.root.id)return;var f=find(id);if(!f||contains(f.node,targetId))return;
@@ -1024,6 +1076,11 @@ function gen(n,d){
   var s=pad+open+'>';if(n.text)s+='\n'+pad+'  '+esc(n.text);
   n.children.forEach(function(c){s+='\n'+gen(c,d+1);});return s+'\n'+pad+'</'+n.tag+'>';
 }
+/* the HTML tab shows a complete document: doctype, html, head and body around the page content */
+function genHtmlView(){
+  var body=genBody().split('\n').map(function(l){return l?'  '+l:l;}).join('\n');
+  return '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="utf-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1">\n  <title>'+esc(S.title)+'</title>\n  <!-- Styles are in the CSS tab and are added to the page when you copy or export it. -->\n</head>\n<body>\n'+body+'\n</body>\n</html>';
+}
 function genBody(){return S.root.children.map(function(c){return gen(c,0);}).join('\n');}
 function rule(sel,st){var k=Object.keys(st);if(!k.length)return '';return sel+' {\n'+k.map(function(p){return '  '+p+': '+st[p]+';';}).join('\n')+'\n}';}
 function genCss(){
@@ -1078,7 +1135,7 @@ function refreshPreview(){
   else pv.srcdoc=html;
 }
 function renderCodeIfOpen(){
-  if(S.view==='html')$('#codeHtml').value=genBody();
+  if(S.view==='html')$('#codeHtml').value=genHtmlView();
   else if(S.view==='css'){$('#codeCss').value=genCss();$('#codeCustom').value=S.css;}
   else if(S.view==='js')$('#codeJs').value=S.js;
   else if(S.view==='preview')refreshPreview();
@@ -1117,7 +1174,7 @@ var ACT={
   importFile:function(){if(!D)return needDesktop();D.importHtml().then(function(r){if(!r||r.canceled)return;if(r.error)return toast(r.error);
     importHtml(r.text,/<html|<body|<!doctype/i.test(r.text));changed();toast('Imported '+r.name);});},
   connectAi:function(){openAi();},
-  undo:undo,redo:redo,dup:dupSel,del:delSel,up:function(){moveSel(-1);},down:function(){moveSel(1);},
+  undo:undo,redo:redo,dup:dupSel,del:delSel,out:moveOut,up:function(){moveSel(-1);},down:function(){moveSel(1);},
   grid:function(){S.grid=!S.grid;stage.classList.toggle('nogrid',!S.grid);$('#tgGrid').classList.toggle('on',S.grid);},
   rulers:function(){S.rulers=!S.rulers;$('#rulerbar').hidden=!(S.rulers&&S.view==='canvas');$('#tgRuler').classList.toggle('on',S.rulers);},
   zoomReset:function(){setZoom(1);}
@@ -1293,7 +1350,7 @@ $('#addbar').addEventListener('click',function(e){var b=e.target.closest('[data-
 
 /* code view buttons */
 $('#htmlCopy').addEventListener('click',function(){copyText($('#codeHtml').value,'HTML copied');});
-$('#htmlApply').addEventListener('click',function(){importHtml($('#codeHtml').value,false);changed();renderCodeIfOpen();toast('Design updated from code');});
+$('#htmlApply').addEventListener('click',function(){importHtml($('#codeHtml').value,false);var tt=new DOMParser().parseFromString($('#codeHtml').value,'text/html').querySelector('title');if(tt&&tt.textContent.trim()){S.title=tt.textContent.trim();$('#projName').value=S.title;}changed();renderCodeIfOpen();toast('Design updated from code');});
 $('#cssCopy').addEventListener('click',function(){copyText(genCss()+(S.css.trim()?'\n\n'+S.css.trim():'')+'\n','CSS copied');});
 $('#codeCustom').addEventListener('input',function(){S.css=this.value;renderCanvas();save();});
 $('#codeCustom').addEventListener('change',function(){commit();});
@@ -1313,6 +1370,7 @@ document.addEventListener('keydown',function(e){
   else if(mod&&k==='y'){e.preventDefault();redo();}
   else if(mod&&k==='d'){e.preventDefault();dupSel();}
   else if(e.key==='Delete'||e.key==='Backspace'){if(S.view==='canvas'){e.preventDefault();delSel();}}
+  else if(e.altKey&&e.key==='ArrowLeft'){e.preventDefault();moveOut();}
   else if(e.altKey&&e.key==='ArrowUp'){e.preventDefault();moveSel(-1);}
   else if(e.altKey&&e.key==='ArrowDown'){e.preventDefault();moveSel(1);}
   else if(e.key==='Escape'){closeMenus();var f=find(S.sel);if(f&&f.parent)selectNode(f.parent.id);}
