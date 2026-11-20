@@ -558,9 +558,12 @@ page.on('console', function (m) {
   await defPage.click('#pagebar .pg.on [data-pgact="dup"]');
   ok(JSON.stringify(await pgTabs()) === '["Page 1","About","About copy"]', 'duplicate adds a copy after the open page ' + JSON.stringify(await pgTabs()));
   await defPage.click('#pagebar .pg.on [data-pgact="del"]');
-  ok((await pgTabs()).length === 3, 'delete needs a second click');
+  ok((await defPage.isVisible('#pgDel')) && (await pgTabs()).length === 3 && /isn.t saved/i.test(await defPage.textContent('#pgDel')), 'deleting an unsaved page shows the lose-content message with Save and Discard');
+  await defPage.click('#pgDelCancel');
+  ok(!(await defPage.isVisible('#pgDel')) && (await pgTabs()).length === 3, 'Keep page closes the message and keeps the page');
   await defPage.click('#pagebar .pg.on [data-pgact="del"]');
-  ok(JSON.stringify(await pgTabs()) === '["Page 1","About"]', 'the second click deletes the page ' + JSON.stringify(await pgTabs()));
+  await defPage.click('#pgDelDiscard');
+  ok(JSON.stringify(await pgTabs()) === '["Page 1","About"]', 'Discard deletes the page ' + JSON.stringify(await pgTabs()));
   const lp = await pgCall('list_pages');
   ok(lp.pages.length === 2 && lp.current === 1 && lp.pages[1].name === 'About', 'list_pages reports the pages');
   await pgCall('select_page', { page: 'Page 1' });
@@ -584,7 +587,14 @@ page.on('console', function (m) {
   ok(w2.r < 50 && w2.c > w1.c + 150 && !(await defPage.isVisible('#propBody')), 'the arrow collapses the Properties panel too ' + JSON.stringify(w2));
   await defPage.reload(); await defPage.waitForTimeout(400);
   ok((await colW()).l < 50 && (await colW()).r < 50, 'collapsed panels stay collapsed after reopening');
-  await defPage.click('#railL'); await defPage.click('#railR');
+  await defPage.click('#railL [data-rail="ly"]');
+  ok((await colW()).l === w0.l && (await defPage.isVisible('#lyPane')) && !(await defPage.isVisible('#palette')) && (await colW()).r < 50, 'a rail tab opens only that tab (Layers, not Elements)');
+  await defPage.click('#colL'); await defPage.click('#railL [data-rail="el"]');
+  ok((await defPage.isVisible('#palette')) && !(await defPage.isVisible('#lyPane')), 'the Elements rail tab opens Elements alone');
+  await defPage.click('#railR [data-rail="css"]');
+  ok((await defPage.isVisible('#propBody')) && (await defPage.$eval('#rtCss', function (e) { return e.classList.contains('on'); })), 'a right rail tab opens only that tab (CSS)');
+  await defPage.click('#colL'); await defPage.click('#colR');
+  await defPage.click('#railLx'); await defPage.click('#railRx');
   const w3 = await colW();
   ok(w3.l === w0.l && w3.r === w0.r && (await defPage.isVisible('#palette')) && (await defPage.isVisible('#propBody')), 'the small arrow on the edge brings each panel back ' + JSON.stringify(w3));
   console.log('Device size dropdown');
@@ -703,6 +713,45 @@ page.on('console', function (m) {
   const expd = await dpage.evaluate(function () { return window.__exported; });
   ok(expd && expd.files.length === 2 && expd.files.every(function (f) { return /^<!DOCTYPE html>/.test(f.text); }) && expd.files[1].name === 'Page 2', 'desktop: Export all pages hands every page as a full HTML document to the app');
   await dpage.keyboard.press('Escape');
+  console.log('In-app save chooser (folder first, then file name)');
+  const fpage = await ctx.newPage();
+  await fpage.setViewportSize({ width: 1280, height: 640 });
+  const ferr = [];
+  fpage.on('pageerror', function (e) { ferr.push(e.message); });
+  await fpage.addInitScript(function () {
+    try { localStorage.clear(); } catch (e) {}
+    window.__log = [];
+    window.nexus = {
+      isDesktop: true, setDocName: function (n) { window.__doc = n; }, newProject: async function () {}, setPreview: async function () { return true; },
+      mcpInfo: async function () { return { running: false, tools: [] }; }, mcpSetEnabled: async function () { return null; }, mcpInstallClaudeDesktop: async function () { return { ok: true }; },
+      onAiRequest: function () {}, aiRespond: function () {}, onAiActivity: function () {},
+      saveProject: async function () { return { needLocation: true }; },
+      exportPages: async function () { return { needLocation: true }; },
+      fbPlaces: async function () { return { start: '/h', places: [{ name: 'Documents', path: '/h' }], roots: ['/'] }; },
+      fbList: async function (a) { return { dir: a.dir, parent: a.dir === '/h' ? '/' : null, entries: a.dir === '/h/site' ? [{ name: 'old.nexus', dir: false }] : [{ name: 'stuff', dir: true }] }; },
+      fbMkdir: async function (a) { window.__log.push(['mkdir', a.dir, a.name]); return { dir: a.dir + '/' + a.name }; },
+      fbSaveProject: async function (a) { window.__log.push(['save', a.dir, a.name, a.overwrite]); return { ok: true, name: a.name }; },
+      fbExportPages: async function (a) { window.__log.push(['exp', a.dir, a.name, a.files.length]); return { ok: true, count: a.files.length }; }
+    };
+  });
+  await fpage.goto(url); await fpage.waitForSelector('#pgAdd');
+  await fpage.click('#pgAdd'); await fpage.waitForTimeout(200);
+  ok((await fpage.isVisible('#fbDlg')) && (await fpage.isVisible('#fbFolderName')) && !(await fpage.isVisible('#fbNameRow')) && (await fpage.$$('#pagebar .pg')).length === 1, 'on a fresh project, + asks for a folder first and adds no page yet');
+  const fbox = await fpage.$eval('#fbDlg .fbox', function (e) { const r = e.getBoundingClientRect(); return { t: r.top, b: r.bottom }; }).catch(function () { return null; });
+  const okb = await fpage.$eval('#fbOk', function (e) { const r = e.getBoundingClientRect(); return { t: r.top, b: r.bottom }; });
+  ok(okb.t >= 0 && okb.b <= 640, 'the chooser buttons fit on a short laptop screen ' + JSON.stringify(okb));
+  await fpage.fill('#fbFolderName', 'site'); await fpage.click('#fbOk'); await fpage.waitForTimeout(200);
+  ok((await fpage.isVisible('#fbNameRow')) && !(await fpage.isVisible('#fbFolderName')) && JSON.stringify(await fpage.evaluate(function () { return window.__log[0]; })) === '["mkdir","/h","site"]', 'step 2 asks for the file name after the folder is created');
+  await fpage.fill('#fbFile', 'old'); await fpage.click('#fbOk');
+  ok(/already/.test(await fpage.textContent('#fbMsg')) && (await fpage.evaluate(function () { return window.__log.length; })) === 1, 'an existing file name warns before replacing');
+  await fpage.fill('#fbFile', 'home'); await fpage.click('#fbOk'); await fpage.waitForTimeout(300);
+  ok(!(await fpage.isVisible('#fbDlg')) && JSON.stringify(await fpage.evaluate(function () { return window.__log[1]; })) === '["save","/h/site","home.nexus",false]' && (await fpage.$$('#pagebar .pg')).length === 2, 'saving finishes, then the new page is added');
+  await fpage.click('[data-menu="file"]'); await fpage.click('[data-act="exportAll"]'); await fpage.waitForTimeout(200);
+  await fpage.keyboard.press('Escape');
+  ok(!(await fpage.isVisible('#fbDlg')), 'Escape cancels the chooser');
+  ok(ferr.length === 0, 'no errors in the chooser page ' + JSON.stringify(ferr));
+  await fpage.close();
+
   ok(derr.length === 0, 'no errors in the desktop-wired page ' + (derr.length ? JSON.stringify(derr) : ''));
 
   ok(errors.length === 0, 'no console or page errors ' + (errors.length ? JSON.stringify(errors.slice(0, 5)) : ''));

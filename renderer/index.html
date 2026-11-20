@@ -48,7 +48,11 @@
 
   <div class="work">
     <aside class="left">
-      <button class="rail" id="railL" type="button" hidden title="Show the Elements and Layers panel" aria-label="Show the Elements and Layers panel"><span aria-hidden="true">›</span><em>Elements · Layers</em></button>
+      <div class="rail" id="railL" hidden role="toolbar" aria-label="Hidden Elements and Layers panel">
+        <button type="button" class="rexp" id="railLx" title="Show the panel" aria-label="Show the Elements and Layers panel">›</button>
+        <button type="button" class="rtab" data-rail="el" title="Open the Elements tab" aria-label="Open the Elements tab"><em>Elements</em></button>
+        <button type="button" class="rtab" data-rail="ly" title="Open the Layers tab" aria-label="Open the Layers tab"><em>Layers</em></button>
+      </div>
       <div class="tabs"><button class="on" id="tabEl">Elements</button><button id="tabLy">Layers</button><button class="colb" id="colL" type="button" title="Hide this panel to make room for the canvas" aria-label="Hide the Elements and Layers panel" aria-expanded="true">‹</button></div>
       <div id="elPane" class="pane" style="display:flex;flex-direction:column">
         <div class="search"><input id="elSearch" type="text" placeholder="Search elements…" aria-label="Search elements"></div>
@@ -104,7 +108,12 @@
     </main>
 
     <aside class="right">
-      <button class="rail" id="railR" type="button" hidden title="Show the Properties panel" aria-label="Show the Properties panel"><span aria-hidden="true">‹</span><em>Properties · HTML · CSS · JS</em></button>
+      <div class="rail" id="railR" hidden role="toolbar" aria-label="Hidden Properties panel">
+        <button type="button" class="rexp" id="railRx" title="Show the panel" aria-label="Show the Properties panel">‹</button>
+        <button type="button" class="rtab" data-rail="html" title="Open the HTML tab" aria-label="Open the HTML tab"><em>HTML</em></button>
+        <button type="button" class="rtab" data-rail="css" title="Open the CSS tab" aria-label="Open the CSS tab"><em>CSS</em></button>
+        <button type="button" class="rtab" data-rail="js" title="Open the JavaScript tab" aria-label="Open the JavaScript tab"><em>JavaScript</em></button>
+      </div>
       <div class="phead"><div><b>Properties</b><span id="pTitle"></span></div><button class="colb" id="colR" type="button" title="Hide this panel to make room for the canvas" aria-label="Hide the Properties panel" aria-expanded="true">›</button></div>
       <div class="tabs"><button id="rtHtml">HTML</button><button class="on" id="rtCss">CSS</button><button id="rtJs">JavaScript</button></div>
       <div class="pane" id="propBody"></div>
@@ -168,6 +177,22 @@
   <p class="note" id="docZealHelp" style="margin:0" hidden>How to find Zeal: click the Windows Start button, type <b>Zeal</b>, right-click it and choose <b>Open file location</b>. In the window that opens, click the address bar at the top, copy the whole path, and paste it into the box above. (If you see a Zeal shortcut, right-click it, choose Properties, and copy the text in the "Target" line instead.) You only do this once.</p>
   <p class="note" id="docMsg" style="margin:0" role="status"></p>
   <div class="acts"><button class="sbtn" id="docClose" type="button">Close</button></div>
+</div></div>
+<div id="pgDel" class="ovl" hidden><div class="box" role="alertdialog" aria-labelledby="pgDelT" aria-describedby="pgDelM">
+  <h3 id="pgDelT">Delete this page?</h3>
+  <p class="note" id="pgDelM" style="margin:0">This page isn't saved. If you delete it you might lose some of its content.</p>
+  <div class="acts"><button class="sbtn" id="pgDelCancel" type="button">Keep page</button><button class="sbtn danger" id="pgDelDiscard" type="button">Discard</button><button class="primary" id="pgDelSave" type="button">Save</button></div>
+</div></div>
+<div id="fbDlg" class="ovl" hidden><div class="box" role="dialog" aria-labelledby="fbTitle">
+  <h3 id="fbTitle"></h3>
+  <p class="note" id="fbHelp" style="margin:0"></p>
+  <div class="fbplaces" id="fbPlaces"></div>
+  <div class="fbbar"><button class="sbtn" id="fbUp" type="button" title="Go up one folder">↑ Up</button><input id="fbPath" type="text" spellcheck="false" aria-label="Current folder"><button class="sbtn" id="fbGo" type="button">Go</button></div>
+  <div class="fblist" id="fbList" role="listbox" aria-label="Folders and files"></div>
+  <div class="fbrow" id="fbNewRow"><label for="fbFolderName">Project folder name</label><input id="fbFolderName" type="text" spellcheck="false" placeholder="my-project"></div>
+  <div class="fbrow" id="fbNameRow" hidden><label for="fbFile">File name</label><input id="fbFile" type="text" spellcheck="false"></div>
+  <p class="note" id="fbMsg" style="margin:0" role="status"></p>
+  <div class="acts"><button class="sbtn" id="fbCancel" type="button">Cancel</button><button class="sbtn" id="fbBack" type="button" hidden>← Back</button><button class="sbtn" id="fbSkip" type="button" hidden>Use this folder</button><button class="primary" id="fbOk" type="button">OK</button></div>
 </div></div>
 <div id="moveHint" hidden>Drag to move</div>
 <div id="toast" hidden></div>

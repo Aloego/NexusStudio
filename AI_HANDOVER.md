@@ -297,3 +297,10 @@ Wait for the user to test dragging positioned elements on the canvas and say `AP
 Awaiting User Approval (drag positioned elements on the canvas). Rejected and reverted on 2026-11-17: add every element blank. Approved on 2026-11-17: viewport number spinner fields and the device size dropdown. Earlier tasks (SVG / Drawing removal, add missing elements, browser-default styles, CSS tab gaps with margin and padding per-side fields, window sizing fix) were approved by the user.
 
 > Note: No approval here authorizes merging into `main` or releasing the application.
+
+## 2026-11-20 — Delete message, rail tabs, in-app save chooser (Awaiting User Approval)
+
+- Native file windows replaced by an in-app chooser (`#fbDlg`, `chooseLocation()` in renderer/app.js); main/main.js `fb:*` IPC validates paths; save/export/open return `{needLocation:true}` to trigger it.
+- `+` on a fresh desktop project saves first (`addPageAsked`). Page delete uses `#pgDel` when the project has unsaved changes.
+- Rails: `.rtab[data-rail]` buttons set S.ltab/S.rtab then expand the panel.
+- Not tested on real Windows/Electron; only the browser stand-in.

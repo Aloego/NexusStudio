@@ -809,3 +809,8 @@ Awaiting User Approval
 ### Approval
 
 Awaiting User Approval
+
+## 2026-11-20 — Delete message, rail tabs, in-app save chooser
+
+- `node test/e2e.js`: 224 passed, 3 failed. The 3 failures (get_window_state, get_app_state, get_process_info) were failing before this work.
+- New checks: delete-page message with Keep/Discard, rail tab opens one tab only, + on fresh project asks folder then file name, overwrite warning, Escape cancels, buttons fit a 640px-tall screen (screenshot checked).

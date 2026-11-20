@@ -1143,7 +1143,7 @@ function importHtml(src,full){
 }
 
 /* ---------- pages (tabs above the canvas) ---------- */
-var MAX_PAGES=30,delArm=null;
+var MAX_PAGES=30;
 function pageSlug(n){return String(n||'page').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'page';}
 function uniquePageName(base){var names=S.pages.map(function(p){return p.name;}),n=base,i=2;while(names.indexOf(n)>=0){n=base+' '+i;i++;}return n;}
 function switchPage(i){
@@ -1154,7 +1154,7 @@ function switchPage(i){
   S.root=p.root;S.css=p.css||'';S.js=p.js||'';S.title=p.title||p.name;S.sel=S.root.id;S.collapsed={};S.pending={};
   $('#projName').value=S.title;fixUid();
   if(p.h&&p.h.length){hist=p.h;hi=Math.min(p.hi,p.h.length-1);}else{hist=[snap()];hi=0;}
-  delArm=null;save();renderAll();
+  save();renderAll();
 }
 function addPage(copy){
   if(S.pages.length>=MAX_PAGES){toast('A project can have up to '+MAX_PAGES+' pages');return;}
@@ -1172,7 +1172,7 @@ function deletePage(){
   S.pageIdx=j;S.root=p.root;S.css=p.css||'';S.js=p.js||'';S.title=p.title||p.name;S.sel=S.root.id;S.collapsed={};S.pending={};
   $('#projName').value=S.title;fixUid();
   if(p.h&&p.h.length){hist=p.h;hi=Math.min(p.hi,p.h.length-1);}else{hist=[snap()];hi=0;}
-  S.dirty=true;delArm=null;save();renderAll();toast('Deleted '+name);
+  S.dirty=true;save();renderAll();toast('Deleted '+name);
 }
 function renamePage(i,name){
   name=(name||'').trim().slice(0,40);if(!name||!S.pages[i])return;
@@ -1187,8 +1187,8 @@ function renderPageBar(){
     var t=document.createElement('span');t.className='pn';t.textContent=p.name;t.title=on?'Double-click to rename':'Open '+p.name;b.appendChild(t);
     if(on){
       var d=document.createElement('button');d.type='button';d.className='pi';d.title='Duplicate this page';d.setAttribute('aria-label','Duplicate this page');d.textContent='⧉';d.setAttribute('data-pgact','dup');b.appendChild(d);
-      if(S.pages.length>1){var x=document.createElement('button');x.type='button';x.className='pi pdel'+(delArm===i?' arm':'');x.setAttribute('data-pgact','del');
-        x.title=delArm===i?'Click again to delete this page':'Delete this page';x.setAttribute('aria-label',x.title);x.textContent=delArm===i?'Delete?':'×';b.appendChild(x);}
+      if(S.pages.length>1){var x=document.createElement('button');x.type='button';x.className='pi pdel';x.setAttribute('data-pgact','del');
+        x.title='Delete this page';x.setAttribute('aria-label','Delete this page');x.textContent='×';b.appendChild(x);}
     }
     bar.appendChild(b);
   });
@@ -1204,13 +1204,12 @@ function startRename(i){
   inp.addEventListener('mousedown',function(e){e.stopPropagation();});
 }
 $('#pagebar').addEventListener('click',function(e){
-  if(e.target.id==='pgAdd'){addPage(false);return;}
+  if(e.target.id==='pgAdd'){addPageAsked(false);return;}
   var a=e.target.closest('[data-pgact]');
   if(a){
     e.stopPropagation();
-    if(a.getAttribute('data-pgact')==='dup'){addPage(true);return;}
-    if(delArm===S.pageIdx){deletePage();return;}
-    delArm=S.pageIdx;renderPageBar();setTimeout(function(){if(delArm!==null){delArm=null;renderPageBar();}},3000);return;
+    if(a.getAttribute('data-pgact')==='dup'){addPageAsked(true);return;}
+    askDeletePage();return;
   }
   var tab=e.target.closest('[data-pg]');if(tab&&!e.target.closest('input'))switchPage(+tab.getAttribute('data-pg'));
 });
@@ -1221,6 +1220,22 @@ $('#pagebar').addEventListener('keydown',function(e){
   if(e.key==='Enter'||e.key===' '){e.preventDefault();switchPage(+tab.getAttribute('data-pg'));}
   else if(e.key==='F2'){e.preventDefault();startRename(+tab.getAttribute('data-pg'));}
 });
+/* a page that is not saved yet: ask before it is lost (Save keeps it in the project file first) */
+function askDeletePage(){
+  if(S.pages.length<2)return;
+  if(!S.dirty){deletePage();return;}
+  $('#pgDelT').textContent='Delete \u201c'+S.pages[S.pageIdx].name+'\u201d?';
+  $('#pgDel').hidden=false;$('#pgDelSave').focus();
+}
+function closePgDel(){$('#pgDel').hidden=true;}
+$('#pgDelCancel').addEventListener('click',closePgDel);
+$('#pgDelDiscard').addEventListener('click',function(){closePgDel();deletePage();});
+$('#pgDelSave').addEventListener('click',function(){closePgDel();ACT.saveWith(false,function(){deletePage();});});
+/* in the desktop app a project needs a folder and a file before it gets more pages */
+function addPageAsked(copy){
+  if(D&&!S.file){ACT.saveWith(true,function(){addPage(copy);},'Pages belong to a project. Make a folder for the project and name its file first; your new page is added after that.');return;}
+  addPage(copy);
+}
 /* the HTML of any page, for exporting all pages */
 function docOfPage(i){
   syncActive();
@@ -1228,6 +1243,85 @@ function docOfPage(i){
   S.root=p.root;S.css=p.css||'';S.js=p.js||'';S.title=p.title||p.name;
   try{return fullDoc();}finally{S.root=keep.root;S.css=keep.css;S.js=keep.js;S.title=keep.title;}
 }
+
+/* ---------- the folder chooser shown inside the app (instead of the Windows file window) ---------- */
+var fb=null;
+function fbMsg(t){$('#fbMsg').textContent=t||'';}
+function fbJoin(dir,name){if(dir==='')return name;var sep=dir.indexOf('\\')>=0?'\\':'/';return /[\\\/]$/.test(dir)?dir+name:dir+sep+name;}
+function chooseLocation(o){
+  return new Promise(function(resolve){
+    D.fbPlaces().then(function(pl){
+      if(!pl){resolve(null);return;}
+      fb={o:o,resolve:resolve,step:o.mode==='save'?1:0,dir:pl.start,parent:null,entries:[],sel:null,warned:false};
+      var box=$('#fbPlaces');box.innerHTML='';
+      pl.places.concat(pl.roots.length>1?[{name:'Drives',path:''}]:[]).forEach(function(p){var b=document.createElement('button');b.type='button';b.textContent=p.name;b.addEventListener('click',function(){fbGo(p.path);});box.appendChild(b);});
+      $('#fbTitle').textContent=o.title;
+      $('#fbFolderName').value=pageSlug(o.name||'my-project');
+      $('#fbFile').value=o.name?pageSlug(o.name):'';
+      fbMsg('');$('#fbDlg').hidden=false;fbGo(pl.start);
+    });
+  });
+}
+function fbGo(dir){
+  D.fbList({dir:dir,kind:fb.o.kind}).then(function(r){
+    if(!fb)return;if(!r||r.error){fbMsg((r&&r.error)||'Could not open that folder.');return;}
+    fb.dir=r.dir;fb.parent=r.parent;fb.entries=r.entries;fb.sel=null;fb.warned=false;fbMsg('');fbRender();
+  });
+}
+function fbRender(){
+  var o=fb.o,save=o.mode==='save',two=save&&fb.step===1;
+  $('#fbPath').value=fb.dir;$('#fbUp').disabled=fb.parent===null;
+  $('#fbNewRow').hidden=!two;$('#fbNameRow').hidden=!(save&&fb.step===2);
+  $('#fbBack').hidden=!(save&&fb.step===2);$('#fbSkip').hidden=!two;
+  $('#fbOk').textContent=two?'Create folder and continue':(save?'Save':'Open');
+  $('#fbOk').disabled=!save&&!fb.sel;
+  $('#fbHelp').textContent=two?(o.help?o.help+' ':'')+'Step 1 of 2: choose where the project folder goes, type its name and create it (or use the folder you are in).':
+    (save?'Step 2 of 2: name the file. It will be saved in '+fb.dir:(o.help||'Pick a file.'));
+  var list=$('#fbList');list.innerHTML='';
+  var shown=fb.entries.filter(function(e){return e.dir||!two;});
+  if(!shown.length){var em=document.createElement('div');em.className='empty';em.textContent=two?'No folders here yet. Create one below.':'Nothing to show here.';list.appendChild(em);}
+  shown.forEach(function(e){
+    var b=document.createElement('button');b.type='button';b.className=e.dir?'dir':'file';
+    b.textContent=(e.dir?'\uD83D\uDCC1 ':'\uD83D\uDCC4 ')+e.name;
+    if(!e.dir&&fb.sel===e.name)b.classList.add('sel');
+    b.addEventListener('click',function(){
+      if(e.dir){fbGo(fbJoin(fb.dir,e.name));return;}
+      if(save){$('#fbFile').value=e.name.replace(/\.[a-z]+$/i,'');fb.warned=false;fbMsg('');}
+      else{fb.sel=e.name;fbRender();}
+    });
+    b.addEventListener('dblclick',function(){if(!e.dir&&!save){fb.sel=e.name;fbOk();}});
+    list.appendChild(b);
+  });
+}
+function fbClose(v){$('#fbDlg').hidden=true;var r=fb&&fb.resolve;fb=null;if(r)r(v);}
+function fbOk(){
+  if(!fb)return;var o=fb.o;
+  if(o.mode==='open'){if(fb.sel)fbClose({dir:fb.dir,name:fb.sel});return;}
+  if(fb.step===1){
+    var fn=$('#fbFolderName').value.trim();if(!fn){fbMsg('Type a name for the project folder.');return;}
+    D.fbMkdir({dir:fb.dir,name:fn}).then(function(r){if(!r||r.error){fbMsg((r&&r.error)||'Could not create the folder.');return;}fb.step=2;fbGo(r.dir);});
+    return;
+  }
+  var nm=$('#fbFile').value.trim();if(!nm){fbMsg('Type a file name.');return;}
+  var ext=o.kind==='project'?'.nexus':'.html',full=/\.[a-z0-9]+$/i.test(nm)&&(o.kind==='project'?/\.(nexus|json)$/i:/\.html?$/i).test(nm)?nm:nm+ext;
+  var exists=fb.entries.some(function(e){return !e.dir&&e.name.toLowerCase()===full.toLowerCase();});
+  if(exists&&!fb.warned){fb.warned=true;fbMsg('A file named '+full+' is already in this folder. Press Save again to replace it.');return;}
+  fbClose({dir:fb.dir,name:full,overwrite:exists});
+}
+$('#fbOk').addEventListener('click',fbOk);
+$('#fbCancel').addEventListener('click',function(){fbClose(null);});
+$('#fbSkip').addEventListener('click',function(){if(!fb)return;fb.step=2;fbRender();});
+$('#fbBack').addEventListener('click',function(){if(!fb)return;fb.step=1;fbRender();});
+$('#fbUp').addEventListener('click',function(){if(fb&&fb.parent!==null)fbGo(fb.parent);});
+$('#fbGo').addEventListener('click',function(){if(fb)fbGo($('#fbPath').value.trim());});
+$('#fbPath').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();$('#fbGo').click();}});
+['#fbFolderName','#fbFile'].forEach(function(id){$(id).addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();fbOk();}});$(id).addEventListener('input',function(){if(fb)fb.warned=false;});});
+$('#fbDlg').addEventListener('mousedown',function(e){if(e.target.id==='fbDlg')fbClose(null);});
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Escape')return;
+  if(!$('#fbDlg').hidden){e.stopPropagation();fbClose(null);}
+  else if(!$('#pgDel').hidden){e.stopPropagation();closePgDel();}
+},true);
 
 /* ---------- collapsing the side panels ---------- */
 var PANEL_KEY='nexusstudio.panels.v1',panels={l:false,r:false};
@@ -1241,9 +1335,11 @@ function applyPanels(){
 }
 function setPanel(side,collapsed){panels[side]=collapsed;applyPanels();}
 $('#colL').addEventListener('click',function(){setPanel('l',true);});
-$('#railL').addEventListener('click',function(){setPanel('l',false);});
+$('#railLx').addEventListener('click',function(){setPanel('l',false);});
+$('#railL').addEventListener('click',function(e){var b=e.target.closest('[data-rail]');if(!b)return;S.ltab=b.getAttribute('data-rail');syncLeft();setPanel('l',false);});
 $('#colR').addEventListener('click',function(){setPanel('r',true);});
-$('#railR').addEventListener('click',function(){setPanel('r',false);});
+$('#railRx').addEventListener('click',function(){setPanel('r',false);});
+$('#railR').addEventListener('click',function(e){var b=e.target.closest('[data-rail]');if(!b)return;S.rtab=b.getAttribute('data-rail');setPanel('r',false);renderProps();});
 
 /* ---------- views ---------- */
 function setView(v){
@@ -1284,26 +1380,52 @@ function projectJson(){var f=fullState();return JSON.stringify({format:'nexusstu
 function parseProject(text){var o=JSON.parse(text);if(!o||o.format!=='nexusstudio')throw new Error('This file is not a NexusStudio project.');return cleanState(o);}
 function needDesktop(){toast('This works in the NexusStudio desktop app');}
 function afterNew(){S.file=null;S.dirty=false;if(D)D.newProject();if(D)D.setDocName(S.title);}
+function openedProject(r){
+  if(!r||r.canceled)return;if(r.error)return toast(r.error);
+  try{loadState(parseProject(r.text));S.file=r.name;S.dirty=false;D.setDocName(S.file);toast('Opened '+r.name);}catch(e){toast('Could not open: '+e.message);}
+}
+function savedProject(r){S.file=r.name;S.dirty=false;D.setDocName(S.file);toast('Saved '+r.name);}
+function importedFile(r){
+  if(!r||r.canceled)return;if(r.error)return toast(r.error);
+  importHtml(r.text,/<html|<body|<!doctype/i.test(r.text));changed();toast('Imported '+r.name);
+}
 var ACT={
   newBlank:function(){loadState(blank());afterNew();toast('New blank page');},
   sample:function(){loadState(sample());afterNew();toast('Sample page loaded');},
   importHtml:function(){openModal('Import HTML','Paste a full page or just body markup. Classes from stylesheets stay as classes; inline styles become editable properties.','',"Import",function(v){
     if(!v.trim())return;importHtml(v,/<html|<body|<!doctype/i.test(v));changed();closeModal();toast('Imported');});},
   copyAll:function(){copyText(fullDoc(),'Full page HTML copied');},
-  openProject:function(){if(!D)return needDesktop();D.openProject().then(function(r){if(!r||r.canceled)return;if(r.error)return toast(r.error);
-    try{loadState(parseProject(r.text));S.file=r.name;S.dirty=false;D.setDocName(S.file);toast('Opened '+r.name);}catch(e){toast('Could not open: '+e.message);}});},
+  openProject:function(){if(!D)return needDesktop();D.openProject().then(function(r){
+    if(r&&r.needLocation)return chooseLocation({mode:'open',kind:'project',title:'Open project'}).then(function(sel){if(sel)return D.fbRead({kind:'project',dir:sel.dir,name:sel.name}).then(openedProject);});
+    openedProject(r);});},
   saveProject:function(){ACT.saveWith(false);},
   saveAs:function(){ACT.saveWith(true);},
-  saveWith:function(as){if(!D)return needDesktop();D.saveProject(projectJson(),as,S.title).then(function(r){if(!r||r.canceled)return;if(r.error)return toast(r.error);S.file=r.name;S.dirty=false;D.setDocName(S.file);toast('Saved '+r.name);});},
+  saveWith:function(as,cb,help){if(!D)return needDesktop();D.saveProject(projectJson(),as,S.title).then(function(r){
+    if(!r||r.canceled)return;if(r.error)return toast(r.error);
+    if(r.needLocation)return chooseLocation({mode:'save',kind:'project',title:'Save project',name:S.title,help:help}).then(function(sel){
+      if(!sel)return;
+      return D.fbSaveProject({dir:sel.dir,name:sel.name,text:projectJson(),overwrite:sel.overwrite}).then(function(r2){
+        if(!r2||r2.error)return toast((r2&&r2.error)||'Could not save.');if(r2.exists)return toast('A file with that name already exists.');
+        savedProject(r2);if(cb)cb();});});
+    savedProject(r);if(cb)cb();});},
   exportAll:function(){
     if(S.pages.length<2)return toast('This project has only one page. Use Export HTML.');
     if(!D||!D.exportPages)return needDesktop();
     var files=S.pages.map(function(p,i){return {name:p.name,text:docOfPage(i)};});
-    D.exportPages(files,S.title).then(function(r){if(!r||r.canceled)return;toast(r.error||('Exported '+r.count+' pages'));});
+    D.exportPages(files,S.title).then(function(r){
+      if(!r||r.canceled)return;if(r.error)return toast(r.error);
+      if(r.needLocation)return chooseLocation({mode:'save',kind:'html',title:'Export all pages',name:S.title,help:'Every page is saved as its own HTML file in the folder; the first page gets the file name you choose.'}).then(function(sel){
+        if(!sel)return;return D.fbExportPages({dir:sel.dir,name:sel.name,files:files,overwrite:sel.overwrite}).then(function(r2){toast(!r2||r2.error?((r2&&r2.error)||'Could not export.'):('Exported '+r2.count+' pages'));});});
+      toast('Exported '+r.count+' pages');});
   },
-  exportHtml:function(){if(!D)return needDesktop();D.exportHtml(fullDoc(),S.title).then(function(r){if(!r||r.canceled)return;toast(r.error||('Exported '+r.name));});},
-  importFile:function(){if(!D)return needDesktop();D.importHtml().then(function(r){if(!r||r.canceled)return;if(r.error)return toast(r.error);
-    importHtml(r.text,/<html|<body|<!doctype/i.test(r.text));changed();toast('Imported '+r.name);});},
+  exportHtml:function(){if(!D)return needDesktop();D.exportHtml(fullDoc(),S.title).then(function(r){
+    if(!r||r.canceled)return;if(r.error)return toast(r.error);
+    if(r.needLocation)return chooseLocation({mode:'save',kind:'html',title:'Export HTML',name:S.title}).then(function(sel){
+      if(!sel)return;return D.fbExportHtml({dir:sel.dir,name:sel.name,text:fullDoc(),overwrite:sel.overwrite}).then(function(r2){toast(!r2||r2.error?((r2&&r2.error)||'Could not export.'):'Exported '+r2.name);});});
+    toast('Exported '+r.name);});},
+  importFile:function(){if(!D)return needDesktop();D.importHtml().then(function(r){
+    if(r&&r.needLocation)return chooseLocation({mode:'open',kind:'html',title:'Import HTML file'}).then(function(sel){if(sel)return D.fbRead({kind:'html',dir:sel.dir,name:sel.name}).then(importedFile);});
+    importedFile(r);});},
   connectAi:function(){openAi();},
   undo:undo,redo:redo,dup:dupSel,del:delSel,out:moveOut,up:function(){moveSel(-1);},down:function(){moveSel(1);},
   grid:function(){S.grid=!S.grid;stage.classList.toggle('nogrid',!S.grid);$('#tgGrid').classList.toggle('on',S.grid);},

@@ -135,71 +135,126 @@ async function readLimited(file) {
   return fs.promises.readFile(file, 'utf8');
 }
 ipcMain.handle('file:new', function (e) { if (!fromEditor(e)) return; currentFile = null; });
-ipcMain.handle('file:open', async function (e) {
-  if (!fromEditor(e)) return { canceled: true };
-  const r = await dialog.showOpenDialog(win, { title: 'Open project', properties: ['openFile'], filters: [{ name: 'NexusStudio project', extensions: ['nexus', 'json'] }] });
-  if (r.canceled || !r.filePaths.length) return { canceled: true };
-  try {
-    const text = await readLimited(r.filePaths[0]);
-    currentFile = r.filePaths[0];
-    return { text: text, name: path.basename(currentFile) };
-  } catch (err) { return { error: err.message }; }
-});
+// Opening and saving use NexusStudio's own folder chooser (shown inside the app) instead of the Windows file
+// windows, which could be taller than the screen. The editor can only list folders and read or write
+// files with a fixed set of extensions; every path is checked here.
+const FB_KINDS = { project: ['.nexus', '.json'], html: ['.html', '.htm'] };
+function fbSafeName(n, kind) {
+  const ext = FB_KINDS[kind] && FB_KINDS[kind][0];
+  if (!ext) return null;
+  n = String(n || '').replace(/[\\/:*?"<>|\u0000-\u001f]/g, '-').replace(/^\.+/, '').trim().slice(0, 80);
+  if (!n) return null;
+  if (!FB_KINDS[kind].some(function (x) { return n.toLowerCase().endsWith(x); })) n += ext;
+  return n;
+}
+function fbDir(d) { return typeof d === 'string' && path.isAbsolute(d) && isDir(d) ? path.resolve(d) : null; }
+function fbRoots() {
+  if (process.platform === 'win32') {
+    const out = [];
+    for (let c = 67; c <= 90; c++) { const r = String.fromCharCode(c) + ':\\'; if (isDir(r)) out.push({ name: r, path: r }); }
+    return out;
+  }
+  return [{ name: '/', path: '/' }];
+}
+ipcMain.handle('file:new', function (e) { if (!fromEditor(e)) return; currentFile = null; });
+ipcMain.handle('file:open', function (e) { return fromEditor(e) ? { needLocation: true } : { canceled: true }; });
+ipcMain.handle('file:importHtml', function (e) { return fromEditor(e) ? { needLocation: true } : { canceled: true }; });
+ipcMain.handle('file:export', function (e) { return fromEditor(e) ? { needLocation: true } : { canceled: true }; });
+ipcMain.handle('file:exportPages', function (e) { return fromEditor(e) ? { needLocation: true } : { canceled: true }; });
 ipcMain.handle('file:save', async function (e, a) {
   if (!fromEditor(e) || !a || typeof a.text !== 'string') return { canceled: true };
+  if (!currentFile || a.saveAs) return { needLocation: true };
   try {
-    let target = currentFile;
-    if (!target || a.saveAs) {
-      const base = String(a.name || 'untitled').replace(/[\\/:*?"<>|]/g, '-').slice(0, 80);
-      const r = await dialog.showSaveDialog(win, { title: 'Save project', defaultPath: base + '.nexus', filters: [{ name: 'NexusStudio project', extensions: ['nexus'] }] });
-      if (r.canceled || !r.filePath) return { canceled: true };
-      target = r.filePath;
-    }
-    await fs.promises.writeFile(target, a.text, 'utf8');
-    currentFile = target;
-    return { ok: true, name: path.basename(target) };
+    await fs.promises.writeFile(currentFile, a.text, 'utf8');
+    return { ok: true, name: path.basename(currentFile) };
   } catch (err) { return { error: 'Could not save: ' + err.message }; }
 });
-ipcMain.handle('file:export', async function (e, a) {
-  if (!fromEditor(e) || !a || typeof a.text !== 'string') return { canceled: true };
-  try {
-    const base = String(a.name || 'index').replace(/[\\/:*?"<>|]/g, '-').slice(0, 80);
-    const r = await dialog.showSaveDialog(win, { title: 'Export HTML', defaultPath: base + '.html', filters: [{ name: 'Web page', extensions: ['html'] }] });
-    if (r.canceled || !r.filePath) return { canceled: true };
-    await fs.promises.writeFile(r.filePath, a.text, 'utf8');
-    return { ok: true, name: path.basename(r.filePath) };
-  } catch (err) { return { error: 'Could not export: ' + err.message }; }
+ipcMain.handle('fb:places', function (e) {
+  if (!fromEditor(e)) return null;
+  const home = app.getPath('home'), places = [];
+  [['Documents', 'documents'], ['Desktop', 'desktop'], ['Downloads', 'downloads']].forEach(function (p) { try { const d = app.getPath(p[1]); if (isDir(d)) places.push({ name: p[0], path: d }); } catch (err) { /* not available */ } });
+  places.push({ name: 'Home', path: home });
+  const last = readSettings().lastDir;
+  return { start: (last && isDir(last)) ? last : (places[0] ? places[0].path : home), places: places, roots: fbRoots() };
 });
-ipcMain.handle('file:exportPages', async function (e, a) {
+ipcMain.handle('fb:list', function (e, a) {
+  if (!fromEditor(e) || !a) return { error: 'Not allowed.' };
+  if (a.dir === '') return { dir: '', parent: null, entries: fbRoots().map(function (r) { return { name: r.path, dir: true }; }) };
+  const dir = fbDir(a.dir);
+  if (!dir) return { error: 'That folder does not exist.' };
+  const exts = FB_KINDS[a.kind] || [];
+  let ents;
+  try { ents = fs.readdirSync(dir, { withFileTypes: true }); } catch (err) { return { error: 'This folder cannot be opened.' }; }
+  const out = [];
+  for (const ent of ents) {
+    if (ent.name.startsWith('.')) continue;
+    if (ent.isDirectory()) out.push({ name: ent.name, dir: true });
+    else if (ent.isFile() && exts.some(function (x) { return ent.name.toLowerCase().endsWith(x); })) out.push({ name: ent.name, dir: false });
+  }
+  out.sort(function (x, y) { return (y.dir - x.dir) || x.name.toLowerCase().localeCompare(y.name.toLowerCase()); });
+  const parent = path.dirname(dir) !== dir ? path.dirname(dir) : (process.platform === 'win32' ? '' : null);
+  return { dir: dir, parent: parent, entries: out.slice(0, 600) };
+});
+ipcMain.handle('fb:mkdir', function (e, a) {
+  if (!fromEditor(e) || !a) return { error: 'Not allowed.' };
+  const dir = fbDir(a.dir);
+  const name = String(a.name || '').replace(/[\\/:*?"<>|\u0000-\u001f]/g, '-').replace(/^\.+/, '').trim().slice(0, 80);
+  if (!dir) return { error: 'That folder does not exist.' };
+  if (!name) return { error: 'Type a folder name.' };
+  const target = path.join(dir, name);
+  try { if (!fs.existsSync(target)) fs.mkdirSync(target); else if (!isDir(target)) return { error: 'A file with that name already exists.' }; }
+  catch (err) { return { error: 'Could not create the folder: ' + err.message }; }
+  const s = readSettings(); s.lastDir = target; writeSettings(s);
+  return { ok: true, dir: target };
+});
+async function fbWrite(a, kind, write) {
+  const dir = fbDir(a && a.dir), name = fbSafeName(a && a.name, kind);
+  if (!dir || !name) return { error: 'Choose a folder and a file name.' };
+  const target = path.join(dir, name);
+  if (fs.existsSync(target) && !a.overwrite) return { exists: true, name: name };
+  try { await write(target, dir, name); } catch (err) { return { error: 'Could not save: ' + err.message }; }
+  const s = readSettings(); s.lastDir = dir; writeSettings(s);
+  return { ok: true, name: name, folder: dir };
+}
+ipcMain.handle('fb:saveProject', function (e, a) {
+  if (!fromEditor(e) || !a || typeof a.text !== 'string' || a.text.length > MAX_FILE) return { canceled: true };
+  return fbWrite(a, 'project', async function (target) { await fs.promises.writeFile(target, a.text, 'utf8'); currentFile = target; });
+});
+ipcMain.handle('fb:exportHtml', function (e, a) {
+  if (!fromEditor(e) || !a || typeof a.text !== 'string' || a.text.length > MAX_FILE) return { canceled: true };
+  return fbWrite(a, 'html', async function (target) { await fs.promises.writeFile(target, a.text, 'utf8'); });
+});
+ipcMain.handle('fb:exportPages', function (e, a) {
   if (!fromEditor(e) || !a || !Array.isArray(a.files) || !a.files.length || a.files.length > 30) return { canceled: true };
-  const files = a.files.filter(function (f) { return f && typeof f.text === 'string'; });
+  const files = a.files.filter(function (f) { return f && typeof f.text === 'string' && f.text.length <= MAX_FILE; });
   if (!files.length) return { canceled: true };
-  try {
-    const clean = function (n) { return String(n || 'page').replace(/[\\/:*?"<>|]/g, '-').slice(0, 80); };
-    const base = clean(a.name || 'index');
-    const r = await dialog.showSaveDialog(win, { title: 'Export all pages (pick a name for the first page)', defaultPath: base + '.html', filters: [{ name: 'Web page', extensions: ['html'] }] });
-    if (r.canceled || !r.filePath) return { canceled: true };
-    const dir = path.dirname(r.filePath), stem = path.basename(r.filePath).replace(/\.html?$/i, '');
-    let count = 0;
+  let count = 0;
+  return fbWrite(a, 'html', async function (target, dir, name) {
+    const stem = name.replace(/\.html?$/i, '');
     for (let i = 0; i < files.length; i++) {
-      let target = r.filePath;
+      let t = target;
       if (i > 0) {
         const slug = String(files[i].name || 'page').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'page';
-        target = path.join(dir, stem + '-' + slug + '.html');
+        t = path.join(dir, stem + '-' + slug + '.html');
         let k = 2;
-        while (fs.existsSync(target)) { target = path.join(dir, stem + '-' + slug + '-' + k + '.html'); k++; }
+        while (fs.existsSync(t)) { t = path.join(dir, stem + '-' + slug + '-' + k + '.html'); k++; }
       }
-      await fs.promises.writeFile(target, files[i].text, 'utf8');
+      await fs.promises.writeFile(t, files[i].text, 'utf8');
       count++;
     }
-    return { ok: true, count: count, folder: dir };
-  } catch (err) { return { error: 'Could not export: ' + err.message }; }
+  }).then(function (r) { if (r.ok) r.count = count; return r; });
 });
-ipcMain.handle('file:importHtml', async function (e) {
-  if (!fromEditor(e)) return { canceled: true };
-  const r = await dialog.showOpenDialog(win, { title: 'Import HTML file', properties: ['openFile'], filters: [{ name: 'Web page', extensions: ['html', 'htm'] }] });
-  if (r.canceled || !r.filePaths.length) return { canceled: true };
-  try { return { text: await readLimited(r.filePaths[0]), name: path.basename(r.filePaths[0]) }; } catch (err) { return { error: err.message }; }
+ipcMain.handle('fb:read', async function (e, a) {
+  if (!fromEditor(e) || !a || !FB_KINDS[a.kind]) return { canceled: true };
+  const dir = fbDir(a.dir), name = String(a.name || '');
+  if (!dir || name !== path.basename(name) || !FB_KINDS[a.kind].some(function (x) { return name.toLowerCase().endsWith(x); })) return { error: 'Choose a file.' };
+  const target = path.join(dir, name);
+  try {
+    const text = await readLimited(target);
+    if (a.kind === 'project') currentFile = target;
+    const s = readSettings(); s.lastDir = dir; writeSettings(s);
+    return { text: text, name: name };
+  } catch (err) { return { error: err.message }; }
 });
 
 /* ---------- element documentation ---------- */

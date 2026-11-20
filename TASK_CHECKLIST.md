@@ -278,7 +278,19 @@
 - [x] File > Export all pages…; MCP page tools
 - [x] Add automated tests, run them, look at the app in a browser
 - [x] Commit and push changes to feature branch
-- [ ] User personally tests collapsing the panels, adding and switching pages, and Export all pages
+- [x] User personally tests collapsing the panels, adding and switching pages, and Export all pages
+
+**Status:** Approved (user said "Approved but …" on 2026-11-20, with the changes below)
+
+## Page delete message, one-tab rails, smaller save window, folder-first saving
+
+- [x] Deleting a page no longer asks "click again"; an unsaved page shows a message (may lose content) with Save / Discard / Keep page
+- [x] Collapsed panels show a button per tab (Elements, Layers; HTML, CSS, JavaScript) that opens only that tab
+- [x] Save/Open/Export windows are now inside the app and fit short laptop screens (replaces the tall Windows window)
+- [x] Save, Save as and + on a fresh project: pick/create the project folder first, then the file name; existing file warns before replacing
+- [x] Main process validates every chooser path (no arbitrary writes); tests updated and added, run
+- [x] Commit and push changes to feature branch
+- [ ] User personally tests the four changes
 
 **Status:** Awaiting User Approval
 
