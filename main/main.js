@@ -156,7 +156,6 @@ function fbRoots() {
   }
   return [{ name: '/', path: '/' }];
 }
-ipcMain.handle('file:new', function (e) { if (!fromEditor(e)) return; currentFile = null; });
 ipcMain.handle('file:open', function (e) { return fromEditor(e) ? { needLocation: true } : { canceled: true }; });
 ipcMain.handle('file:importHtml', function (e) { return fromEditor(e) ? { needLocation: true } : { canceled: true }; });
 ipcMain.handle('file:export', function (e) { return fromEditor(e) ? { needLocation: true } : { canceled: true }; });
