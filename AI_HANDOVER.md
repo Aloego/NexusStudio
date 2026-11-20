@@ -4,7 +4,13 @@
 
 Close tab vs delete page (state: Awaiting User Approval once pushed; it replaces the delete-page message task, which the user said did not fit how they work). Approved on 2026-11-20: the one-tab rails and the in-app save window. Rejected on 2026-11-20 and deferred: folder-first saving (the code is unchanged; design notes are in the "twenty-third request" session below).
 
-## Latest Session (2026-11-20, twenty-sixth request: Pages tab, a tree of every page)
+## Latest Session (2026-11-20, twenty-seventh request: drag to reorder pages)
+
+- User request: add drag-to-reorder to the Pages tab.
+- Done: rows in `#pgTree` are draggable; a line shows where the page will land; dropping calls `movePage(from,to)`, which keeps the open page open, marks the project unsaved, and the tabs follow the new order. Keyboard: Alt+Up / Alt+Down on a focused row moves it one place. Order is saved with the project (it is the order of `S.pages`).
+- Tests: `node test/e2e.js` 242 passed, 3 failed (same 3 old failures). Real Electron window not run.
+
+## Previous Session (2026-11-20, twenty-sixth request: Pages tab, a tree of every page)
 
 - User request: instead of the Closed list, a file explorer showing all pages of the file; closing a tab never removes a page from it; click a page in the tree to reopen it. User chose: a new "Pages" tab in the left panel (next to Elements and Layers) and to remove the "Closed (n)" button.
 - Done: new left-panel tab `#tabPg` / pane `#pgPane` / tree `#pgTree` (also a Pages button on the collapsed rail). Root row shows the project file name (or "Project"); each page is a row: open page highlighted, closed pages grey italic with "closed". Click a row opens it (reopens the tab if closed). Hover shows a delete button, which asks "Delete ... from the project?" (Keep page / Delete page). Removed `#pgClosed` button and `#pgClosedList`. Tab `×` still only closes. `renderPageTree()` is called from `renderPageBar()`.

@@ -353,3 +353,11 @@
 - [x] Tests in `test/e2e.js`
 
 **Status:** Awaiting User Approval. It replaces the Closed-list part of the previous task.
+
+## Drag to reorder pages
+
+- [x] Drag a row in the Pages tab to a new place; a line shows the drop spot
+- [x] Tabs follow the order; the open page stays open; Alt+Up/Down moves a focused row
+- [x] Tests in `test/e2e.js`
+
+**Status:** Awaiting User Approval.

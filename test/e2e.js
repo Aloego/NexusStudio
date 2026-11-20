@@ -591,7 +591,18 @@ page.on('console', function (m) {
   ok(JSON.stringify(await pgTabs()) === '["Page 1","About"]' && JSON.stringify(await treeRows()) === '["Page 1","About|on"]', 'confirming removes the page from the project and the tree for good ' + JSON.stringify(await treeRows()));
   await defPage.click('#pagebar .pg.on [data-pgact="close"]');
   ok((await openN()) === 1 && (await defPage.$$('#pagebar .pg .pdel')).length === 0, 'the last open tab has no close button');
+  // drag to reorder
   await defPage.click('#pgTree [data-ptpg="1"]');
+  await defPage.click('#pgAdd'); await defPage.click('#tabPg');
+  await defPage.dragAndDrop('#pgTree [data-ptpg="2"]', '#pgTree [data-ptpg="0"]', { targetPosition: { x: 40, y: 2 } });
+  const ord1 = await pgTabs();
+  ok(ord1.length === 3 && ord1[0] !== 'Page 1' && ord1[1] === 'Page 1', 'dragging a page above another moves it and the tabs follow ' + JSON.stringify(ord1));
+  const activeBefore = await defPage.$eval('#pagebar .pg.on .pn', function (e) { return e.textContent; });
+  await defPage.focus('#pgTree [data-ptpg="0"]'); await defPage.keyboard.press('Alt+ArrowDown');
+  const ord2 = await pgTabs();
+  ok(ord2[0] === ord1[1] && ord2[1] === ord1[0] && (await defPage.$eval('#pagebar .pg.on .pn', function (e) { return e.textContent; })) === activeBefore, 'Alt+Down moves a page one place and the open page stays open ' + JSON.stringify(ord2));
+  await pgCall('delete_page', { page: 'Page 3' });
+  await pgCall('select_page', { page: 'About' });
   await defPage.click('#tabEl');
   const lp = await pgCall('list_pages');
   ok(lp.pages.length === 2 && lp.pages[1].name === 'About' && lp.pages[1].closed === false, 'list_pages reports the pages and which are closed');

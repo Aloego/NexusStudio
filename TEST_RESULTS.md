@@ -957,3 +957,17 @@ Manual testing: open the Pages tab, add pages, close one with `×` (it stays in 
 ### Approval
 
 Awaiting User Approval
+
+## Drag to reorder pages
+
+Command: `node test/e2e.js` (AI sandbox). Result: 242 passed, 3 failed (same 3 as before).
+
+Passed: dragging a page above another moves it and the tabs follow; Alt+Down moves a page one place and the open page stays open.
+
+Not run: the real Electron window.
+
+Manual testing: in the Pages tab, drag a page up or down (a blue line shows where it will drop). Check the tabs follow, then save and reopen the project to see the order kept.
+
+### Approval
+
+Awaiting User Approval
