@@ -2,7 +2,7 @@
 
 ## Current Task
 
-Rails: a rail tab opens only that tab (state: Awaiting User Approval once pushed). Folder-first saving was rejected by the user and then deferred by them ("leave it for now"); it is unchanged. The delete-page message and in-app save window were accepted in comments but not formally approved.
+Nothing awaiting approval. Approved on 2026-11-20: the one-tab rails and the in-app save window. Rejected on 2026-11-20 and deferred: folder-first saving (the file name is not reflected on the page); the code is unchanged and the design notes are in the "twenty-third request" session below. The delete-page message was called "good" by the user but not formally approved.
 
 ## Latest Session (2026-11-20, twenty-third request: rails fixed; saving deferred)
 
@@ -17,7 +17,8 @@ Rails: a rail tab opens only that tab (state: Awaiting User Approval once pushed
   - Relevant code: `main/main.js` (`file:save`, `fb:saveProject`, `fb:read`, `FB_KINDS`, `win:docname`), `main/preload.js`, `renderer/app.js` (`ACT.saveWith`, `savedProject`, `openedProject`, `chooseLocation`, `fullDoc`, `genCss`, `importHtml`, `docOfPage`, `S.file`).
 - Known: `node test/main-smoke.js` crashes (`screen` missing from its Electron stand-in since Dyad commit `130d85b`); the 3 e2e failures are a test mismatch (those tools live in `main/mcp-server.js`). Neither was touched.
 - Not run: real Electron window testing. The user must test it.
-- Next action: wait for the user to test the rails and say `APPROVE` or `REJECT`; the saving work only when the user asks. Do not merge into `main`.
+- Result (2026-11-20, later): user approved the rails and the in-app save window, and explicitly rejected folder-first saving (not reverted; deferred).
+- Next action: wait for the user's next instruction; resume the folder-first saving fix (notes above) only when asked. Do not merge into `main`.
 
 ## Earlier Session (2026-11-20, twenty-first request: collapsible panels and several pages)
 

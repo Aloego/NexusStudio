@@ -863,5 +863,13 @@ Screenshot with both panels collapsed, then Layers and CSS opened from the strip
 
 ### Approval
 
-Awaiting User Approval
+Approved (user said "Rail task - Approve" on 2026-11-20).
 
+---
+
+## User decisions on the 2026-11-20 "Delete message, rail tabs, in-app save chooser" task
+
+- In-app save window: Approved (user said "In-app save window - Approve").
+- Folder-first saving: Rejected (user said "Folder-first saving - Reject"). Reason: the file name is not reflected on the page after saving. Deferred; the code is unchanged. No tests were changed.
+- One-tab rails: see the "Rails: a rail tab opens only that tab" section above (Approved).
+- Delete-page message: not part of this message from the user; earlier comment "good" only. Not marked Approved.
