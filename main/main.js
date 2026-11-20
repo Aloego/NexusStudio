@@ -170,6 +170,31 @@ ipcMain.handle('file:export', async function (e, a) {
     return { ok: true, name: path.basename(r.filePath) };
   } catch (err) { return { error: 'Could not export: ' + err.message }; }
 });
+ipcMain.handle('file:exportPages', async function (e, a) {
+  if (!fromEditor(e) || !a || !Array.isArray(a.files) || !a.files.length || a.files.length > 30) return { canceled: true };
+  const files = a.files.filter(function (f) { return f && typeof f.text === 'string'; });
+  if (!files.length) return { canceled: true };
+  try {
+    const clean = function (n) { return String(n || 'page').replace(/[\\/:*?"<>|]/g, '-').slice(0, 80); };
+    const base = clean(a.name || 'index');
+    const r = await dialog.showSaveDialog(win, { title: 'Export all pages (pick a name for the first page)', defaultPath: base + '.html', filters: [{ name: 'Web page', extensions: ['html'] }] });
+    if (r.canceled || !r.filePath) return { canceled: true };
+    const dir = path.dirname(r.filePath), stem = path.basename(r.filePath).replace(/\.html?$/i, '');
+    let count = 0;
+    for (let i = 0; i < files.length; i++) {
+      let target = r.filePath;
+      if (i > 0) {
+        const slug = String(files[i].name || 'page').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'page';
+        target = path.join(dir, stem + '-' + slug + '.html');
+        let k = 2;
+        while (fs.existsSync(target)) { target = path.join(dir, stem + '-' + slug + '-' + k + '.html'); k++; }
+      }
+      await fs.promises.writeFile(target, files[i].text, 'utf8');
+      count++;
+    }
+    return { ok: true, count: count, folder: dir };
+  } catch (err) { return { error: 'Could not export: ' + err.message }; }
+});
 ipcMain.handle('file:importHtml', async function (e) {
   if (!fromEditor(e)) return { canceled: true };
   const r = await dialog.showOpenDialog(win, { title: 'Import HTML file', properties: ['openFile'], filters: [{ name: 'Web page', extensions: ['html', 'htm'] }] });

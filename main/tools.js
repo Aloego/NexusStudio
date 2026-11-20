@@ -131,6 +131,31 @@ const TOOLS = [
     inputSchema: obj({ operations: { type: 'array', description: 'Steps to run.', items: obj({ tool: str('Any editing tool name except screenshot and batch.'), arguments: { type: 'object' } }, ['tool']) } }, ['operations']), destructive: true
   },
   {
+    name: 'list_pages', title: 'List the pages of the project',
+    description: 'Returns every page (tab above the canvas) with its index, name and title, and which one is open. All other tools work on the page that is open.',
+    inputSchema: obj({}), readOnly: true
+  },
+  {
+    name: 'add_page', title: 'Add a page',
+    description: 'Adds a new blank page (or a copy of the open page) after the open page and opens it. The person can switch back with the page tabs.',
+    inputSchema: obj({ name: str('Name for the page tab.'), duplicate: bool('Copy the open page instead of starting blank.') })
+  },
+  {
+    name: 'select_page', title: 'Open a page',
+    description: 'Opens a page of the project so the other tools edit it. Give the page name, or its number counting from 1 as text, or its index from list_pages.',
+    inputSchema: obj({ page: { type: ['string', 'number'], description: 'Page name, or index from list_pages.' } }, ['page']), readOnly: true
+  },
+  {
+    name: 'rename_page', title: 'Rename a page',
+    description: 'Changes the name on a page tab. Defaults to the open page.',
+    inputSchema: obj({ name: str('New name.'), page: { type: ['string', 'number'], description: 'Page name or index. Defaults to the open page.' } }, ['name'])
+  },
+  {
+    name: 'delete_page', title: 'Delete a page',
+    description: 'Deletes a page and everything on it. The last remaining page cannot be deleted. This cannot be undone.',
+    inputSchema: obj({ page: { type: ['string', 'number'], description: 'Page name or index. Defaults to the open page.' } }), destructive: true
+  },
+  {
     name: 'new_document', title: 'Start a new page',
     description: 'Throws away the current page and starts a blank page or the sample landing page. The person can undo this.',
     inputSchema: obj({ template: str('"blank" or "sample".', { enum: ['blank', 'sample'] }) }), destructive: true

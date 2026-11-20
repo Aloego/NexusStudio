@@ -531,6 +531,62 @@ page.on('console', function (m) {
   await addPalette('h3'); await defPage.evaluate(function () { document.querySelector('#ovLab').click(); });
   ok((await defPage.textContent('#docTitle')) === '<h3>', 'the guide follows the selected element');
   await defPage.click('#docClose');
+  console.log('Pages and collapsible panels');
+  const pgCall = function (m, a) { return defPage.evaluate(function (x) { return window.NexusAPI.call(x.m, x.a); }, { m: m, a: a || {} }); };
+  const pgTabs = function () { return defPage.$$eval('#pagebar .pg .pn', function (l) { return l.map(function (e) { return e.textContent; }); }); };
+  await pgCall('new_document', { template: 'blank' });
+  await pgCall('add_element', { tag: 'h1', text: 'First page title', parent: 'body' }).catch(async function () { await defPage.evaluate(function () { const em = [].slice.call(document.querySelectorAll('#palette .it em')).filter(function (e) { return e.textContent === 'h1'; })[0]; em.closest('button').click(); }); });
+  await pgCall('set_css', { css: '.one{color:red}' }); await pgCall('set_js', { js: 'var one=1;' });
+  ok(JSON.stringify(await pgTabs()) === '["Page 1"]', 'a project starts with one page tab ' + JSON.stringify(await pgTabs()));
+  await defPage.click('#pgAdd');
+  ok(JSON.stringify(await pgTabs()) === '["Page 1","Page 2"]' && (await defPage.$eval('#pagebar .pg.on .pn', function (e) { return e.textContent; })) === 'Page 2', 'the + button adds a second page and opens it');
+  const pg2Tree = await pgCall('get_tree', { max_depth: 2 });
+  ok((pg2Tree.children || []).length === 0 && (await pgCall('get_document')).custom_css.indexOf('.one') < 0 && (await pgCall('get_document')).js.indexOf('one=1') < 0, 'the new page is empty and has its own CSS and JavaScript');
+  await defPage.evaluate(function () { const em = [].slice.call(document.querySelectorAll('#palette .it em')).filter(function (e) { return e.textContent === 'h2'; })[0]; em.closest('button').click(); });
+  await pgCall('set_css', { css: '.two{color:blue}' });
+  await defPage.click('#pagebar [data-pg="0"] .pn');
+  const pg1 = await pgCall('get_document');
+  ok((await defPage.$eval('#pagebar .pg.on .pn', function (e) { return e.textContent; })) === 'Page 1' && pg1.custom_css.indexOf('.one') >= 0 && pg1.custom_css.indexOf('.two') < 0 && pg1.html.indexOf('First page title') >= 0 && pg1.html.indexOf('<h2') < 0, 'switching back shows page 1 untouched ' + JSON.stringify(pg1).slice(0, 200));
+  await defPage.click('#pagebar [data-pg="1"] .pn');
+  ok((await pgCall('get_document')).custom_css.indexOf('.two') >= 0 && ((await pgCall('get_tree', { max_depth: 2 })).children || []).length === 1, 'page 2 kept its own content');
+  // undo only affects the page that is open
+  await pgCall('undo'); await pgCall('undo');
+  ok((await defPage.$eval('#pagebar .pg.on .pn', function (e) { return e.textContent; })) === 'Page 2', 'undo stays on the open page');
+  await defPage.dblclick('#pagebar .pg.on .pn');
+  await defPage.fill('#pagebar .pnin', 'About'); await defPage.press('#pagebar .pnin', 'Enter');
+  ok(JSON.stringify(await pgTabs()) === '["Page 1","About"]', 'double-click renames a page ' + JSON.stringify(await pgTabs()));
+  await defPage.click('#pagebar .pg.on [data-pgact="dup"]');
+  ok(JSON.stringify(await pgTabs()) === '["Page 1","About","About copy"]', 'duplicate adds a copy after the open page ' + JSON.stringify(await pgTabs()));
+  await defPage.click('#pagebar .pg.on [data-pgact="del"]');
+  ok((await pgTabs()).length === 3, 'delete needs a second click');
+  await defPage.click('#pagebar .pg.on [data-pgact="del"]');
+  ok(JSON.stringify(await pgTabs()) === '["Page 1","About"]', 'the second click deletes the page ' + JSON.stringify(await pgTabs()));
+  const lp = await pgCall('list_pages');
+  ok(lp.pages.length === 2 && lp.current === 1 && lp.pages[1].name === 'About', 'list_pages reports the pages');
+  await pgCall('select_page', { page: 'Page 1' });
+  ok((await pgCall('get_document')).custom_css.indexOf('.one') >= 0, 'select_page opens a page by name');
+  // pages survive a reload
+  await defPage.reload(); await defPage.waitForTimeout(400);
+  ok(JSON.stringify(await pgTabs()) === '["Page 1","About"]' && (await pgCall('get_document')).custom_css.indexOf('.one') >= 0, 'pages are remembered after reopening ' + JSON.stringify(await pgTabs()));
+  await pgCall('select_page', { page: 'About' });
+  ok((await pgCall('get_document')).custom_css.indexOf('.one') < 0 && (await defPage.$eval('#pagebar .pg.on .pn', function (e) { return e.textContent; })) === 'About', 'every page keeps its own content after reopening');
+  await pgCall('delete_page', { page: 'About' });
+  let lastDel = null; try { await pgCall('delete_page', {}); } catch (e) { lastDel = e.message; }
+  ok(/at least one page/.test(lastDel || ''), 'the last page cannot be deleted');
+  // collapsible panels
+  const colW = function () { return defPage.evaluate(function () { const l = document.querySelector('.left').getBoundingClientRect().width, r = document.querySelector('.right').getBoundingClientRect().width, c = document.querySelector('.center').getBoundingClientRect().width; return { l: Math.round(l), r: Math.round(r), c: Math.round(c) }; }); };
+  const w0 = await colW();
+  await defPage.click('#colL');
+  const w1 = await colW();
+  ok(w1.l < 50 && w1.c > w0.c + 150 && (await defPage.isVisible('#railL')) && !(await defPage.isVisible('#palette')), 'the arrow collapses the Elements/Layers panel and the canvas grows ' + JSON.stringify([w0, w1]));
+  await defPage.click('#colR');
+  const w2 = await colW();
+  ok(w2.r < 50 && w2.c > w1.c + 150 && !(await defPage.isVisible('#propBody')), 'the arrow collapses the Properties panel too ' + JSON.stringify(w2));
+  await defPage.reload(); await defPage.waitForTimeout(400);
+  ok((await colW()).l < 50 && (await colW()).r < 50, 'collapsed panels stay collapsed after reopening');
+  await defPage.click('#railL'); await defPage.click('#railR');
+  const w3 = await colW();
+  ok(w3.l === w0.l && w3.r === w0.r && (await defPage.isVisible('#palette')) && (await defPage.isVisible('#propBody')), 'the small arrow on the edge brings each panel back ' + JSON.stringify(w3));
   console.log('Device size dropdown');
   ok((await defPage.$$('#devs [data-w]')).length === 0, 'the Mobile / Tablet / Desktop tab buttons are gone');
   ok((await defPage.textContent('#devBtn')).trim() === 'Responsive', 'the dropdown starts as Responsive');
@@ -595,6 +651,7 @@ page.on('console', function (m) {
       onAiRequest: function (cb) { window.__aiCb = cb; }, aiRespond: function (id, ok, p) { (window.__aiResp = window.__aiResp || []).push({ id: id, ok: ok, p: p }); },
       onAiActivity: function (cb) { window.__actCb = cb; },
       docsOpenOnline: async function (t, site) { (window.__docs = window.__docs || []).push(['online', t, site]); return { ok: true }; },
+      exportPages: async function (files, name) { window.__exported = { files: files, name: name }; return { ok: true, count: files.length }; },
       docsOpenZeal: async function (t) { (window.__docs = window.__docs || []).push(['zeal', t]); return window.__zealMissing ? { needPath: true, error: 'Zeal was not found on this computer.' } : { ok: true }; },
       docsSetZealPath: async function (p) { (window.__docs = window.__docs || []).push(['path', p]); if (!/zeal/i.test(p)) return { error: 'bad' }; window.__zealMissing = false; return { ok: true }; }
     };
@@ -640,6 +697,11 @@ page.on('console', function (m) {
   await dpage.fill('#docZealPath', 'C:\\Zeal\\zeal.exe'); await dpage.click('#docZealSave'); await dpage.waitForTimeout(150);
   const docCalls = await dpage.evaluate(function () { return window.__docs; });
   ok(JSON.stringify(docCalls.map(function (c) { return c[0]; })) === '["online","online","zeal","path","zeal"]' && docCalls[0][1] === docCalls[2][1] && docCalls[0][2] === 'mdn' && docCalls[1][2] === 'w3schools' && !(await dpage.isVisible('#docZealRow')), 'desktop: MDN button, Zeal button asks for the path, saving it opens Zeal ' + JSON.stringify(docCalls));
+  await dpage.evaluate(function () { document.querySelector('#pgAdd').click(); });
+  await dpage.evaluate(function () { document.querySelector('[data-act="exportAll"]').click(); });
+  await dpage.waitForTimeout(150);
+  const expd = await dpage.evaluate(function () { return window.__exported; });
+  ok(expd && expd.files.length === 2 && expd.files.every(function (f) { return /^<!DOCTYPE html>/.test(f.text); }) && expd.files[1].name === 'Page 2', 'desktop: Export all pages hands every page as a full HTML document to the app');
   await dpage.keyboard.press('Escape');
   ok(derr.length === 0, 'no errors in the desktop-wired page ' + (derr.length ? JSON.stringify(derr) : ''));
 

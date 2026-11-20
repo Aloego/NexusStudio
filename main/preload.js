@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('nexus', {
   newProject: function () { return ipcRenderer.invoke('file:new'); },
   openProject: function () { return ipcRenderer.invoke('file:open'); },
   saveProject: function (text, saveAs, name) { return ipcRenderer.invoke('file:save', { text: text, saveAs: !!saveAs, name: name }); },
+  exportPages: function (files, name) { return ipcRenderer.invoke('file:exportPages', { files: files, name: name }); },
   exportHtml: function (text, name) { return ipcRenderer.invoke('file:export', { text: text, name: name }); },
   importHtml: function () { return ipcRenderer.invoke('file:importHtml'); },
   setPreview: function (html) { return ipcRenderer.invoke('preview:set', html); },

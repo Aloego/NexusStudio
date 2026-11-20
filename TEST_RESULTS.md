@@ -799,3 +799,13 @@ Awaiting User Approval
 ### Approval
 
 Awaiting User Approval
+
+## Collapsible panels and several pages (2026-11-20)
+
+- `node test/e2e.js`: 213 passed, 3 failed (`get_window_state`, `get_app_state`, `get_process_info`, same as before).
+- Looked at the app in a browser: page tabs and both collapsed panels render correctly.
+- Not run: real Electron window, real export dialog; user must test.
+
+### Approval
+
+Awaiting User Approval

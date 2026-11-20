@@ -4,7 +4,18 @@
 
 Drag positioned elements on the canvas: elements whose position is not static can be dragged to move them (state: Awaiting User Approval once pushed). Earlier on 2026-11-17: viewport number spinner fields and device size dropdown approved; "add every element blank" rejected and reverted.
 
-## Latest Session (2026-11-18, twentieth request: independent dragging)
+## Latest Session (2026-11-20, twenty-first request: collapsible panels and several pages)
+
+- User request: collapse arrows for the left panel (Elements and Layers) and the right panel (Properties with HTML, CSS, JavaScript) to make room for the canvas, and more than one page in a project. User chose: page tabs one at a time; every page has its own CSS and JavaScript.
+- Done in `renderer/index.html`, `styles.css`, `app.js` (panels): arrow button (`#colL`, `#colR`) in each panel header collapses it to a thin strip with a vertical label and an arrow (`#railL`, `#railR`) that brings it back; the canvas grows; state remembered in localStorage (`nexusstudio.panels.v1`). Hidden on narrow windows (single column layout).
+- Done (pages): a tab bar above the canvas (`#pagebar`): click a tab to open a page; `+` adds a blank page; the open page's tab has duplicate and delete buttons (delete needs a second click within 3 s); double-click or F2 renames. `S.root/css/js/title` always hold the open page; `S.pages` holds the list (`syncActive()`, `allPages()`, `fullState()`, `switchPage()`, `addPage()`, `deletePage()`, `renamePage()`). Each page has its own undo history; undo only affects the open page. Add, delete and rename page are not undoable. Draft (localStorage) and project files now store all pages (`pages`, `idx`; old single-page files still open as one page; `cleanState` cleans every page, max 30).
+- Done: File menu "Export all pages…" (`file:exportPages` IPC in `main/main.js`, `preload.js`): one Save dialog for the first page's name; other pages are written next to it as `<name>-<page-name>.html` (numbered if the file exists, never overwritten). "Export HTML…" and "Copy page code" still export the open page only. Preview, HTML, CSS and JavaScript tabs show the open page.
+- Done in `main/tools.js` + `app.js`: MCP tools `list_pages`, `add_page`, `select_page`, `rename_page`, `delete_page`; other tools act on the open page; `new_document` replaces only the open page.
+- Tests: `node test/e2e.js` gives 213 passed, 3 failed (the same 3 as before). New checks cover tabs, separate CSS/JS per page, switching, per-page undo, rename, duplicate, delete, reopening, panel collapse and restore, export-all hand-off. Not run: real Electron window and the real export dialog; user must test.
+- Known limits: pages share the viewport size; links between pages are not created automatically; the file name shown at the top is the open page's title.
+- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Do not merge into `main`.
+
+## Earlier Session (2026-11-18, twentieth request: independent dragging, approved)
 
 - User request: drag any element independently (a div must not drag other elements along; those only follow if really placed inside it), be able to take an element out of a box without deleting it (Delete removed it from the page completely), and have the generated HTML wrapped in doctype, html, head and body.
 - Finding: a box carries only the elements that are really its children. Elements ended up as children because dropping from the Elements tab onto a box always nested inside it, and earlier clicks nested too (fixed in the earlier request). There was no way to take a child out except deleting it or the Layers panel.

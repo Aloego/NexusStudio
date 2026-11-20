@@ -18,6 +18,7 @@
         <button data-act="saveAs">Save as…</button>
         <button data-act="importFile">Import HTML file…</button>
         <button data-act="exportHtml">Export HTML…</button>
+        <button data-act="exportAll">Export all pages…</button>
         <button data-act="newBlank">New blank page</button>
         <button data-act="sample">Load sample page</button>
         <button data-act="importHtml">Import HTML…</button>
@@ -47,7 +48,8 @@
 
   <div class="work">
     <aside class="left">
-      <div class="tabs"><button class="on" id="tabEl">Elements</button><button id="tabLy">Layers</button></div>
+      <button class="rail" id="railL" type="button" hidden title="Show the Elements and Layers panel" aria-label="Show the Elements and Layers panel"><span aria-hidden="true">›</span><em>Elements · Layers</em></button>
+      <div class="tabs"><button class="on" id="tabEl">Elements</button><button id="tabLy">Layers</button><button class="colb" id="colL" type="button" title="Hide this panel to make room for the canvas" aria-label="Hide the Elements and Layers panel" aria-expanded="true">‹</button></div>
       <div id="elPane" class="pane" style="display:flex;flex-direction:column">
         <div class="search"><input id="elSearch" type="text" placeholder="Search elements…" aria-label="Search elements"></div>
         <div id="palette" style="flex:1;overflow-y:auto"></div>
@@ -59,6 +61,7 @@
     </aside>
 
     <main class="center">
+      <div class="pagebar" id="pagebar" role="tablist" aria-label="Pages"></div>
       <div class="rulerbar" id="rulerbar">
         <div id="rpos"></div>
         <div>Select mode · double-click text to edit · <span id="zoomLab">100%</span></div>
@@ -101,7 +104,8 @@
     </main>
 
     <aside class="right">
-      <div class="phead"><div><b>Properties</b><span id="pTitle"></span></div><i></i></div>
+      <button class="rail" id="railR" type="button" hidden title="Show the Properties panel" aria-label="Show the Properties panel"><span aria-hidden="true">‹</span><em>Properties · HTML · CSS · JS</em></button>
+      <div class="phead"><div><b>Properties</b><span id="pTitle"></span></div><button class="colb" id="colR" type="button" title="Hide this panel to make room for the canvas" aria-label="Hide the Properties panel" aria-expanded="true">›</button></div>
       <div class="tabs"><button id="rtHtml">HTML</button><button class="on" id="rtCss">CSS</button><button id="rtJs">JavaScript</button></div>
       <div class="pane" id="propBody"></div>
       <div class="addbar" id="addbar">

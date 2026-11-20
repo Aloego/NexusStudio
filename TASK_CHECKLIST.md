@@ -269,6 +269,19 @@
 
 **Status:** Approved (user said "Approved" on 2026-11-18)
 
+## Collapsible side panels and several pages
+
+- [x] Collapse arrow on the Elements/Layers panel and on the Properties panel; thin strip with an arrow to bring each back; remembered
+- [x] Page tabs above the canvas: add, open, rename, duplicate, delete (two clicks)
+- [x] Each page has its own elements, CSS, JavaScript and undo history
+- [x] Pages saved in the draft and in project files (old files still open)
+- [x] File > Export all pages…; MCP page tools
+- [x] Add automated tests, run them, look at the app in a browser
+- [x] Commit and push changes to feature branch
+- [ ] User personally tests collapsing the panels, adding and switching pages, and Export all pages
+
+**Status:** Awaiting User Approval
+
 ## Phase 8 — End-to-End Workflow Verification
 
 - [ ] Test the complete AI workflow
