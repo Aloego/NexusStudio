@@ -485,6 +485,11 @@ function snap(){return JSON.stringify({root:S.root,css:S.css,js:S.js,title:S.tit
 function commit(){var s=snap();if(s===hist[hi])return;S.dirty=true;hist=hist.slice(0,hi+1);hist.push(s);if(hist.length>120)hist.shift();hi=hist.length-1;save();syncUndo();}
 /* ---------- pages: S.root / S.css / S.js / S.title always hold the page being edited ---------- */
 function syncActive(){var p=S.pages[S.pageIdx];if(p){p.root=S.root;p.css=S.css;p.js=S.js;p.title=S.title;}}
+/* a page counts as modified when its content differs from how it was when it was created, opened or last saved
+   (so adding a page, renaming one or editing a different page does not count; undoing back to the start does not either) */
+function pageSnap(p){return JSON.stringify({root:p.root,css:p.css||'',js:p.js||'',title:p.title||p.name});}
+function markClean(){syncActive();S.pages.forEach(function(p){p.base=pageSnap(p);});}
+function isPageModified(i){syncActive();var p=S.pages[i];return !p||p.base==null?!!S.dirty:pageSnap(p)!==p.base;}
 function allPages(){syncActive();return S.pages.map(function(p){return {name:p.name,title:p.title,root:p.root,css:p.css,js:p.js};});}
 function fullState(){return {root:S.root,css:S.css,js:S.js,title:S.title,pages:allPages(),idx:S.pageIdx};}
 function setPages(st){
@@ -497,7 +502,7 @@ function syncUndo(){$('#btnUndo').disabled=hi<=0;$('#btnRedo').disabled=hi>=hist
 function restore(s){var o=JSON.parse(s);S.root=o.root;S.css=o.css;S.js=o.js;S.title=o.title||S.title;if(!find(S.sel))S.sel=S.root.id;$('#projName').value=S.title;fixUid();renderAll();}
 function undo(){if(hi>0){hi--;restore(hist[hi]);save();syncUndo();}}
 function redo(){if(hi<hist.length-1){hi++;restore(hist[hi]);save();syncUndo();}}
-function loadState(st){S.root=st.root;S.css=st.css||'';S.js=st.js||'';S.title=st.title||'untitled-page';S.sel=S.root.id;S.collapsed={};S.pending={};setPages(st);fixUid();$('#projName').value=S.title;hist=[];hi=-1;commit();renderAll();}
+function loadState(st){S.root=st.root;S.css=st.css||'';S.js=st.js||'';S.title=st.title||'untitled-page';S.sel=S.root.id;S.collapsed={};S.pending={};setPages(st);fixUid();$('#projName').value=S.title;hist=[];hi=-1;commit();markClean();renderAll();}
 function changed(){commit();renderAll();}
 
 /* ---------- canvas rendering ---------- */
@@ -1161,6 +1166,7 @@ function addPage(copy){
   syncActive();
   var base=copy?S.pages[S.pageIdx].name+' copy':'Page '+(S.pages.length+1),name=uniquePageName(base);
   var p=copy?{name:name,title:S.title,root:clone(S.root),css:S.css,js:S.js}:{name:name,title:name,root:blank().root,css:'',js:''};
+  p.base=pageSnap(p);
   S.pages.splice(S.pageIdx+1,0,p);S.dirty=true;
   switchPage(S.pageIdx+1);toast(copy?'Page duplicated':'Page added');
 }
@@ -1223,7 +1229,7 @@ $('#pagebar').addEventListener('keydown',function(e){
 /* a page that is not saved yet: ask before it is lost (Save keeps it in the project file first) */
 function askDeletePage(){
   if(S.pages.length<2)return;
-  if(!S.dirty){deletePage();return;}
+  if(!isPageModified(S.pageIdx)){deletePage();return;}
   $('#pgDelT').textContent='Delete \u201c'+S.pages[S.pageIdx].name+'\u201d?';
   $('#pgDel').hidden=false;$('#pgDelSave').focus();
 }
@@ -1387,7 +1393,7 @@ function openedProject(r){
   if(!r||r.canceled)return;if(r.error)return toast(r.error);
   try{loadState(parseProject(r.text));S.file=r.name;S.dirty=false;D.setDocName(S.file);toast('Opened '+r.name);}catch(e){toast('Could not open: '+e.message);}
 }
-function savedProject(r){S.file=r.name;S.dirty=false;D.setDocName(S.file);toast('Saved '+r.name);}
+function savedProject(r){S.file=r.name;S.dirty=false;markClean();D.setDocName(S.file);toast('Saved '+r.name);}
 function importedFile(r){
   if(!r||r.canceled)return;if(r.error)return toast(r.error);
   importHtml(r.text,/<html|<body|<!doctype/i.test(r.text));changed();toast('Imported '+r.name);
@@ -1650,7 +1656,7 @@ function boot(){
   var avail=stage.clientWidth-40;if(avail>200&&avail<880)S.zoom=Math.max(0.3,Math.floor(avail/880*10)/10);
   else if(avail>=200&&avail<880+40)S.zoom=1;
   $('#zoomVal').textContent=Math.round(S.zoom*100)+'%';$('#zoomLab').textContent=Math.round(S.zoom*100)+'%';
-  renderAll();setView('canvas');applyPanels();S.dirty=false;if(D)D.setDocName(S.title);
+  renderAll();setView('canvas');applyPanels();S.dirty=false;markClean();if(D)D.setDocName(S.title);
 }
 /* ---------- automation API (used by the AI server and by tests) ---------- */
 var API={};

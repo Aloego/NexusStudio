@@ -2,9 +2,19 @@
 
 ## Current Task
 
-Nothing awaiting approval. Approved on 2026-11-20: the one-tab rails and the in-app save window. Rejected on 2026-11-20 and deferred: folder-first saving (the file name is not reflected on the page); the code is unchanged and the design notes are in the "twenty-third request" session below. The delete-page message was called "good" by the user but not formally approved.
+Delete-page message only for a modified page (state: Awaiting User Approval once pushed). Approved on 2026-11-20: the one-tab rails and the in-app save window. Rejected on 2026-11-20 and deferred: folder-first saving (the code is unchanged; design notes are in the "twenty-third request" session below).
 
-## Latest Session (2026-11-20, twenty-third request: rails fixed; saving deferred)
+## Latest Session (2026-11-20, twenty-fourth request: delete message only for a modified page)
+
+- User request: the delete-page message must open only if the page was modified; an unmodified page closes without any message.
+- Reproduced: untouched new page still showed the message (project-wide `S.dirty` was used).
+- Done in `renderer/app.js`: `pageSnap`, `markClean`, `isPageModified`; `addPage` stores the new page's snapshot; `loadState`, `savedProject` and boot call `markClean()`; `askDeletePage` uses `isPageModified(S.pageIdx)`.
+- Done in `test/e2e.js`: old duplicate-delete check rewritten; new checks for blank page, duplicate, editing another page, modified page, modified-then-saved. `node test/e2e.js` gives 236 passed, 3 failed (same 3 as before).
+- Known limit: a page with no stored snapshot (should not happen) falls back to the project-wide unsaved flag. Renaming a page does not count as modifying it.
+- Not run: real Electron window; the user must test.
+- Next action: wait for the user to test and say `APPROVE` or `REJECT`. Resume folder-first saving only when asked. Do not merge into `main`.
+
+## Earlier Session (2026-11-20, twenty-third request: rails fixed; saving deferred)
 
 - User report: the delete-page confirmation is gone (good); the in-app save window is fine; per-tab rails still open every tab (rejected: the arrow should open everything, a tab button only that tab); folder-first saving rejected because nothing on the page reflects the file name.
 - Confirmed in a browser before any change: clicking a rail tab showed all tab buttons; after saving as `my-site` the top bar still said `nebula-landing-v2` + fixed `/index.html` and only the window title changed (to `my-site.nexus`).

@@ -872,4 +872,53 @@ Approved (user said "Rail task - Approve" on 2026-11-20).
 - In-app save window: Approved (user said "In-app save window - Approve").
 - Folder-first saving: Rejected (user said "Folder-first saving - Reject"). Reason: the file name is not reflected on the page after saving. Deferred; the code is unchanged. No tests were changed.
 - One-tab rails: see the "Rails: a rail tab opens only that tab" section above (Approved).
-- Delete-page message: not part of this message from the user; earlier comment "good" only. Not marked Approved.
+- Delete-page message: Rejected later the same day (user said "Delete page message - Rejected"): it should appear only if the page was modified. See the next section.
+
+---
+
+## Delete-page message only for a modified page
+
+### Date
+
+2026-11-20
+
+### Branch
+
+feature/ai-development-workflow
+
+### Scope
+
+Files changed: `renderer/app.js`, `test/e2e.js`.
+
+- User report: the message should open only if the page has been modified; otherwise the page should close without any message.
+- Reproduced first: add a page with + and click its delete button without touching it: the message appeared. Cause: the check used the project-wide "unsaved" flag, which adding a page, renaming a page and any edit on any page all set.
+- Change: each page stores a snapshot of its content (elements, CSS, JavaScript, title) taken when it is created, opened or last saved (`pageSnap`, `markClean`, `isPageModified`). Deleting asks only when the page's current content differs from that snapshot. So: a new blank page, a duplicate nobody changed, and a page that was modified and then saved close with no message; a page you edited asks; editing another page does not make this one ask; editing a page and undoing everything back to the start does not ask. Renaming a page does not count as modifying it. The message text and its Save / Discard / Keep buttons are unchanged.
+- Not changed: folder-first saving (rejected, deferred), rails, in-app save window.
+
+### Static check
+
+`node --check` on `renderer/app.js` and `test/e2e.js` — passed.
+
+### Automated tests
+
+Command: `node test/e2e.js` (AI sandbox)
+
+Result: 236 passed, 3 failed. The 3 failures are the same ones as before: `get_window_state`, `get_app_state`, `get_process_info` (main-process tools that the test calls on the editor page).
+
+New or changed checks that passed: deleting a duplicate nobody modified closes with no message; the + button adds a blank page and deleting it closes with no message; editing another page does not make an untouched page ask; a modified page shows the message; Keep and Discard still work (existing checks); in the desktop stand-in, a page that was modified and then saved closes with no message. Against the previous `renderer/app.js`, the first of these fails.
+
+### Could not be run
+
+- The real Electron window. Not run in this sandbox.
+- `node test/main-smoke.js`: crashes (`screen` is missing from the test's stand-in for Electron, since a Dyad commit on 2026-11-14). Not changed here.
+
+### Manual testing for the user
+
+- Add a page with + and delete it straight away: it should close with no message.
+- Add an element to a page and delete it: the message should appear. Try Keep page, Discard, and Save.
+- Edit page 1, switch to a new untouched page 2 and delete it: no message.
+
+### Approval
+
+Awaiting User Approval
+

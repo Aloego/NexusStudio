@@ -557,8 +557,27 @@ page.on('console', function (m) {
   ok(JSON.stringify(await pgTabs()) === '["Page 1","About"]', 'double-click renames a page ' + JSON.stringify(await pgTabs()));
   await defPage.click('#pagebar .pg.on [data-pgact="dup"]');
   ok(JSON.stringify(await pgTabs()) === '["Page 1","About","About copy"]', 'duplicate adds a copy after the open page ' + JSON.stringify(await pgTabs()));
+  // a page that has not been modified closes without any message
   await defPage.click('#pagebar .pg.on [data-pgact="del"]');
-  ok((await defPage.isVisible('#pgDel')) && (await pgTabs()).length === 3 && /isn.t saved/i.test(await defPage.textContent('#pgDel')), 'deleting an unsaved page shows the lose-content message with Save and Discard');
+  ok(!(await defPage.isVisible('#pgDel')) && JSON.stringify(await pgTabs()) === '["Page 1","About"]', 'deleting a duplicate nobody has modified closes it with no message ' + JSON.stringify(await pgTabs()));
+  await defPage.click('#pgAdd');
+  ok((await pgTabs()).length === 3, 'the + button adds a blank page');
+  await defPage.click('#pagebar .pg.on [data-pgact="del"]');
+  ok(!(await defPage.isVisible('#pgDel')) && JSON.stringify(await pgTabs()) === '["Page 1","About"]', 'deleting a blank page right after adding it closes it with no message');
+  // modify a different page, then delete an untouched one: still no message
+  await defPage.click('#pgAdd');
+  await defPage.click('#pagebar [data-pg="0"] .pn');
+  await defPage.evaluate(function () { const em = [].slice.call(document.querySelectorAll('#palette .it em')).filter(function (e) { return e.textContent === 'h2'; })[0]; em.closest('button').click(); });
+  await defPage.click('#pagebar [data-pg="2"] .pn');
+  await defPage.click('#pagebar .pg.on [data-pgact="del"]');
+  ok(!(await defPage.isVisible('#pgDel')) && (await pgTabs()).length === 2, 'editing another page does not make an untouched page ask before closing');
+  await defPage.click('#pagebar [data-pg="0"] .pn');
+  // a page whose content was modified asks first
+  await defPage.click('#pagebar .pg.on [data-pgact="dup"]');
+  await defPage.evaluate(function () { const em = [].slice.call(document.querySelectorAll('#palette .it em')).filter(function (e) { return e.textContent === 'h2'; })[0]; em.closest('button').click(); });
+  ok((await pgTabs()).length === 3, 'a copy was added and then modified');
+  await defPage.click('#pagebar .pg.on [data-pgact="del"]');
+  ok((await defPage.isVisible('#pgDel')) && (await pgTabs()).length === 3 && /isn.t saved/i.test(await defPage.textContent('#pgDel')), 'deleting a page you modified shows the lose-content message with Save and Discard');
   await defPage.click('#pgDelCancel');
   ok(!(await defPage.isVisible('#pgDel')) && (await pgTabs()).length === 3, 'Keep page closes the message and keeps the page');
   await defPage.click('#pagebar .pg.on [data-pgact="del"]');
@@ -748,6 +767,9 @@ page.on('console', function (m) {
     };
   });
   await fpage.goto(url); await fpage.waitForSelector('#pgAdd');
+  // edit the first page before saving, so it is modified and unsaved
+  await fpage.click('#tabEl');
+  await fpage.evaluate(function () { const em = [].slice.call(document.querySelectorAll('#palette .it em')).filter(function (e) { return e.textContent === 'h2'; })[0]; em.closest('button').click(); });
   await fpage.click('#pgAdd'); await fpage.waitForTimeout(200);
   ok((await fpage.isVisible('#fbDlg')) && (await fpage.isVisible('#fbFolderName')) && !(await fpage.isVisible('#fbNameRow')) && (await fpage.$$('#pagebar .pg')).length === 1, 'on a fresh project, + asks for a folder first and adds no page yet');
   const fbox = await fpage.$eval('#fbDlg .fbox', function (e) { const r = e.getBoundingClientRect(); return { t: r.top, b: r.bottom }; }).catch(function () { return null; });
@@ -759,6 +781,11 @@ page.on('console', function (m) {
   ok(/already/.test(await fpage.textContent('#fbMsg')) && (await fpage.evaluate(function () { return window.__log.length; })) === 1, 'an existing file name warns before replacing');
   await fpage.fill('#fbFile', 'home'); await fpage.click('#fbOk'); await fpage.waitForTimeout(300);
   ok(!(await fpage.isVisible('#fbDlg')) && JSON.stringify(await fpage.evaluate(function () { return window.__log[1]; })) === '["save","/h/site","home.nexus",false]' && (await fpage.$$('#pagebar .pg')).length === 2, 'saving finishes, then the new page is added');
+  // the first page was modified, then saved: it no longer asks before it is closed
+  await fpage.click('#pagebar [data-pg="0"] .pn');
+  await fpage.click('#pagebar .pg.on [data-pgact="del"]');
+  ok(!(await fpage.isVisible('#pgDel')) && (await fpage.$$('#pagebar .pg')).length === 1, 'a page that was modified and then saved closes without a message');
+  await fpage.click('#pgAdd'); await fpage.waitForTimeout(200);
   await fpage.click('[data-menu="file"]'); await fpage.click('[data-act="exportAll"]'); await fpage.waitForTimeout(200);
   await fpage.keyboard.press('Escape');
   ok(!(await fpage.isVisible('#fbDlg')), 'Escape cancels the chooser');

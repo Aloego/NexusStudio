@@ -296,7 +296,7 @@
   - One-tab rails: REJECTED. Clicking a rail tab still brought back all tab buttons (Elements and Layers, or HTML, CSS and JavaScript). The arrow should open everything. Fixed in the next task.
   - Folder-first saving: REJECTED. After saving, the top bar still shows the old name and the fixed `/index.html`; the file name is not reflected on the page. The user chose to leave this for now (2026-11-20); it was not changed.
 
-**Status:** Split on 2026-11-20. In-app save window: Approved (user said "In-app save window - Approve"). One-tab rails: Rejected, fixed in the next task, now Approved. Folder-first saving: Rejected (user said "Folder-first saving - Reject"), reason: after saving, the file name is not reflected on the page (the top-bar name and the fixed `/index.html` do not change); the user asked to leave it for now, so it is still in the code unchanged and is back to In Progress / not started. Delete-page message: the user said "good" earlier and did not repeat an approval, so it stays recorded as accepted by comment, not Approved. Design notes for the folder-first fix are in `AI_HANDOVER.md`.
+**Status:** Split on 2026-11-20. In-app save window: Approved (user said "In-app save window - Approve"). One-tab rails: Rejected, fixed in the next task, now Approved. Folder-first saving: Rejected (user said "Folder-first saving - Reject"), reason: after saving, the file name is not reflected on the page (the top-bar name and the fixed `/index.html` do not change); the user asked to leave it for now, so it is still in the code unchanged and is back to In Progress / not started. Delete-page message: REJECTED on 2026-11-20 (user said "Delete page message - Rejected"): it must appear only when the page has been modified; an unmodified page must close with no message. Fixed in the next task. Design notes for the folder-first fix are in `AI_HANDOVER.md`.
 
 ## Rails: a rail tab opens only that tab
 
@@ -309,6 +309,17 @@
 - [x] User personally tests the rails
 
 **Status:** Approved (user said "Rail task - Approve" on 2026-11-20)
+
+## Delete-page message only for a modified page
+
+- [x] Reproduce: a freshly added, untouched page still showed the message (the old check used one flag for the whole project, set by adding a page, renaming and any edit anywhere)
+- [x] Each page now remembers its content as it was when created, opened or last saved; the message appears only if that page differs from it. Untouched, blank, freshly added or duplicated-and-unchanged pages close with no message; editing a different page does not matter; saving clears it
+- [x] Keep the message text and its Save / Discard / Keep page buttons as they were
+- [x] Add and update automated tests (6 new checks, one old check rewritten), run all tests
+- [x] Commit and push changes to feature branch
+- [ ] User personally tests deleting pages (untouched and modified)
+
+**Status:** Awaiting User Approval
 
 ## Phase 8 — End-to-End Workflow Verification
 
