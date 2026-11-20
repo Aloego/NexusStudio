@@ -52,8 +52,9 @@
         <button type="button" class="rexp" id="railLx" title="Show the panel" aria-label="Show the Elements and Layers panel">›</button>
         <button type="button" class="rtab" data-rail="el" title="Open the Elements tab" aria-label="Open the Elements tab"><em>Elements</em></button>
         <button type="button" class="rtab" data-rail="ly" title="Open the Layers tab" aria-label="Open the Layers tab"><em>Layers</em></button>
+        <button type="button" class="rtab" data-rail="pg" title="Open the Pages tab" aria-label="Open the Pages tab"><em>Pages</em></button>
       </div>
-      <div class="tabs"><button class="on" id="tabEl">Elements</button><button id="tabLy">Layers</button><button class="colb" id="colL" type="button" title="Hide this panel to make room for the canvas" aria-label="Hide the Elements and Layers panel" aria-expanded="true">‹</button></div>
+      <div class="tabs"><button class="on" id="tabEl">Elements</button><button id="tabLy">Layers</button><button id="tabPg">Pages</button><button class="colb" id="colL" type="button" title="Hide this panel to make room for the canvas" aria-label="Hide the Elements and Layers panel" aria-expanded="true">‹</button></div>
       <div id="elPane" class="pane" style="display:flex;flex-direction:column">
         <div class="search"><input id="elSearch" type="text" placeholder="Search elements…" aria-label="Search elements"></div>
         <div id="palette" style="flex:1;overflow-y:auto"></div>
@@ -61,6 +62,10 @@
       <div id="lyPane" class="pane" hidden>
         <div class="lhead"><span>Document tree</span><span style="font:9px var(--mono);text-transform:none;letter-spacing:0" id="nodeCount"></span></div>
         <div id="layers" style="padding:4px 0"></div>
+      </div>
+      <div id="pgPane" class="pane" hidden>
+        <div class="lhead"><span>Pages</span><span style="font:9px var(--mono);text-transform:none;letter-spacing:0">click to open</span></div>
+        <div id="pgTree" role="tree" aria-label="Pages in this project" style="padding:4px 0"></div>
       </div>
     </aside>
 
@@ -183,7 +188,6 @@
   <p class="note" id="pgDelM" style="margin:0">This removes the page and everything on it from the project. To keep it, close its tab instead.</p>
   <div class="acts"><button class="sbtn" id="pgDelCancel" type="button">Keep page</button><button class="sbtn danger" id="pgDelOk" type="button">Delete page</button></div>
 </div></div>
-<div id="pgClosedList" class="pclist" role="menu" hidden></div>
 <div id="fbDlg" class="ovl" hidden><div class="box" role="dialog" aria-labelledby="fbTitle">
   <h3 id="fbTitle"></h3>
   <p class="note" id="fbHelp" style="margin:0"></p>

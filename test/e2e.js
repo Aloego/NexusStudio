@@ -557,38 +557,42 @@ page.on('console', function (m) {
   ok(JSON.stringify(await pgTabs()) === '["Page 1","About"]', 'double-click renames a page ' + JSON.stringify(await pgTabs()));
   await defPage.click('#pagebar .pg.on [data-pgact="dup"]');
   ok(JSON.stringify(await pgTabs()) === '["Page 1","About","About copy"]', 'duplicate adds a copy after the open page ' + JSON.stringify(await pgTabs()));
-  // closing a tab keeps the page in the project
+  // the Pages tab lists every page; closing a tab never removes a page from it
   const openN = function () { return defPage.$$('#pagebar .pg').then(function (l) { return l.length; }); };
+  const treeRows = function () { return defPage.$$eval('#pgTree .ptrow', function (l) { return l.map(function (e) { return e.querySelector('.ptn').textContent + (e.classList.contains('cl') ? '|closed' : '') + (e.classList.contains('on') ? '|on' : ''); }); }); };
+  await defPage.click('#tabPg');
+  ok((await defPage.isVisible('#pgTree')) && !(await defPage.isVisible('#palette')) && JSON.stringify(await treeRows()) === '["Page 1","About","About copy|on"]', 'the Pages tab shows every page of the project ' + JSON.stringify(await treeRows()));
   await defPage.click('#pagebar .pg.on [data-pgact="close"]');
-  ok(!(await defPage.isVisible('#pgDel')) && JSON.stringify(await pgTabs()) === '["Page 1","About"]' && (await defPage.textContent('#pgClosed')).indexOf('(1)') >= 0, 'closing a tab shows no message and moves the page to the Closed list ' + JSON.stringify(await pgTabs()));
+  ok(!(await defPage.isVisible('#pgDel')) && JSON.stringify(await pgTabs()) === '["Page 1","About"]' && JSON.stringify(await treeRows()) === '["Page 1","About|on","About copy|closed"]', 'closing a tab shows no message and the page stays in the tree as closed ' + JSON.stringify(await treeRows()));
   ok((await pgCall('list_pages')).pages.length === 3 && (await pgCall('list_pages')).pages[2].closed === true, 'the closed page is still part of the project');
-  await defPage.click('#pgClosed');
-  ok((await defPage.isVisible('#pgClosedList')) && (await defPage.textContent('#pgClosedList')).indexOf('About copy') >= 0, 'the Closed button lists closed pages');
-  await defPage.click('#pgClosedList [data-pcopen]');
-  ok(JSON.stringify(await pgTabs()) === '["Page 1","About","About copy"]' && (await defPage.$eval('#pagebar .pg.on .pn', function (e) { return e.textContent; })) === 'About copy' && !(await defPage.isVisible('#pgClosed')), 'reopening a closed page puts its tab back and opens it');
-  // a modified page can be closed too, and comes back with its content
-  await defPage.evaluate(function () { const em = [].slice.call(document.querySelectorAll('#palette .it em')).filter(function (e) { return e.textContent === 'h2'; })[0]; em.closest('button').click(); });
+  await defPage.click('#pgTree [data-ptpg="2"]');
+  ok(JSON.stringify(await pgTabs()) === '["Page 1","About","About copy"]' && (await defPage.$eval('#pagebar .pg.on .pn', function (e) { return e.textContent; })) === 'About copy', 'clicking a closed page in the tree reopens its tab and opens it');
+  await defPage.click('#pgTree [data-ptpg="0"]');
+  ok((await defPage.$eval('#pagebar .pg.on .pn', function (e) { return e.textContent; })) === 'Page 1', 'clicking an open page in the tree switches to it');
+  await defPage.click('#pgTree [data-ptpg="2"]');
+  await defPage.evaluate(function () { const em = [].slice.call(document.querySelectorAll('#palette .it em')).filter(function (e) { return e.textContent === 'h2'; })[0]; if (em) em.closest('button').click(); });
   const copyHtml = (await pgCall('get_document')).html;
   await defPage.click('#pagebar .pg.on [data-pgact="close"]');
   ok(!(await defPage.isVisible('#pgDel')) && (await openN()) === 2, 'closing a modified page needs no message because nothing is lost');
-  // closed pages are saved with the project and come back after a reload
   await defPage.reload(); await defPage.waitForTimeout(400);
-  ok((await openN()) === 2 && (await defPage.isVisible('#pgClosed')), 'a closed page is still closed after reopening the project');
-  await defPage.click('#pgClosed'); await defPage.click('#pgClosedList [data-pcopen]');
+  await defPage.click('#tabPg');
+  ok((await openN()) === 2 && JSON.stringify(await treeRows()).indexOf('About copy|closed') >= 0, 'a closed page is still in the tree after reopening the project');
+  await defPage.click('#pgTree [data-ptpg="2"]');
   const reHtml = (await pgCall('get_document')).html;
   const noId = function (h) { return h.replace(/ id="nx-\d+"/g, ''); };
   ok(noId(reHtml) === noId(copyHtml), 'a reopened page has all of its content ' + JSON.stringify([copyHtml, reHtml]).slice(0, 600));
   // deleting for good is separate and asks first
   await defPage.click('#pagebar .pg.on [data-pgact="close"]');
-  await defPage.click('#pgClosed'); await defPage.click('#pgClosedList [data-pcdel]');
-  ok((await defPage.isVisible('#pgDel')) && /from the project/i.test(await defPage.textContent('#pgDelT')) && (await pgCall('list_pages')).pages.length === 3, 'Delete in the Closed list asks before removing the page');
+  await defPage.hover('#pgTree [data-ptpg="2"]'); await defPage.click('#pgTree [data-ptdel="2"]');
+  ok((await defPage.isVisible('#pgDel')) && /from the project/i.test(await defPage.textContent('#pgDelT')) && (await pgCall('list_pages')).pages.length === 3, 'the delete button in the tree asks before removing the page');
   await defPage.click('#pgDelCancel');
   ok(!(await defPage.isVisible('#pgDel')) && (await pgCall('list_pages')).pages.length === 3, 'Keep page cancels the deletion');
-  await defPage.click('#pgClosed'); await defPage.click('#pgClosedList [data-pcdel]'); await defPage.click('#pgDelOk');
-  ok(JSON.stringify(await pgTabs()) === '["Page 1","About"]' && (await pgCall('list_pages')).pages.length === 2 && !(await defPage.isVisible('#pgClosed')), 'confirming removes the page from the project for good ' + JSON.stringify(await pgTabs()));
+  await defPage.hover('#pgTree [data-ptpg="2"]'); await defPage.click('#pgTree [data-ptdel="2"]'); await defPage.click('#pgDelOk');
+  ok(JSON.stringify(await pgTabs()) === '["Page 1","About"]' && JSON.stringify(await treeRows()) === '["Page 1","About|on"]', 'confirming removes the page from the project and the tree for good ' + JSON.stringify(await treeRows()));
   await defPage.click('#pagebar .pg.on [data-pgact="close"]');
   ok((await openN()) === 1 && (await defPage.$$('#pagebar .pg .pdel')).length === 0, 'the last open tab has no close button');
-  await defPage.click('#pgClosed'); await defPage.click('#pgClosedList [data-pcopen]');
+  await defPage.click('#pgTree [data-ptpg="1"]');
+  await defPage.click('#tabEl');
   const lp = await pgCall('list_pages');
   ok(lp.pages.length === 2 && lp.pages[1].name === 'About' && lp.pages[1].closed === false, 'list_pages reports the pages and which are closed');
   await pgCall('select_page', { page: 'Page 1' });

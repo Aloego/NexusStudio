@@ -344,3 +344,12 @@
 - [x] Tests added to `test/e2e.js`
 
 **Status:** Awaiting User Approval. Replaces the delete-page-message behaviour (that task's own approval is no longer needed).
+
+## Pages tab (file explorer for pages)
+
+- [x] New "Pages" tab in the left panel listing every page; click opens or reopens
+- [x] Closing a tab leaves the page in the tree (shown as closed)
+- [x] Delete from the tree asks first; "Closed (n)" button removed
+- [x] Tests in `test/e2e.js`
+
+**Status:** Awaiting User Approval. It replaces the Closed-list part of the previous task.

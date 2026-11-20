@@ -1179,7 +1179,7 @@ function closePage(i){
   var p=S.pages[i];if(!p||p.closed||openPages().length<2)return;
   var j=neighborOpen(i);if(j<0)return;
   if(i===S.pageIdx)switchPage(j);
-  p.closed=true;S.dirty=true;save();renderPageBar();toast('Closed '+p.name+' \u2014 it is still in the project');
+  p.closed=true;S.dirty=true;save();renderPageBar();toast('Closed '+p.name+' \u2014 it is still in the Pages tab');
 }
 function reopenPage(i){if(!S.pages[i])return;if(i===S.pageIdx){S.pages[i].closed=false;save();renderPageBar();return;}switchPage(i);}
 /* deleting is the only thing that removes a page from the project */
@@ -1212,10 +1212,33 @@ function renderPageBar(){
     bar.appendChild(b);
   });
   var add=document.createElement('button');add.type='button';add.className='pgadd';add.id='pgAdd';add.title='Add a page';add.setAttribute('aria-label','Add a page');add.textContent='+';bar.appendChild(add);
-  var nc=closedPages().length;
-  if(nc){var cb=document.createElement('button');cb.type='button';cb.className='pgclosed';cb.id='pgClosed';cb.title='Closed pages \u2014 reopen or delete';cb.setAttribute('aria-label','Closed pages');cb.setAttribute('aria-haspopup','true');cb.textContent='Closed ('+nc+') \u25BE';bar.appendChild(cb);}
-  else closeClosedList();
+  renderPageTree();
 }
+/* Pages tab (left panel): every page of the project, open or closed. Closing a tab never removes a page from here. */
+function renderPageTree(){
+  var box=$('#pgTree');if(!box)return;
+  box.innerHTML='';
+  var root=document.createElement('div');root.className='ptroot';root.textContent='\u25BE \u25A4 '+(S.file||'Project');root.title=S.file?'Project file: '+S.file:'Not saved yet';box.appendChild(root);
+  S.pages.forEach(function(p,i){
+    var on=i===S.pageIdx&&!p.closed,row=document.createElement('div');
+    row.className='ptrow'+(on?' on':'')+(p.closed?' cl':'');row.setAttribute('data-ptpg',i);row.tabIndex=0;row.setAttribute('role','treeitem');
+    row.title=p.closed?'Closed \u2014 click to reopen':(on?'Open page':'Click to open');
+    var ic=document.createElement('span');ic.className='pti';ic.textContent='\u25A4';row.appendChild(ic);
+    var nm=document.createElement('span');nm.className='ptn';nm.textContent=p.name;row.appendChild(nm);
+    var st=document.createElement('span');st.className='pts';st.textContent=p.closed?'closed':(on?'open':'tab');if(!p.closed&&!on)st.textContent='';row.appendChild(st);
+    if(S.pages.length>1){var d=document.createElement('button');d.type='button';d.className='ptdel';d.setAttribute('data-ptdel',i);d.title='Delete this page from the project';d.setAttribute('aria-label','Delete '+p.name+' from the project');d.textContent='\u2715';row.appendChild(d);}
+    box.appendChild(row);
+  });
+}
+$('#pgTree').addEventListener('click',function(e){
+  var d=e.target.closest('[data-ptdel]');if(d){e.stopPropagation();askDeletePage(+d.getAttribute('data-ptdel'));return;}
+  var r=e.target.closest('[data-ptpg]');if(r)reopenPage(+r.getAttribute('data-ptpg'));
+});
+$('#pgTree').addEventListener('keydown',function(e){
+  var r=e.target.closest('[data-ptpg]');if(!r)return;
+  if(e.key==='Enter'||e.key===' '){e.preventDefault();reopenPage(+r.getAttribute('data-ptpg'));}
+  else if(e.key==='Delete'){e.preventDefault();askDeletePage(+r.getAttribute('data-ptpg'));}
+});
 function startRename(i){
   var tab=$('#pagebar').querySelector('[data-pg="'+i+'"] .pn');if(!tab)return;
   var inp=document.createElement('input');inp.type='text';inp.className='pnin';inp.value=S.pages[i].name;inp.maxLength=40;inp.setAttribute('aria-label','Page name');
@@ -1227,7 +1250,6 @@ function startRename(i){
 }
 $('#pagebar').addEventListener('click',function(e){
   if(e.target.id==='pgAdd'){addPageAsked(false);return;}
-  if(e.target.id==='pgClosed'){toggleClosedList();return;}
   var a=e.target.closest('[data-pgact]');
   if(a){
     e.stopPropagation();
@@ -1243,27 +1265,6 @@ $('#pagebar').addEventListener('keydown',function(e){
   if(e.key==='Enter'||e.key===' '){e.preventDefault();switchPage(+tab.getAttribute('data-pg'));}
   else if(e.key==='F2'){e.preventDefault();startRename(+tab.getAttribute('data-pg'));}
 });
-/* list of closed pages: reopen one, or delete it from the project for good (that asks first) */
-function closeClosedList(){var m=$('#pgClosedList');if(m)m.hidden=true;}
-function toggleClosedList(){
-  var m=$('#pgClosedList'),btn=$('#pgClosed');if(!m||!btn)return;
-  if(!m.hidden){m.hidden=true;return;}
-  m.innerHTML='';
-  S.pages.forEach(function(p,i){
-    if(!p.closed)return;
-    var row=document.createElement('div');row.className='pcrow';
-    var o=document.createElement('button');o.type='button';o.className='pcopen';o.setAttribute('data-pcopen',i);o.textContent=p.name;o.title='Reopen '+p.name;row.appendChild(o);
-    var d=document.createElement('button');d.type='button';d.className='pcdel';d.setAttribute('data-pcdel',i);d.textContent='Delete';d.title='Delete '+p.name+' from the project';row.appendChild(d);
-    m.appendChild(row);
-  });
-  var r=btn.getBoundingClientRect();m.style.left=Math.max(4,Math.min(r.left,window.innerWidth-244))+'px';m.style.top=(r.bottom+2)+'px';m.hidden=false;
-}
-$('#pgClosedList').addEventListener('click',function(e){
-  var o=e.target.closest('[data-pcopen]'),d=e.target.closest('[data-pcdel]');
-  if(o){closeClosedList();reopenPage(+o.getAttribute('data-pcopen'));}
-  else if(d){closeClosedList();askDeletePage(+d.getAttribute('data-pcdel'));}
-});
-document.addEventListener('mousedown',function(e){if(!e.target.closest('#pgClosedList,#pgClosed'))closeClosedList();});
 var delIdx=-1;
 function askDeletePage(i){
   var p=S.pages[i];if(!p||S.pages.length<2)return;
@@ -1616,7 +1617,8 @@ $('#tgGrid').addEventListener('click',ACT.grid);$('#tgRuler').addEventListener('
 
 $('#tabEl').addEventListener('click',function(){S.ltab='el';syncLeft();});
 $('#tabLy').addEventListener('click',function(){S.ltab='ly';syncLeft();});
-function syncLeft(){$('#tabEl').classList.toggle('on',S.ltab==='el');$('#tabLy').classList.toggle('on',S.ltab==='ly');$('#elPane').hidden=S.ltab!=='el';$('#lyPane').hidden=S.ltab!=='ly';}
+$('#tabPg').addEventListener('click',function(){S.ltab='pg';syncLeft();});
+function syncLeft(){$('#tabEl').classList.toggle('on',S.ltab==='el');$('#tabLy').classList.toggle('on',S.ltab==='ly');$('#tabPg').classList.toggle('on',S.ltab==='pg');$('#elPane').hidden=S.ltab!=='el';$('#lyPane').hidden=S.ltab!=='ly';$('#pgPane').hidden=S.ltab!=='pg';}
 ['Html','Css','Js'].forEach(function(t){$('#rt'+t).addEventListener('click',function(){S.rtab=t.toLowerCase();renderProps();});});
 $('#views').addEventListener('click',function(e){var b=e.target.closest('button');if(b)setView(b.getAttribute('data-v'));});
 $('#elSearch').addEventListener('input',renderPalette);

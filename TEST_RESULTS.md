@@ -943,3 +943,17 @@ New checks that passed: closing shows no message and moves the page to the Close
 ### Approval
 
 Awaiting User Approval
+
+## Pages tab (file explorer for pages)
+
+Command: `node test/e2e.js` (AI sandbox). Result: 240 passed, 3 failed (same as before: `get_window_state`, `get_app_state`, `get_process_info`). Screenshot of the tab checked.
+
+Passed: the tab lists all pages; closing a tab keeps the page in the tree as closed; clicking a closed page reopens it; clicking an open page switches to it; closed pages survive a reload; reopened page keeps its content; tree delete asks first, Keep page cancels, confirming removes it; the last open tab has no close button.
+
+Not run: the real Electron window.
+
+Manual testing: open the Pages tab, add pages, close one with `×` (it stays in the tree, grey), click it to reopen, hover a row and use the ✕ to delete (asks first). Save, then Open project: closed pages are still in the tree.
+
+### Approval
+
+Awaiting User Approval
