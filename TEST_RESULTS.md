@@ -970,4 +970,4 @@ Manual testing: in the Pages tab, drag a page up or down (a blue line shows wher
 
 ### Approval
 
-Awaiting User Approval
+Approved on 2026-11-20 (user said "Approve").

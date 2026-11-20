@@ -360,4 +360,4 @@
 - [x] Tabs follow the order; the open page stays open; Alt+Up/Down moves a focused row
 - [x] Tests in `test/e2e.js`
 
-**Status:** Awaiting User Approval.
+**Status:** Approved on 2026-11-20 (user said "Approve" right after the drag-to-reorder summary).

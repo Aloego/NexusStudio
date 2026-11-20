@@ -9,6 +9,7 @@ Close tab vs delete page (state: Awaiting User Approval once pushed; it replaces
 - User request: add drag-to-reorder to the Pages tab.
 - Done: rows in `#pgTree` are draggable; a line shows where the page will land; dropping calls `movePage(from,to)`, which keeps the open page open, marks the project unsaved, and the tabs follow the new order. Keyboard: Alt+Up / Alt+Down on a focused row moves it one place. Order is saved with the project (it is the order of `S.pages`).
 - Tests: `node test/e2e.js` 242 passed, 3 failed (same 3 old failures). Real Electron window not run.
+- Approval: the user said "Approve" on 2026-11-20 after this task. The earlier close-tab and Pages-tab tasks were not approved by name; they are still recorded as Awaiting User Approval.
 
 ## Previous Session (2026-11-20, twenty-sixth request: Pages tab, a tree of every page)
 
