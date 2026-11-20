@@ -1324,22 +1324,25 @@ document.addEventListener('keydown',function(e){
 },true);
 
 /* ---------- collapsing the side panels ---------- */
-var PANEL_KEY='nexusstudio.panels.v1',panels={l:false,r:false};
+/* panels.l / panels.r: the panel is hidden. solo.l / solo.r: the panel was opened from one of its tab buttons on
+   the thin strip, so only that tab (and its button) is shown. The arrow on the strip opens the whole panel. */
+var PANEL_KEY='nexusstudio.panels.v1',panels={l:false,r:false},solo={l:false,r:false};
 try{var pr=JSON.parse(localStorage.getItem(PANEL_KEY)||'{}');panels.l=!!pr.l;panels.r=!!pr.r;}catch(e){}
 function applyPanels(){
   var w=document.querySelector('.work');w.classList.toggle('lc',panels.l);w.classList.toggle('rc',panels.r);
+  w.classList.toggle('sl',solo.l&&!panels.l);w.classList.toggle('sr',solo.r&&!panels.r);
   $('#colL').setAttribute('aria-expanded',String(!panels.l));$('#colR').setAttribute('aria-expanded',String(!panels.r));
   $('#railL').hidden=!panels.l;$('#railR').hidden=!panels.r;
   try{localStorage.setItem(PANEL_KEY,JSON.stringify(panels));}catch(e){}
   sizeFrame();placeOverlay();
 }
-function setPanel(side,collapsed){panels[side]=collapsed;applyPanels();}
+function setPanel(side,collapsed,single){panels[side]=collapsed;solo[side]=!!single&&!collapsed;applyPanels();}
 $('#colL').addEventListener('click',function(){setPanel('l',true);});
-$('#railLx').addEventListener('click',function(){setPanel('l',false);});
-$('#railL').addEventListener('click',function(e){var b=e.target.closest('[data-rail]');if(!b)return;S.ltab=b.getAttribute('data-rail');syncLeft();setPanel('l',false);});
+$('#railLx').addEventListener('click',function(){setPanel('l',false,false);});
+$('#railL').addEventListener('click',function(e){var b=e.target.closest('[data-rail]');if(!b)return;S.ltab=b.getAttribute('data-rail');syncLeft();setPanel('l',false,true);});
 $('#colR').addEventListener('click',function(){setPanel('r',true);});
-$('#railRx').addEventListener('click',function(){setPanel('r',false);});
-$('#railR').addEventListener('click',function(e){var b=e.target.closest('[data-rail]');if(!b)return;S.rtab=b.getAttribute('data-rail');setPanel('r',false);renderProps();});
+$('#railRx').addEventListener('click',function(){setPanel('r',false,false);});
+$('#railR').addEventListener('click',function(e){var b=e.target.closest('[data-rail]');if(!b)return;S.rtab=b.getAttribute('data-rail');setPanel('r',false,true);renderProps();});
 
 /* ---------- views ---------- */
 function setView(v){

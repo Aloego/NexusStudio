@@ -2,9 +2,24 @@
 
 ## Current Task
 
-Drag positioned elements on the canvas: elements whose position is not static can be dragged to move them (state: Awaiting User Approval once pushed). Earlier on 2026-11-17: viewport number spinner fields and device size dropdown approved; "add every element blank" rejected and reverted.
+Rails: a rail tab opens only that tab (state: Awaiting User Approval once pushed). Folder-first saving was rejected by the user and then deferred by them ("leave it for now"); it is unchanged. The delete-page message and in-app save window were accepted in comments but not formally approved.
 
-## Latest Session (2026-11-20, twenty-first request: collapsible panels and several pages)
+## Latest Session (2026-11-20, twenty-third request: rails fixed; saving deferred)
+
+- User report: the delete-page confirmation is gone (good); the in-app save window is fine; per-tab rails still open every tab (rejected: the arrow should open everything, a tab button only that tab); folder-first saving rejected because nothing on the page reflects the file name.
+- Confirmed in a browser before any change: clicking a rail tab showed all tab buttons; after saving as `my-site` the top bar still said `nebula-landing-v2` + fixed `/index.html` and only the window title changed (to `my-site.nexus`).
+- Done (rails): `renderer/app.js` (`solo` state, `setPanel(side,collapsed,single)`), `renderer/styles.css` (`.work.sl` / `.work.sr` hide the other tab buttons; narrow layout shows them). 7 new e2e checks. `node test/e2e.js` gives 230 passed, 3 failed (same 3 as before).
+- NOT done (deferred by the user, "leave the folder/file creation stuff for now"). The user's decisions for when it is resumed:
+  - The editable name in the top bar is the PAGE name (renames the page); remove the fixed `/index.html`.
+  - The window title (now `NexusStudio - <file>.nexus`) should show the folder name followed by the file name / page name.
+  - Every saved file gets `.html` (user chose `.html` over `.htm`). The CSS and JavaScript are saved automatically in the same folder as companions of each html file (html links to them). No `.nexus` file: Open reads the `.html` and its `.css`/`.js` back; with several pages each page is its own set of files opened one at a time.
+  - Design risk found: the CSS companion would hold the editor's generated per-element rules and the user's custom CSS; on reopening, old generated rules would override new edits. Mark the generated section in the file and rebuild element styles from it (do not load it as custom CSS).
+  - Relevant code: `main/main.js` (`file:save`, `fb:saveProject`, `fb:read`, `FB_KINDS`, `win:docname`), `main/preload.js`, `renderer/app.js` (`ACT.saveWith`, `savedProject`, `openedProject`, `chooseLocation`, `fullDoc`, `genCss`, `importHtml`, `docOfPage`, `S.file`).
+- Known: `node test/main-smoke.js` crashes (`screen` missing from its Electron stand-in since Dyad commit `130d85b`); the 3 e2e failures are a test mismatch (those tools live in `main/mcp-server.js`). Neither was touched.
+- Not run: real Electron window testing. The user must test it.
+- Next action: wait for the user to test the rails and say `APPROVE` or `REJECT`; the saving work only when the user asks. Do not merge into `main`.
+
+## Earlier Session (2026-11-20, twenty-first request: collapsible panels and several pages)
 
 - User request: collapse arrows for the left panel (Elements and Layers) and the right panel (Properties with HTML, CSS, JavaScript) to make room for the canvas, and more than one page in a project. User chose: page tabs one at a time; every page has its own CSS and JavaScript.
 - Done in `renderer/index.html`, `styles.css`, `app.js` (panels): arrow button (`#colL`, `#colR`) in each panel header collapses it to a thin strip with a vertical label and an arrow (`#railL`, `#railR`) that brings it back; the canvas grows; state remembered in localStorage (`nexusstudio.panels.v1`). Hidden on narrow windows (single column layout).

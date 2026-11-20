@@ -290,7 +290,23 @@
 - [x] Save, Save as and + on a fresh project: pick/create the project folder first, then the file name; existing file warns before replacing
 - [x] Main process validates every chooser path (no arbitrary writes); tests updated and added, run
 - [x] Commit and push changes to feature branch
-- [ ] User personally tests the four changes
+- [x] User tested (2026-11-20), part by part:
+  - Delete-page message: user said "the delete-page confirmation is gone, good". Not marked Approved (no explicit APPROVE).
+  - In-app save window: user said "the in app save window display is fine too". Same.
+  - One-tab rails: REJECTED. Clicking a rail tab still brought back all tab buttons (Elements and Layers, or HTML, CSS and JavaScript). The arrow should open everything. Fixed in the next task.
+  - Folder-first saving: REJECTED. After saving, the top bar still shows the old name and the fixed `/index.html`; the file name is not reflected on the page. The user chose to leave this for now (2026-11-20); it was not changed.
+
+**Status:** Rejected in part. Rails fixed in the next task. Folder-first saving: deferred by the user, not changed (design notes are in `AI_HANDOVER.md`).
+
+## Rails: a rail tab opens only that tab
+
+- [x] Confirm the problem: opened from a rail tab, the panel showed every tab button (reproduced in a browser)
+- [x] A rail tab now opens the panel showing only that tab and its button; the arrow on the strip opens the whole panel with every tab
+- [x] Left (Elements, Layers) and right (HTML, CSS, JavaScript) panels; narrow-window layout unchanged
+- [x] Add automated tests (7 checks); the three single-tab checks fail on the old code
+- [x] Run automated tests (same 3 failures as before); look at the result in a browser
+- [x] Commit and push changes to feature branch
+- [ ] User personally tests the rails
 
 **Status:** Awaiting User Approval
 

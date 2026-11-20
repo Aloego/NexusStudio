@@ -593,6 +593,19 @@ page.on('console', function (m) {
   ok((await defPage.isVisible('#palette')) && !(await defPage.isVisible('#lyPane')), 'the Elements rail tab opens Elements alone');
   await defPage.click('#railR [data-rail="css"]');
   ok((await defPage.isVisible('#propBody')) && (await defPage.$eval('#rtCss', function (e) { return e.classList.contains('on'); })), 'a right rail tab opens only that tab (CSS)');
+  // only that tab's button is shown; the other tab buttons stay hidden until the arrow is used
+  const tabBtns = function (ids) { return defPage.evaluate(function (list) { return list.map(function (s) { return !!document.querySelector(s).offsetParent; }); }, ids); };
+  ok(JSON.stringify(await tabBtns(['#tabEl', '#tabLy', '#colL'])) === '[true,false,true]', 'opened from the Elements rail tab, the panel shows only the Elements tab button (and its arrow) ' + JSON.stringify(await tabBtns(['#tabEl', '#tabLy', '#colL'])));
+  ok(JSON.stringify(await tabBtns(['#rtHtml', '#rtCss', '#rtJs', '#colR'])) === '[false,true,false,true]', 'opened from the CSS rail tab, the Properties panel shows only the CSS tab button (and its arrow) ' + JSON.stringify(await tabBtns(['#rtHtml', '#rtCss', '#rtJs', '#colR'])));
+  await defPage.click('#colL'); await defPage.click('#railL [data-rail="ly"]');
+  ok(JSON.stringify(await tabBtns(['#tabEl', '#tabLy'])) === '[false,true]' && (await defPage.isVisible('#lyPane')), 'opened from the Layers rail tab, only the Layers tab button is shown');
+  await defPage.click('#colL'); await defPage.click('#railLx');
+  ok(JSON.stringify(await tabBtns(['#tabEl', '#tabLy'])) === '[true,true]', 'the arrow on the strip opens everything: both Elements and Layers tab buttons are back');
+  await defPage.click('#colR'); await defPage.click('#railRx');
+  ok(JSON.stringify(await tabBtns(['#rtHtml', '#rtCss', '#rtJs'])) === '[true,true,true]', 'the arrow on the strip opens the whole Properties panel: HTML, CSS and JavaScript tab buttons are back');
+  await defPage.click('#colL'); await defPage.click('#railL [data-rail="ly"]'); await defPage.click('#colL'); await defPage.click('#railLx');
+  ok(JSON.stringify(await tabBtns(['#tabEl', '#tabLy'])) === '[true,true]', 'after using a single tab, hiding and using the arrow still opens everything');
+  await defPage.click('#tabEl');
   await defPage.click('#colL'); await defPage.click('#colR');
   await defPage.click('#railLx'); await defPage.click('#railRx');
   const w3 = await colW();

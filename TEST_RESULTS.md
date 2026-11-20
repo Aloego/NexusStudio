@@ -814,3 +814,54 @@ Awaiting User Approval
 
 - `node test/e2e.js`: 224 passed, 3 failed. The 3 failures (get_window_state, get_app_state, get_process_info) were failing before this work.
 - New checks: delete-page message with Keep/Discard, rail tab opens one tab only, + on fresh project asks folder then file name, overwrite warning, Escape cancels, buttons fit a 640px-tall screen (screenshot checked).
+
+---
+
+## Rails: a rail tab opens only that tab
+
+### Date
+
+2026-11-20
+
+### Branch
+
+feature/ai-development-workflow
+
+### Scope
+
+Files changed: `renderer/app.js`, `renderer/styles.css`, `test/e2e.js`.
+
+- User report: the per-tab buttons on the collapsed strips opened every tab, not just the one clicked; the arrow is meant to open everything.
+- Confirmed first (no code changed): with both panels collapsed, clicking Layers brought back the Elements and Layers tab buttons; clicking CSS brought back HTML, CSS and JavaScript. The earlier test only checked which content was showing, not the tab buttons.
+- Change: a rail tab now opens the panel in a "single tab" state (`.work.sl` / `.work.sr`): only that tab's button and the collapse arrow are shown. The arrow on the strip opens the whole panel with every tab. Hiding the panel and opening it again with the arrow also gives every tab. The single-tab state is not remembered across a reload (a panel that is open after a reload shows every tab). In the narrow-window layout (rails hidden) every tab button is shown as before.
+- Not changed: folder-first saving, the top-bar name and `/index.html`, the in-app save window, the delete-page message, the window title. The user chose to leave the saving work for now.
+
+### Static check
+
+`node --check` on `renderer/app.js` and `test/e2e.js` — passed.
+
+### Automated tests
+
+Command: `node test/e2e.js` (AI sandbox)
+
+Result: 230 passed, 3 failed. The 3 failures are the same ones as before: `get_window_state`, `get_app_state`, `get_process_info` (they are handled in the main process; the test calls them on the editor page).
+
+New checks that passed: only the Elements tab button after the Elements rail tab; only the CSS tab button after the CSS rail tab; only the Layers tab button after the Layers rail tab; the arrow opens both Elements and Layers; the arrow opens HTML, CSS and JavaScript; hiding then using the arrow after a single tab still opens everything. Against the previous `renderer/app.js` and `styles.css`, the three single-tab checks fail (227 passed, 6 failed).
+
+### Inspected in a browser
+
+Screenshot with both panels collapsed, then Layers and CSS opened from the strips: the left panel shows only "Layers" with its arrow, the right panel only "CSS".
+
+### Could not be run
+
+- The real Electron window. Not run in this sandbox.
+- `node test/main-smoke.js`: crashes (`screen` is missing from the test's stand-in for Electron, since a Dyad commit on 2026-11-14). Not changed here.
+
+### Manual testing for the user
+
+- Collapse both panels. Click each rail tab and check only that tab and its arrow show. Click the small arrow on a strip and check every tab shows.
+
+### Approval
+
+Awaiting User Approval
+
