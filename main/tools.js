@@ -152,7 +152,7 @@ const TOOLS = [
   },
   {
     name: 'delete_page', title: 'Delete a page',
-    description: 'Deletes a page and everything on it. The last remaining page cannot be deleted. This cannot be undone.',
+    description: 'Deletes a page and everything on it from the project for good (the person only closes tabs; closed pages stay in the project). The last remaining page cannot be deleted. This cannot be undone.',
     inputSchema: obj({ page: { type: ['string', 'number'], description: 'Page name or index. Defaults to the open page.' } }), destructive: true
   },
   {

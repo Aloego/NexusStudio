@@ -2,9 +2,17 @@
 
 ## Current Task
 
-Delete-page message only for a modified page (state: Awaiting User Approval once pushed). Approved on 2026-11-20: the one-tab rails and the in-app save window. Rejected on 2026-11-20 and deferred: folder-first saving (the code is unchanged; design notes are in the "twenty-third request" session below).
+Close tab vs delete page (state: Awaiting User Approval once pushed; it replaces the delete-page message task, which the user said did not fit how they work). Approved on 2026-11-20: the one-tab rails and the in-app save window. Rejected on 2026-11-20 and deferred: folder-first saving (the code is unchanged; design notes are in the "twenty-third request" session below).
 
-## Latest Session (2026-11-20, twenty-fourth request: delete message only for a modified page)
+## Latest Session (2026-11-20, twenty-fifth request: closing a tab keeps the page)
+
+- User report: a closed page was missing after Open project. User answer: "any page that i name and deleted don't have to be deleted completely from the project. I might be deleting the page to make room for other pages."
+- Done: the tab `×` now only closes the tab. A closed page stays in `S.pages` with `closed:true`, is saved in the `.nexus` file (`closed` is kept by `cleanState`) and in the browser draft. A "Closed (n) ▾" button next to `+` lists closed pages: click one to reopen it, or Delete (asks first, dialog `#pgDel` now has Keep page / Delete page) to remove it from the project for good. No message when closing, even for a modified page, because nothing is lost. The last open tab has no `×`. AI tool `delete_page` still deletes for good; `list_pages` now reports `closed`; `select_page` reopens a closed page. Functions: `closePage`, `reopenPage`, `deletePageAt`, `openPages`, `closedPages`, `neighborOpen`, `toggleClosedList`.
+- Files: `renderer/app.js`, `renderer/index.html`, `renderer/styles.css`, `main/tools.js` (description), `test/e2e.js`.
+- Tests: `node test/e2e.js` 239 passed, 3 failed (same 3 old main-process tool failures).
+- Not run: the real Electron window.
+
+## Previous Session (2026-11-20, twenty-fourth request: delete message only for a modified page)
 
 - User request: the delete-page message must open only if the page was modified; an unmodified page closes without any message.
 - Reproduced: untouched new page still showed the message (project-wide `S.dirty` was used).

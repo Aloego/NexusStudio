@@ -325,3 +325,13 @@ body{padding:0!important;overflow:hidden}
 .aibtns{display:flex;gap:8px;flex-wrap:wrap}
 #aiTools{display:flex;flex-wrap:wrap;gap:4px}
 #aiTools span{font:10px var(--mono);background:var(--alt);border:1px solid var(--line);border-radius:4px;padding:2px 6px;color:#d4d4d8}
+
+.pgclosed{background:none;border:1px solid var(--line);border-radius:5px;color:var(--muted);cursor:pointer;height:22px;margin:0 0 3px 6px;padding:0 8px;font-size:11px;white-space:nowrap}
+.pgclosed:hover{color:#fff;border-color:var(--accent)}
+.pclist{position:fixed;z-index:60;width:240px;max-height:50vh;overflow:auto;background:var(--panel,#1f1f24);border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.45);padding:4px}
+.pclist[hidden]{display:none}
+.pcrow{display:flex;align-items:center;gap:4px}
+.pcopen{flex:1;min-width:0;text-align:left;background:none;border:0;color:#e4e4e7;cursor:pointer;padding:6px 8px;border-radius:5px;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pcopen:hover{background:#2e2e35}
+.pcdel{background:none;border:0;color:var(--dim);cursor:pointer;padding:4px 6px;border-radius:5px;font-size:11px}
+.pcdel:hover{color:#fff;background:#7f1d1d}

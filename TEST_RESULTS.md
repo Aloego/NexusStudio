@@ -922,3 +922,24 @@ New or changed checks that passed: deleting a duplicate nobody modified closes w
 
 Awaiting User Approval
 
+## Close a tab without deleting the page
+
+### Automated tests
+
+Command: `node test/e2e.js` (AI sandbox). Result: 239 passed, 3 failed (same 3 as before: `get_window_state`, `get_app_state`, `get_process_info`).
+
+New checks that passed: closing shows no message and moves the page to the Closed list; the page is still in `list_pages` as closed; the Closed button lists it; reopening restores the tab and content; closing a modified page needs no message; a closed page is still closed after a reload; Delete in the list asks first; Keep page cancels; confirming removes the page for good; the last open tab has no close button.
+
+### Could not be run
+
+- The real Electron window. `node test/main-smoke.js` (crashes on a missing `screen` in its stand-in, not changed).
+
+### Manual testing for the user
+
+- Add a page with content, click `×`: the tab goes, "Closed (1) ▾" appears. Save, then Open project: the page is still in the Closed list.
+- Click Closed, click the page name: it reopens with its content.
+- Click Closed, Delete next to a page: a message asks; Keep page cancels, Delete page removes it for good.
+
+### Approval
+
+Awaiting User Approval

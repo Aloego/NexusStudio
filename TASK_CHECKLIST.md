@@ -332,3 +332,15 @@
 - [ ] Document remaining limitations
 
 **Status:** Pending
+
+## Close a tab without deleting the page
+
+**Request:** a page the user "deletes" should stay in the project (they are only making room for other pages).
+
+- [x] `×` closes the tab; the page stays in the project and in the saved file
+- [x] "Closed (n)" list next to `+` to reopen a page or delete it for good (asks first)
+- [x] No message when closing; the last open tab cannot be closed
+- [x] `closed` saved in the project file and the draft; AI tools `list_pages`/`select_page` updated
+- [x] Tests added to `test/e2e.js`
+
+**Status:** Awaiting User Approval. Replaces the delete-page-message behaviour (that task's own approval is no longer needed).

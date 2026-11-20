@@ -557,34 +557,40 @@ page.on('console', function (m) {
   ok(JSON.stringify(await pgTabs()) === '["Page 1","About"]', 'double-click renames a page ' + JSON.stringify(await pgTabs()));
   await defPage.click('#pagebar .pg.on [data-pgact="dup"]');
   ok(JSON.stringify(await pgTabs()) === '["Page 1","About","About copy"]', 'duplicate adds a copy after the open page ' + JSON.stringify(await pgTabs()));
-  // a page that has not been modified closes without any message
-  await defPage.click('#pagebar .pg.on [data-pgact="del"]');
-  ok(!(await defPage.isVisible('#pgDel')) && JSON.stringify(await pgTabs()) === '["Page 1","About"]', 'deleting a duplicate nobody has modified closes it with no message ' + JSON.stringify(await pgTabs()));
-  await defPage.click('#pgAdd');
-  ok((await pgTabs()).length === 3, 'the + button adds a blank page');
-  await defPage.click('#pagebar .pg.on [data-pgact="del"]');
-  ok(!(await defPage.isVisible('#pgDel')) && JSON.stringify(await pgTabs()) === '["Page 1","About"]', 'deleting a blank page right after adding it closes it with no message');
-  // modify a different page, then delete an untouched one: still no message
-  await defPage.click('#pgAdd');
-  await defPage.click('#pagebar [data-pg="0"] .pn');
+  // closing a tab keeps the page in the project
+  const openN = function () { return defPage.$$('#pagebar .pg').then(function (l) { return l.length; }); };
+  await defPage.click('#pagebar .pg.on [data-pgact="close"]');
+  ok(!(await defPage.isVisible('#pgDel')) && JSON.stringify(await pgTabs()) === '["Page 1","About"]' && (await defPage.textContent('#pgClosed')).indexOf('(1)') >= 0, 'closing a tab shows no message and moves the page to the Closed list ' + JSON.stringify(await pgTabs()));
+  ok((await pgCall('list_pages')).pages.length === 3 && (await pgCall('list_pages')).pages[2].closed === true, 'the closed page is still part of the project');
+  await defPage.click('#pgClosed');
+  ok((await defPage.isVisible('#pgClosedList')) && (await defPage.textContent('#pgClosedList')).indexOf('About copy') >= 0, 'the Closed button lists closed pages');
+  await defPage.click('#pgClosedList [data-pcopen]');
+  ok(JSON.stringify(await pgTabs()) === '["Page 1","About","About copy"]' && (await defPage.$eval('#pagebar .pg.on .pn', function (e) { return e.textContent; })) === 'About copy' && !(await defPage.isVisible('#pgClosed')), 'reopening a closed page puts its tab back and opens it');
+  // a modified page can be closed too, and comes back with its content
   await defPage.evaluate(function () { const em = [].slice.call(document.querySelectorAll('#palette .it em')).filter(function (e) { return e.textContent === 'h2'; })[0]; em.closest('button').click(); });
-  await defPage.click('#pagebar [data-pg="2"] .pn');
-  await defPage.click('#pagebar .pg.on [data-pgact="del"]');
-  ok(!(await defPage.isVisible('#pgDel')) && (await pgTabs()).length === 2, 'editing another page does not make an untouched page ask before closing');
-  await defPage.click('#pagebar [data-pg="0"] .pn');
-  // a page whose content was modified asks first
-  await defPage.click('#pagebar .pg.on [data-pgact="dup"]');
-  await defPage.evaluate(function () { const em = [].slice.call(document.querySelectorAll('#palette .it em')).filter(function (e) { return e.textContent === 'h2'; })[0]; em.closest('button').click(); });
-  ok((await pgTabs()).length === 3, 'a copy was added and then modified');
-  await defPage.click('#pagebar .pg.on [data-pgact="del"]');
-  ok((await defPage.isVisible('#pgDel')) && (await pgTabs()).length === 3 && /isn.t saved/i.test(await defPage.textContent('#pgDel')), 'deleting a page you modified shows the lose-content message with Save and Discard');
+  const copyHtml = (await pgCall('get_document')).html;
+  await defPage.click('#pagebar .pg.on [data-pgact="close"]');
+  ok(!(await defPage.isVisible('#pgDel')) && (await openN()) === 2, 'closing a modified page needs no message because nothing is lost');
+  // closed pages are saved with the project and come back after a reload
+  await defPage.reload(); await defPage.waitForTimeout(400);
+  ok((await openN()) === 2 && (await defPage.isVisible('#pgClosed')), 'a closed page is still closed after reopening the project');
+  await defPage.click('#pgClosed'); await defPage.click('#pgClosedList [data-pcopen]');
+  const reHtml = (await pgCall('get_document')).html;
+  const noId = function (h) { return h.replace(/ id="nx-\d+"/g, ''); };
+  ok(noId(reHtml) === noId(copyHtml), 'a reopened page has all of its content ' + JSON.stringify([copyHtml, reHtml]).slice(0, 600));
+  // deleting for good is separate and asks first
+  await defPage.click('#pagebar .pg.on [data-pgact="close"]');
+  await defPage.click('#pgClosed'); await defPage.click('#pgClosedList [data-pcdel]');
+  ok((await defPage.isVisible('#pgDel')) && /from the project/i.test(await defPage.textContent('#pgDelT')) && (await pgCall('list_pages')).pages.length === 3, 'Delete in the Closed list asks before removing the page');
   await defPage.click('#pgDelCancel');
-  ok(!(await defPage.isVisible('#pgDel')) && (await pgTabs()).length === 3, 'Keep page closes the message and keeps the page');
-  await defPage.click('#pagebar .pg.on [data-pgact="del"]');
-  await defPage.click('#pgDelDiscard');
-  ok(JSON.stringify(await pgTabs()) === '["Page 1","About"]', 'Discard deletes the page ' + JSON.stringify(await pgTabs()));
+  ok(!(await defPage.isVisible('#pgDel')) && (await pgCall('list_pages')).pages.length === 3, 'Keep page cancels the deletion');
+  await defPage.click('#pgClosed'); await defPage.click('#pgClosedList [data-pcdel]'); await defPage.click('#pgDelOk');
+  ok(JSON.stringify(await pgTabs()) === '["Page 1","About"]' && (await pgCall('list_pages')).pages.length === 2 && !(await defPage.isVisible('#pgClosed')), 'confirming removes the page from the project for good ' + JSON.stringify(await pgTabs()));
+  await defPage.click('#pagebar .pg.on [data-pgact="close"]');
+  ok((await openN()) === 1 && (await defPage.$$('#pagebar .pg .pdel')).length === 0, 'the last open tab has no close button');
+  await defPage.click('#pgClosed'); await defPage.click('#pgClosedList [data-pcopen]');
   const lp = await pgCall('list_pages');
-  ok(lp.pages.length === 2 && lp.current === 1 && lp.pages[1].name === 'About', 'list_pages reports the pages');
+  ok(lp.pages.length === 2 && lp.pages[1].name === 'About' && lp.pages[1].closed === false, 'list_pages reports the pages and which are closed');
   await pgCall('select_page', { page: 'Page 1' });
   ok((await pgCall('get_document')).custom_css.indexOf('.one') >= 0, 'select_page opens a page by name');
   // pages survive a reload
@@ -783,8 +789,8 @@ page.on('console', function (m) {
   ok(!(await fpage.isVisible('#fbDlg')) && JSON.stringify(await fpage.evaluate(function () { return window.__log[1]; })) === '["save","/h/site","home.nexus",false]' && (await fpage.$$('#pagebar .pg')).length === 2, 'saving finishes, then the new page is added');
   // the first page was modified, then saved: it no longer asks before it is closed
   await fpage.click('#pagebar [data-pg="0"] .pn');
-  await fpage.click('#pagebar .pg.on [data-pgact="del"]');
-  ok(!(await fpage.isVisible('#pgDel')) && (await fpage.$$('#pagebar .pg')).length === 1, 'a page that was modified and then saved closes without a message');
+  await fpage.click('#pagebar .pg.on [data-pgact="close"]');
+  ok(!(await fpage.isVisible('#pgDel')) && (await fpage.$$('#pagebar .pg')).length === 1, 'closing a page never shows a message');
   await fpage.click('#pgAdd'); await fpage.waitForTimeout(200);
   await fpage.click('[data-menu="file"]'); await fpage.click('[data-act="exportAll"]'); await fpage.waitForTimeout(200);
   await fpage.keyboard.press('Escape');

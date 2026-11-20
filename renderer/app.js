@@ -37,10 +37,10 @@ function cleanState(o){if(!isObj(o)||!isObj(o.root))throw new Error('This is not
       if(!isObj(p))return;
       var nm=typeof p.name==='string'&&p.name.trim()?p.name.trim().slice(0,40):'Page '+(i+1);
       var root=isObj(p.root)?cleanNode(p.root,0,{n:0}):null;
-      st.pages.push({name:nm,root:root,css:typeof p.css==='string'?p.css:'',js:typeof p.js==='string'?p.js:'',title:typeof p.title==='string'&&p.title?p.title.slice(0,120):nm});
+      st.pages.push({closed:p.closed===true,name:nm,root:root,css:typeof p.css==='string'?p.css:'',js:typeof p.js==='string'?p.js:'',title:typeof p.title==='string'&&p.title?p.title.slice(0,120):nm});
     });
     st.idx=Math.max(0,Math.min(st.pages.length-1,(o.idx|0)));
-    if(st.pages.length){var ap=st.pages[st.idx];ap.root=st.root;ap.css=st.css;ap.js=st.js;ap.title=st.title;st.pages=st.pages.filter(function(p){return p.root;});if(st.idx>=st.pages.length)st.idx=0;}
+    if(st.pages.length){var ap=st.pages[st.idx];ap.root=st.root;ap.css=st.css;ap.js=st.js;ap.title=st.title;ap.closed=false;st.pages=st.pages.filter(function(p){return p.root;});if(st.idx>=st.pages.length)st.idx=0;}
     else delete st.pages;
   }
   return st;}
@@ -490,12 +490,12 @@ function syncActive(){var p=S.pages[S.pageIdx];if(p){p.root=S.root;p.css=S.css;p
 function pageSnap(p){return JSON.stringify({root:p.root,css:p.css||'',js:p.js||'',title:p.title||p.name});}
 function markClean(){syncActive();S.pages.forEach(function(p){p.base=pageSnap(p);});}
 function isPageModified(i){syncActive();var p=S.pages[i];return !p||p.base==null?!!S.dirty:pageSnap(p)!==p.base;}
-function allPages(){syncActive();return S.pages.map(function(p){return {name:p.name,title:p.title,root:p.root,css:p.css,js:p.js};});}
+function allPages(){syncActive();return S.pages.map(function(p){var o={name:p.name,title:p.title,root:p.root,css:p.css,js:p.js};if(p.closed)o.closed=true;return o;});}
 function fullState(){return {root:S.root,css:S.css,js:S.js,title:S.title,pages:allPages(),idx:S.pageIdx};}
 function setPages(st){
-  S.pages=(st.pages&&st.pages.length)?st.pages.map(function(p){return {name:p.name,title:p.title,root:p.root,css:p.css,js:p.js};}):[{name:'Page 1'}];
+  S.pages=(st.pages&&st.pages.length)?st.pages.map(function(p){return {name:p.name,title:p.title,root:p.root,css:p.css,js:p.js,closed:p.closed===true};}):[{name:'Page 1'}];
   S.pageIdx=st.pages&&st.pages.length?Math.min(st.idx|0,S.pages.length-1):0;
-  S.pages[S.pageIdx].root=S.root;
+  S.pages[S.pageIdx].root=S.root;S.pages[S.pageIdx].closed=false;
 }
 function save(){try{localStorage.setItem(KEY,JSON.stringify(fullState()));}catch(e){}if(D)D.setDocName((S.file||S.title)+(S.dirty?' *':''));}
 function syncUndo(){$('#btnUndo').disabled=hi<=0;$('#btnRedo').disabled=hi>=hist.length-1;}
@@ -1155,7 +1155,7 @@ function switchPage(i){
   if(i<0||i>=S.pages.length||i===S.pageIdx)return;
   syncActive();
   var cur=S.pages[S.pageIdx];cur.h=hist;cur.hi=hi;
-  S.pageIdx=i;var p=S.pages[i];
+  S.pageIdx=i;var p=S.pages[i];p.closed=false;
   S.root=p.root;S.css=p.css||'';S.js=p.js||'';S.title=p.title||p.name;S.sel=S.root.id;S.collapsed={};S.pending={};
   $('#projName').value=S.title;fixUid();
   if(p.h&&p.h.length){hist=p.h;hi=Math.min(p.hi,p.h.length-1);}else{hist=[snap()];hi=0;}
@@ -1170,16 +1170,27 @@ function addPage(copy){
   S.pages.splice(S.pageIdx+1,0,p);S.dirty=true;
   switchPage(S.pageIdx+1);toast(copy?'Page duplicated':'Page added');
 }
-function deletePage(){
-  if(S.pages.length<2)return;
-  var i=S.pageIdx,name=S.pages[i].name;
-  S.pages.splice(i,1);
-  var j=Math.min(i,S.pages.length-1),p=S.pages[j];
-  S.pageIdx=j;S.root=p.root;S.css=p.css||'';S.js=p.js||'';S.title=p.title||p.name;S.sel=S.root.id;S.collapsed={};S.pending={};
-  $('#projName').value=S.title;fixUid();
-  if(p.h&&p.h.length){hist=p.h;hi=Math.min(p.hi,p.h.length-1);}else{hist=[snap()];hi=0;}
-  S.dirty=true;save();renderAll();toast('Deleted '+name);
+function openPages(){return S.pages.filter(function(p){return !p.closed;});}
+function closedPages(){return S.pages.filter(function(p){return p.closed;});}
+function neighborOpen(i){var k;for(k=i+1;k<S.pages.length;k++)if(!S.pages[k].closed)return k;for(k=i-1;k>=0;k--)if(!S.pages[k].closed)return k;return -1;}
+/* closing a page only hides its tab: the page stays in the project and in the saved file, and can be reopened from the list */
+function closePage(i){
+  if(i===undefined)i=S.pageIdx;
+  var p=S.pages[i];if(!p||p.closed||openPages().length<2)return;
+  var j=neighborOpen(i);if(j<0)return;
+  if(i===S.pageIdx)switchPage(j);
+  p.closed=true;S.dirty=true;save();renderPageBar();toast('Closed '+p.name+' \u2014 it is still in the project');
 }
+function reopenPage(i){if(!S.pages[i])return;if(i===S.pageIdx){S.pages[i].closed=false;save();renderPageBar();return;}switchPage(i);}
+/* deleting is the only thing that removes a page from the project */
+function deletePageAt(i){
+  if(!S.pages[i]||S.pages.length<2)return;
+  var name=S.pages[i].name;
+  if(i===S.pageIdx){var j=neighborOpen(i);if(j<0){j=i>0?i-1:i+1;S.pages[j].closed=false;}switchPage(j);}
+  S.pages.splice(i,1);if(i<S.pageIdx)S.pageIdx--;
+  S.dirty=true;save();renderAll();toast('Deleted '+name+' from the project');
+}
+function deletePage(){deletePageAt(S.pageIdx);}
 function renamePage(i,name){
   name=(name||'').trim().slice(0,40);if(!name||!S.pages[i])return;
   S.pages[i].name=name;S.dirty=true;save();renderPageBar();
@@ -1187,18 +1198,23 @@ function renamePage(i,name){
 function renderPageBar(){
   var bar=$('#pagebar');if(!bar)return;
   bar.innerHTML='';
+  var nOpen=openPages().length;
   S.pages.forEach(function(p,i){
+    if(p.closed)return;
     var on=i===S.pageIdx,b=document.createElement('div');
     b.className='pg'+(on?' on':'');b.setAttribute('role','tab');b.setAttribute('aria-selected',on?'true':'false');b.setAttribute('data-pg',i);b.tabIndex=0;
     var t=document.createElement('span');t.className='pn';t.textContent=p.name;t.title=on?'Double-click to rename':'Open '+p.name;b.appendChild(t);
     if(on){
       var d=document.createElement('button');d.type='button';d.className='pi';d.title='Duplicate this page';d.setAttribute('aria-label','Duplicate this page');d.textContent='⧉';d.setAttribute('data-pgact','dup');b.appendChild(d);
-      if(S.pages.length>1){var x=document.createElement('button');x.type='button';x.className='pi pdel';x.setAttribute('data-pgact','del');
-        x.title='Delete this page';x.setAttribute('aria-label','Delete this page');x.textContent='×';b.appendChild(x);}
+      if(nOpen>1){var x=document.createElement('button');x.type='button';x.className='pi pdel';x.setAttribute('data-pgact','close');
+        x.title='Close this tab (the page stays in the project)';x.setAttribute('aria-label','Close this tab');x.textContent='×';b.appendChild(x);}
     }
     bar.appendChild(b);
   });
   var add=document.createElement('button');add.type='button';add.className='pgadd';add.id='pgAdd';add.title='Add a page';add.setAttribute('aria-label','Add a page');add.textContent='+';bar.appendChild(add);
+  var nc=closedPages().length;
+  if(nc){var cb=document.createElement('button');cb.type='button';cb.className='pgclosed';cb.id='pgClosed';cb.title='Closed pages \u2014 reopen or delete';cb.setAttribute('aria-label','Closed pages');cb.setAttribute('aria-haspopup','true');cb.textContent='Closed ('+nc+') \u25BE';bar.appendChild(cb);}
+  else closeClosedList();
 }
 function startRename(i){
   var tab=$('#pagebar').querySelector('[data-pg="'+i+'"] .pn');if(!tab)return;
@@ -1211,11 +1227,12 @@ function startRename(i){
 }
 $('#pagebar').addEventListener('click',function(e){
   if(e.target.id==='pgAdd'){addPageAsked(false);return;}
+  if(e.target.id==='pgClosed'){toggleClosedList();return;}
   var a=e.target.closest('[data-pgact]');
   if(a){
     e.stopPropagation();
     if(a.getAttribute('data-pgact')==='dup'){addPageAsked(true);return;}
-    askDeletePage();return;
+    closePage(S.pageIdx);return;
   }
   var tab=e.target.closest('[data-pg]');if(tab&&!e.target.closest('input'))switchPage(+tab.getAttribute('data-pg'));
 });
@@ -1226,17 +1243,37 @@ $('#pagebar').addEventListener('keydown',function(e){
   if(e.key==='Enter'||e.key===' '){e.preventDefault();switchPage(+tab.getAttribute('data-pg'));}
   else if(e.key==='F2'){e.preventDefault();startRename(+tab.getAttribute('data-pg'));}
 });
-/* a page that is not saved yet: ask before it is lost (Save keeps it in the project file first) */
-function askDeletePage(){
-  if(S.pages.length<2)return;
-  if(!isPageModified(S.pageIdx)){deletePage();return;}
-  $('#pgDelT').textContent='Delete \u201c'+S.pages[S.pageIdx].name+'\u201d?';
-  $('#pgDel').hidden=false;$('#pgDelSave').focus();
+/* list of closed pages: reopen one, or delete it from the project for good (that asks first) */
+function closeClosedList(){var m=$('#pgClosedList');if(m)m.hidden=true;}
+function toggleClosedList(){
+  var m=$('#pgClosedList'),btn=$('#pgClosed');if(!m||!btn)return;
+  if(!m.hidden){m.hidden=true;return;}
+  m.innerHTML='';
+  S.pages.forEach(function(p,i){
+    if(!p.closed)return;
+    var row=document.createElement('div');row.className='pcrow';
+    var o=document.createElement('button');o.type='button';o.className='pcopen';o.setAttribute('data-pcopen',i);o.textContent=p.name;o.title='Reopen '+p.name;row.appendChild(o);
+    var d=document.createElement('button');d.type='button';d.className='pcdel';d.setAttribute('data-pcdel',i);d.textContent='Delete';d.title='Delete '+p.name+' from the project';row.appendChild(d);
+    m.appendChild(row);
+  });
+  var r=btn.getBoundingClientRect();m.style.left=Math.max(4,Math.min(r.left,window.innerWidth-244))+'px';m.style.top=(r.bottom+2)+'px';m.hidden=false;
 }
-function closePgDel(){$('#pgDel').hidden=true;}
+$('#pgClosedList').addEventListener('click',function(e){
+  var o=e.target.closest('[data-pcopen]'),d=e.target.closest('[data-pcdel]');
+  if(o){closeClosedList();reopenPage(+o.getAttribute('data-pcopen'));}
+  else if(d){closeClosedList();askDeletePage(+d.getAttribute('data-pcdel'));}
+});
+document.addEventListener('mousedown',function(e){if(!e.target.closest('#pgClosedList,#pgClosed'))closeClosedList();});
+var delIdx=-1;
+function askDeletePage(i){
+  var p=S.pages[i];if(!p||S.pages.length<2)return;
+  delIdx=i;
+  $('#pgDelT').textContent='Delete \u201c'+p.name+'\u201d from the project?';
+  $('#pgDel').hidden=false;$('#pgDelCancel').focus();
+}
+function closePgDel(){$('#pgDel').hidden=true;delIdx=-1;}
 $('#pgDelCancel').addEventListener('click',closePgDel);
-$('#pgDelDiscard').addEventListener('click',function(){closePgDel();deletePage();});
-$('#pgDelSave').addEventListener('click',function(){closePgDel();ACT.saveWith(false,function(){deletePage();});});
+$('#pgDelOk').addEventListener('click',function(){var i=delIdx;closePgDel();deletePageAt(i);});
 /* in the desktop app a project needs a folder and a file before it gets more pages */
 function addPageAsked(copy){
   if(D&&!S.file){ACT.saveWith(true,function(){addPage(copy);},'Pages belong to a project. Make a folder for the project and name its file first; your new page is added after that.');return;}
@@ -1980,7 +2017,7 @@ function pageIndex(v){
   if(typeof v==='string'){var i=S.pages.map(function(p){return p.name.toLowerCase();}).indexOf(v.trim().toLowerCase());if(i>=0)return i;if(/^\d+$/.test(v.trim())&&S.pages[+v.trim()-1])return +v.trim()-1;}
   throw new Error('No such page. Use list_pages to see the page names.');
 }
-API.list_pages=function(){syncActive();return {current:S.pageIdx,pages:S.pages.map(function(p,i){return {index:i,name:p.name,title:p.title,current:i===S.pageIdx};})};};
+API.list_pages=function(){syncActive();return {current:S.pageIdx,pages:S.pages.map(function(p,i){return {index:i,name:p.name,title:p.title,current:i===S.pageIdx,closed:!!p.closed};})};};
 API.add_page=function(a){
   var before=S.pages.length;addPage(!!a.duplicate);
   if(S.pages.length===before)throw new Error('A project can have up to '+MAX_PAGES+' pages.');
@@ -1992,8 +2029,7 @@ API.rename_page=function(a){var i=a.page===undefined?S.pageIdx:pageIndex(a.page)
 API.delete_page=function(a){
   if(S.pages.length<2)throw new Error('A project needs at least one page.');
   var i=a.page===undefined?S.pageIdx:pageIndex(a.page);
-  if(i!==S.pageIdx)switchPage(i);
-  deletePage();return {ok:true,current:S.pageIdx,name:S.pages[S.pageIdx].name};
+  deletePageAt(i);return {ok:true,current:S.pageIdx,name:S.pages[S.pageIdx].name};
 };
 API.__after_screenshot=function(){placeOverlay();return true;};
 ['get_document','get_tree','get_element','find_elements','get_selection','select_element','get_full_html','new_document','list_pages','add_page','select_page','rename_page','delete_page','undo','redo','__prepare_screenshot','__after_screenshot','get_computed_style','get_accessibility','get_console_logs','inspect_element'].forEach(function(k){API[k].raw=true;});
