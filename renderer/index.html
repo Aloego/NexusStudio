@@ -17,7 +17,7 @@
         <button data-act="saveProject">Save <kbd>Ctrl S</kbd></button>
         <button data-act="saveAs">Save as…</button>
         <button data-act="importFile">Import HTML file…</button>
-        <button data-act="exportHtml">Export HTML…</button>
+        <button data-act="exportHtml">Export page to a folder…</button>
         <button data-act="exportAll">Export all pages…</button>
         <button data-act="newBlank">New blank page</button>
         <button data-act="sample">Load sample page</button>
@@ -194,7 +194,7 @@
   <div class="fbplaces" id="fbPlaces"></div>
   <div class="fbbar"><button class="sbtn" id="fbUp" type="button" title="Go up one folder">↑ Up</button><input id="fbPath" type="text" spellcheck="false" aria-label="Current folder"><button class="sbtn" id="fbGo" type="button">Go</button></div>
   <div class="fblist" id="fbList" role="listbox" aria-label="Folders and files"></div>
-  <div class="fbrow" id="fbNewRow"><label for="fbFolderName">Project folder name</label><input id="fbFolderName" type="text" spellcheck="false" placeholder="my-project"></div>
+  <div class="fbrow" id="fbNewRow"><label for="fbFolderName" id="fbFolderLbl">Project folder name</label><input id="fbFolderName" type="text" spellcheck="false" placeholder="my-project"></div>
   <div class="fbrow" id="fbNameRow" hidden><label for="fbFile">File name</label><input id="fbFile" type="text" spellcheck="false"></div>
   <p class="note" id="fbMsg" style="margin:0" role="status"></p>
   <div class="acts"><button class="sbtn" id="fbCancel" type="button">Cancel</button><button class="sbtn" id="fbBack" type="button" hidden>← Back</button><button class="sbtn" id="fbSkip" type="button" hidden>Use this folder</button><button class="primary" id="fbOk" type="button">OK</button></div>

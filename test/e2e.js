@@ -650,6 +650,16 @@ page.on('console', function (m) {
   await defPage.click('#railLx'); await defPage.click('#railRx');
   const w3 = await colW();
   ok(w3.l === w0.l && w3.r === w0.r && (await defPage.isVisible('#palette')) && (await defPage.isVisible('#propBody')), 'the small arrow on the edge brings each panel back ' + JSON.stringify(w3));
+  // nothing is added without consent
+  await pgCall('select_page', { page: 'Page 1' });
+  await pgCall('add_element', { tag: 'h2', text: 'With id', attrs: { id: 'hello' }, style: { color: 'red' } });
+  await pgCall('add_element', { tag: 'p', text: 'With class', attrs: { 'class': 'note big' }, style: { margin: '0' } });
+  await pgCall('add_element', { tag: 'p', text: 'Plain', style: { margin: '4px' } });
+  const nc = await pgCall('get_document');
+  ok(/<h2 id="hello">/.test(nc.html) && /<p class="note big">/.test(nc.html) && /<p style="margin: 4px;">/.test(nc.html) && !/nx-\d/.test(nc.html), 'only the ids you set appear; an element with neither id nor class gets an inline style ' + nc.html.slice(0, 200));
+  ok(/#hello \{\s*color: red;/.test(nc.generated_css) && /\.note\.big \{\s*margin: 0;/.test(nc.generated_css) && !/box-sizing|margin: 4px/.test(nc.generated_css) && !/\* \{|body \{\s*margin: 0/.test(nc.generated_css), 'panel styles go under your id or class, with no reset or other rules added ' + nc.generated_css);
+  const fh = await pgCall('get_full_html');
+  ok(!/googleapis/.test(fh), 'no font link is added to the page');
   console.log('Device size dropdown');
   ok((await defPage.$$('#devs [data-w]')).length === 0, 'the Mobile / Tablet / Desktop tab buttons are gone');
   ok((await defPage.textContent('#devBtn')).trim() === 'Responsive', 'the dropdown starts as Responsive');
@@ -707,14 +717,16 @@ page.on('console', function (m) {
       isDesktop: true, setDocName: function (n) { window.__doc = n; }, newProject: async function () {}, setPreview: async function () { return true; },
       openProject: async function () { return { text: evil, name: 'evil.nexus' }; },
       saveProject: async function (t, as, name) { window.__saved.push({ t: t, as: as, name: name }); return { ok: true, name: 'mine.nexus' }; },
-      exportHtml: async function (t) { window.__exported = t; return { ok: true, name: 'x.html' }; },
+      exportHtml: async function () { return { needLocation: true }; },
+      fbPlaces: async function () { return { start: '/h', places: [{ name: 'Documents', path: '/h' }], roots: ['/'] }; },
+      fbList: async function (a) { return { dir: a.dir, parent: '/', entries: a.dir === '/h' ? [{ name: 'taken', dir: true }] : [] }; },
+      fbExportFolder: async function (a) { window.__exported = a; return { ok: true, name: a.name, count: a.files.length }; },
       importHtml: async function () { return { canceled: true }; },
       mcpInfo: async function () { return { running: true, url: 'http://127.0.0.1:39517/mcp', token: 'abc', tools: [{ name: 'get_tree', title: 'Read' }], desktopConfig: '{"mcpServers":{}}', claudeCodeCommand: 'claude mcp add x' }; },
       mcpSetEnabled: async function () { return null; }, mcpInstallClaudeDesktop: async function () { return { ok: true, message: 'Added to Claude Desktop.' }; },
       onAiRequest: function (cb) { window.__aiCb = cb; }, aiRespond: function (id, ok, p) { (window.__aiResp = window.__aiResp || []).push({ id: id, ok: ok, p: p }); },
       onAiActivity: function (cb) { window.__actCb = cb; },
       docsOpenOnline: async function (t, site) { (window.__docs = window.__docs || []).push(['online', t, site]); return { ok: true }; },
-      exportPages: async function (files, name) { window.__exported = { files: files, name: name }; return { ok: true, count: files.length }; },
       docsOpenZeal: async function (t) { (window.__docs = window.__docs || []).push(['zeal', t]); return window.__zealMissing ? { needPath: true, error: 'Zeal was not found on this computer.' } : { ok: true }; },
       docsSetZealPath: async function (p) { (window.__docs = window.__docs || []).push(['path', p]); if (!/zeal/i.test(p)) return { error: 'bad' }; window.__zealMissing = false; return { ok: true }; }
     };
@@ -739,8 +751,17 @@ page.on('console', function (m) {
   const saved = JSON.parse(await dpage.evaluate(function () { return window.__saved[0].t; }));
   ok(saved.format === 'nexusstudio' && saved.root.tag === 'body', 'Ctrl+S saves a project file');
   await dpage.click('[data-menu="file"]'); await dpage.click('[data-act="exportHtml"]');
+  await dpage.waitForSelector('#fbDlg:not([hidden])');
+  ok(!(await dpage.isVisible('#fbNameRow')) && /Export folder name/.test(await dpage.textContent('#fbNewRow')), 'Export page asks only for a folder name');
+  await dpage.fill('#fbFolderName', 'taken'); await dpage.click('#fbOk');
+  ok(/already exists/.test(await dpage.textContent('#fbMsg')) && !(await dpage.evaluate(function () { return window.__exported; })), 'an existing export folder warns before replacing');
+  await dpage.fill('#fbFolderName', 'my-site'); await dpage.click('#fbOk');
   await dpage.waitForFunction(function () { return !!window.__exported; });
-  ok((await dpage.evaluate(function () { return window.__exported; })).startsWith('<!DOCTYPE html>'), 'Export HTML sends a full page');
+  const ex1 = await dpage.evaluate(function () { return window.__exported; });
+  const exPaths = ex1.files.map(function (f) { return f.path; });
+  ok(ex1.name === 'my-site' && exPaths[0] === 'index.html' && /^<!DOCTYPE html>/.test(ex1.files[0].text), 'Export page sends a folder name and an index.html ' + JSON.stringify(exPaths));
+  ok(!/googleapis|box-sizing|nx-\d/.test(ex1.files.map(function (f) { return f.text; }).join('\n')), 'the export contains nothing the app added (no font link, no reset, no automatic ids)');
+  await dpage.evaluate(function () { window.__exported = null; });
   await dpage.click('#aiChip');
   ok(await dpage.isVisible('#aiModal') && /AI server is on/.test(await dpage.textContent('#aiStatus')), 'Connect AI dialog opens');
   await dpage.click('#aiInstall');
@@ -761,10 +782,19 @@ page.on('console', function (m) {
   const docCalls = await dpage.evaluate(function () { return window.__docs; });
   ok(JSON.stringify(docCalls.map(function (c) { return c[0]; })) === '["online","online","zeal","path","zeal"]' && docCalls[0][1] === docCalls[2][1] && docCalls[0][2] === 'mdn' && docCalls[1][2] === 'w3schools' && !(await dpage.isVisible('#docZealRow')), 'desktop: MDN button, Zeal button asks for the path, saving it opens Zeal ' + JSON.stringify(docCalls));
   await dpage.evaluate(function () { document.querySelector('#pgAdd').click(); });
+  await dpage.evaluate(function () { document.querySelector('#pagebar [data-pg="0"] .pn').click(); });
+  await dpage.evaluate(function () { return window.NexusAPI.call('set_css', { css: '.x { color: red; }' }); });
+  await dpage.evaluate(function () { return window.NexusAPI.call('set_js', { js: 'console.log(1)' }); });
   await dpage.evaluate(function () { document.querySelector('[data-act="exportAll"]').click(); });
-  await dpage.waitForTimeout(150);
+  await dpage.waitForSelector('#fbDlg:not([hidden])');
+  await dpage.fill('#fbFolderName', 'all-pages'); await dpage.click('#fbOk');
+  await dpage.waitForFunction(function () { return !!window.__exported; });
   const expd = await dpage.evaluate(function () { return window.__exported; });
-  ok(expd && expd.files.length === 2 && expd.files.every(function (f) { return /^<!DOCTYPE html>/.test(f.text); }) && expd.files[1].name === 'Page 2', 'desktop: Export all pages hands every page as a full HTML document to the app');
+  const ep = expd.files.map(function (f) { return f.path; });
+  ok(expd.name === 'all-pages' && ep.indexOf('index.html') >= 0 && ep.indexOf('page-2.html') >= 0, 'Export all pages writes one html file per page ' + JSON.stringify(ep));
+  const idxHtml = expd.files.filter(function (f) { return f.path === 'index.html'; })[0].text;
+  ok(ep.indexOf('css/index.css') >= 0 && ep.indexOf('js/index.js') >= 0 && /<link rel="stylesheet" href="css\/index\.css">/.test(idxHtml) && /<script src="js\/index\.js">/.test(idxHtml) && !/<style|console\.log/.test(idxHtml), 'CSS and JavaScript go to css/ and js/ files that the html links to ' + JSON.stringify(ep));
+  ok(ep.indexOf('css/page-2.css') < 0 && ep.indexOf('js/page-2.js') < 0 && !/<link|<script/.test(expd.files.filter(function (f) { return f.path === 'page-2.html'; })[0].text), 'a page with no CSS or JavaScript gets no empty files or links');
   await dpage.keyboard.press('Escape');
   console.log('In-app save chooser (folder first, then file name)');
   const fpage = await ctx.newPage();

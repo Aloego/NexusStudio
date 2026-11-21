@@ -94,9 +94,9 @@ function sample(){
     N('div',{text:'© 2025 HyperScale Cloud Inc. All rights reserved.'}),
     N('div',{style:{display:'flex',gap:'16px'},children:[N('a',{text:'Privacy Policy',attrs:{href:'#'},style:{color:'inherit','text-decoration':'none'}}),N('a',{text:'Terms of Service',attrs:{href:'#'},style:{color:'inherit','text-decoration':'none'}}),N('a',{text:'System Status',attrs:{href:'#'},style:{color:'inherit','text-decoration':'none'}})]})]});
   var root=N('body',{style:{background:'#020617',color:'#f1f5f9','font-family':"'Plus Jakarta Sans', system-ui, sans-serif"},children:[header,hero,footer]});
-  return {root:root,css:'',js:'',title:'nebula-landing-v2'};
+  return {root:root,css:'*, *::before, *::after { box-sizing: border-box; }\n\nbody { margin: 0; }',js:'',title:'nebula-landing-v2'};
 }
-function blank(){return {root:N('body',{style:{background:'#ffffff',color:'#18181b','font-family':"'Plus Jakarta Sans', system-ui, sans-serif",padding:'24px'}}),css:'',js:'',title:'untitled-page'};}
+function blank(){return {root:N('body'),css:'',js:'',title:'untitled-page'};}
 
 /* ---------- element palette ---------- */
 var PAL=[
@@ -1088,11 +1088,27 @@ function renderCrumbs(){
 
 /* ---------- code generation ---------- */
 function hasStyle(n){return Object.keys(n.style).length>0;}
-function idFor(n){return n.attrs.id||(hasStyle(n)?'nx-'+n.id.slice(1):'');}
+/* Nothing is added on its own: no automatic ids, no base rules, no font links. A style set in the panel is written under
+   the id or class the person gave that element (in the CSS file); an element with neither gets it on its style attribute. */
+var selMap={};
+function idFor(n){return n.attrs.id||'';}
+function calcSel(){
+  var used={},m={};
+  S.root.children.forEach(function(c){walk(c,function(n){
+    if(!hasStyle(n))return;
+    var sel='',id=n.attrs.id,cl=(n.attrs['class']||'').trim();
+    if(id&&/^[A-Za-z_][\w-]*$/.test(id))sel='#'+id;
+    else if(cl&&cl.split(/\s+/).every(function(c){return /^[A-Za-z_-][\w-]*$/.test(c);}))sel='.'+cl.split(/\s+/).join('.');
+    if(sel&&!used[sel]){used[sel]=1;m[n.id]=sel;}
+  });});
+  selMap=m;
+}
+function inlineStyle(n){return Object.keys(n.style).map(function(p){return p+': '+n.style[p];}).join('; ')+';';}
 function attrStr(n){
   var s='',id=idFor(n);if(id)s+=' id="'+escA(id)+'"';
   if(n.attrs['class'])s+=' class="'+escA(n.attrs['class'])+'"';
   Object.keys(n.attrs).forEach(function(k){if(k==='id'||k==='class'||!k)return;var v=n.attrs[k];s+=v===''?' '+k:' '+k+'="'+escA(v)+'"';});
+  if(hasStyle(n)&&!selMap[n.id])s+=' style="'+escA(inlineStyle(n))+'"';
   return s;
 }
 function gen(n,d){
@@ -1106,19 +1122,34 @@ function gen(n,d){
 /* the HTML tab shows a complete document: doctype, html, head and body around the page content */
 function genHtmlView(){
   var body=genBody().split('\n').map(function(l){return l?'  '+l:l;}).join('\n');
-  return '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="utf-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1">\n  <title>'+esc(S.title)+'</title>\n  <!-- Styles are in the CSS tab and are added to the page when you copy or export it. -->\n</head>\n<body>\n'+body+'\n</body>\n</html>';
+  return '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="utf-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1">\n  <title>'+esc(S.title)+'</title>\n  <!-- Your styles are in the CSS tab and your script in the JavaScript tab. Exporting puts them in css/ and js/ files. -->\n</head>\n<body>\n'+body+'\n</body>\n</html>';
 }
-function genBody(){return S.root.children.map(function(c){return gen(c,0);}).join('\n');}
+function genBody(){calcSel();return S.root.children.map(function(c){return gen(c,0);}).join('\n');}
 function rule(sel,st){var k=Object.keys(st);if(!k.length)return '';return sel+' {\n'+k.map(function(p){return '  '+p+': '+st[p]+';';}).join('\n')+'\n}';}
 function genCss(){
-  var out=['*, *::before, *::after { box-sizing: border-box; }','body { margin: 0; }'];
-  var b=rule('body',S.root.style);if(b)out.push(b.replace('body {','body {'));
-  S.root.children.forEach(function(c){walk(c,function(n){var id=idFor(n);if(id&&hasStyle(n))out.push(rule('#'+id,n.style));});});
+  calcSel();
+  var out=[];
+  var b=rule('body',S.root.style);if(b)out.push(b);
+  S.root.children.forEach(function(c){walk(c,function(n){var sel=selMap[n.id];if(sel&&hasStyle(n))out.push(rule(sel,n.style));});});
   return out.join('\n\n');
 }
+/* everything one page needs, with nothing added: its body, its CSS (panel styles + the CSS tab) and its script */
+function pageCss(){return [genCss(),S.css.trim()].filter(Boolean).join('\n\n');}
+function docWrap(head,body,tail){
+  return '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>'+esc(S.title)+'</title>\n'+head+'</head>\n<body>\n'+body+'\n'+tail+'</body>\n</html>\n';
+}
+/* one self-contained document (preview, Copy page code) */
 function fullDoc(){
-  return '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>'+esc(S.title)+'</title>\n'+
-   '<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">\n<style>\n'+genCss()+(S.css.trim()?'\n\n'+S.css.trim().replace(/<\/style/gi,'<\\/style'):'')+'\n</style>\n</head>\n<body>\n'+genBody()+'\n'+(S.js.trim()?'<script>\n'+S.js.replace(/<\/script/gi,'<\\/script')+'\n<\/script>\n':'')+'</body>\n</html>\n';
+  var body=genBody(),css=pageCss();
+  return docWrap(css?'<style>\n'+css.replace(/<\/style/gi,'<\\/style')+'\n</style>\n':'',body,S.js.trim()?'<script>\n'+S.js.replace(/<\/script/gi,'<\\/script')+'\n<\/script>\n':'');
+}
+/* the same page as three files: stem.html links css/stem.css and js/stem.js (a link is only written when the file has content) */
+function pageFiles(stem){
+  var body=genBody(),css=pageCss();
+  var files=[{path:stem+'.html',text:docWrap(css?'<link rel="stylesheet" href="css/'+stem+'.css">\n':'',body,S.js.trim()?'<script src="js/'+stem+'.js"><\/script>\n':'')}];
+  if(css)files.push({path:'css/'+stem+'.css',text:css+'\n'});
+  if(S.js.trim())files.push({path:'js/'+stem+'.js',text:S.js.replace(/\s+$/,'')+'\n'});
+  return files;
 }
 
 /* ---------- import ---------- */
@@ -1303,11 +1334,20 @@ function addPageAsked(copy){
   addPage(copy);
 }
 /* the HTML of any page, for exporting all pages */
-function docOfPage(i){
+function withPage(i,fn){
   syncActive();
   var keep={root:S.root,css:S.css,js:S.js,title:S.title},p=S.pages[i];
   S.root=p.root;S.css=p.css||'';S.js=p.js||'';S.title=p.title||p.name;
-  try{return fullDoc();}finally{S.root=keep.root;S.css=keep.css;S.js=keep.js;S.title=keep.title;}
+  try{return fn();}finally{S.root=keep.root;S.css=keep.css;S.js=keep.js;S.title=keep.title;}
+}
+/* the files of the pages in "list" (page numbers); the first is index, the others are named after the page */
+function exportFilesOf(list){
+  var used={},out=[];
+  list.forEach(function(i,k){
+    var stem=k===0?'index':pageSlug(S.pages[i].name);if(used[stem]){var n=2;while(used[stem+'-'+n])n++;stem=stem+'-'+n;}used[stem]=1;
+    out=out.concat(withPage(i,function(){return pageFiles(stem);}));
+  });
+  return out;
 }
 
 /* ---------- the folder chooser shown inside the app (instead of the Windows file window) ---------- */
@@ -1318,7 +1358,7 @@ function chooseLocation(o){
   return new Promise(function(resolve){
     D.fbPlaces().then(function(pl){
       if(!pl){resolve(null);return;}
-      fb={o:o,resolve:resolve,step:o.mode==='save'?1:0,dir:pl.start,parent:null,entries:[],sel:null,warned:false};
+      fb={o:o,resolve:resolve,step:(o.mode==='save'||o.mode==='folder')?1:0,dir:pl.start,parent:null,entries:[],sel:null,warned:false};
       var box=$('#fbPlaces');box.innerHTML='';
       pl.places.concat(pl.roots.length>1?[{name:'Drives',path:''}]:[]).forEach(function(p){var b=document.createElement('button');b.type='button';b.textContent=p.name;b.addEventListener('click',function(){fbGo(p.path);});box.appendChild(b);});
       $('#fbTitle').textContent=o.title;
@@ -1335,16 +1375,17 @@ function fbGo(dir){
   });
 }
 function fbRender(){
-  var o=fb.o,save=o.mode==='save',two=save&&fb.step===1;
+  var o=fb.o,folder=o.mode==='folder',save=o.mode==='save',two=save&&fb.step===1,showNew=two||folder;
   $('#fbPath').value=fb.dir;$('#fbUp').disabled=fb.parent===null;
-  $('#fbNewRow').hidden=!two;$('#fbNameRow').hidden=!(save&&fb.step===2);
+  $('#fbNewRow').hidden=!showNew;$('#fbFolderLbl').textContent=folder?'Export folder name':'Project folder name';$('#fbNameRow').hidden=!(save&&fb.step===2);
   $('#fbBack').hidden=!(save&&fb.step===2);$('#fbSkip').hidden=!two;
-  $('#fbOk').textContent=two?'Create folder and continue':(save?'Save':'Open');
-  $('#fbOk').disabled=!save&&!fb.sel;
-  $('#fbHelp').textContent=two?(o.help?o.help+' ':'')+'Step 1 of 2: choose where the project folder goes, type its name and create it (or use the folder you are in).':
+  $('#fbOk').textContent=folder?'Export':(two?'Create folder and continue':(save?'Save':'Open'));
+  $('#fbOk').disabled=!save&&!folder&&!fb.sel;
+  if(folder)$('#fbHelp').textContent=(o.help?o.help+' ':'')+'Choose where the folder goes, then type its name.';
+  else $('#fbHelp').textContent=two?(o.help?o.help+' ':'')+'Step 1 of 2: choose where the project folder goes, type its name and create it (or use the folder you are in).':
     (save?'Step 2 of 2: name the file. It will be saved in '+fb.dir:(o.help||'Pick a file.'));
   var list=$('#fbList');list.innerHTML='';
-  var shown=fb.entries.filter(function(e){return e.dir||!two;});
+  var shown=fb.entries.filter(function(e){return e.dir||!(two||folder);});
   if(!shown.length){var em=document.createElement('div');em.className='empty';em.textContent=two?'No folders here yet. Create one below.':'Nothing to show here.';list.appendChild(em);}
   shown.forEach(function(e){
     var b=document.createElement('button');b.type='button';b.className=e.dir?'dir':'file';
@@ -1363,6 +1404,12 @@ function fbClose(v){$('#fbDlg').hidden=true;var r=fb&&fb.resolve;fb=null;if(r)r(
 function fbOk(){
   if(!fb)return;var o=fb.o;
   if(o.mode==='open'){if(fb.sel)fbClose({dir:fb.dir,name:fb.sel});return;}
+  if(o.mode==='folder'){
+    var xn=$('#fbFolderName').value.trim();if(!xn){fbMsg('Type a name for the export folder.');return;}
+    var xe=fb.entries.some(function(e){return e.dir&&e.name.toLowerCase()===xn.toLowerCase();});
+    if(xe&&!fb.warned){fb.warned=true;fbMsg('A folder named '+xn+' already exists here. Files with the same names inside it will be replaced. Press Export again to continue.');return;}
+    fbClose({dir:fb.dir,name:xn,overwrite:xe});return;
+  }
   if(fb.step===1){
     var fn=$('#fbFolderName').value.trim();if(!fn){fbMsg('Type a name for the project folder.');return;}
     D.fbMkdir({dir:fb.dir,name:fn}).then(function(r){if(!r||r.error){fbMsg((r&&r.error)||'Could not create the folder.');return;}fb.step=2;fbGo(r.dir);});
@@ -1478,20 +1525,22 @@ var ACT={
         savedProject(r2);if(cb)cb();});});
     savedProject(r);if(cb)cb();});},
   exportAll:function(){
-    if(S.pages.length<2)return toast('This project has only one page. Use Export HTML.');
-    if(!D||!D.exportPages)return needDesktop();
-    var files=S.pages.map(function(p,i){return {name:p.name,text:docOfPage(i)};});
-    D.exportPages(files,S.title).then(function(r){
-      if(!r||r.canceled)return;if(r.error)return toast(r.error);
-      if(r.needLocation)return chooseLocation({mode:'save',kind:'html',title:'Export all pages',name:S.title,help:'Every page is saved as its own HTML file in the folder; the first page gets the file name you choose.'}).then(function(sel){
-        if(!sel)return;return D.fbExportPages({dir:sel.dir,name:sel.name,files:files,overwrite:sel.overwrite}).then(function(r2){toast(!r2||r2.error?((r2&&r2.error)||'Could not export.'):('Exported '+r2.count+' pages'));});});
-      toast('Exported '+r.count+' pages');});
+    if(S.pages.length<2)return toast('This project has only one page. Use Export page.');
+    ACT.exportPagesTo(S.pages.map(function(p,i){return i;}),'Export all pages','Every page is exported into the folder you name: its HTML file, plus its CSS in css/ and its JavaScript in js/. The first page is index.html.');
   },
-  exportHtml:function(){if(!D)return needDesktop();D.exportHtml(fullDoc(),S.title).then(function(r){
-    if(!r||r.canceled)return;if(r.error)return toast(r.error);
-    if(r.needLocation)return chooseLocation({mode:'save',kind:'html',title:'Export HTML',name:S.title}).then(function(sel){
-      if(!sel)return;return D.fbExportHtml({dir:sel.dir,name:sel.name,text:fullDoc(),overwrite:sel.overwrite}).then(function(r2){toast(!r2||r2.error?((r2&&r2.error)||'Could not export.'):'Exported '+r2.name);});});
-    toast('Exported '+r.name);});},
+  exportHtml:function(){ACT.exportPagesTo([S.pageIdx],'Export page','The page is exported into the folder you name: index.html, its CSS in css/ and its JavaScript in js/.');},
+  exportPagesTo:function(list,title,help){
+    if(!D||!D.exportHtml)return needDesktop();
+    var files=exportFilesOf(list);
+    D.exportHtml(null,S.title).then(function(r){
+      if(!r||r.canceled)return;if(r.error)return toast(r.error);
+      if(!r.needLocation)return;
+      return chooseLocation({mode:'folder',kind:'html',title:title,name:list.length>1?S.title:S.pages[list[0]].name,help:help}).then(function(sel){
+        if(!sel)return;
+        return D.fbExportFolder({dir:sel.dir,name:sel.name,files:files,overwrite:sel.overwrite}).then(function(r2){
+          toast(!r2||r2.error?((r2&&r2.error)||'Could not export.'):'Exported '+r2.count+' files to the folder '+r2.name);});});
+    });
+  },
   importFile:function(){if(!D)return needDesktop();D.importHtml().then(function(r){
     if(r&&r.needLocation)return chooseLocation({mode:'open',kind:'html',title:'Import HTML file'}).then(function(sel){if(sel)return D.fbRead({kind:'html',dir:sel.dir,name:sel.name}).then(importedFile);});
     importedFile(r);});},
@@ -1805,7 +1854,7 @@ function parseSnippet(html){
 
 API.get_document=function(){
   return {title:S.title,html:genBody(),custom_css:S.css,generated_css:genCss(),js:S.js,selected:pubId(find(S.sel).node),element_count:countNodes(),
-    note:'In the html, ids look like nx-12. In get_tree they look like n12. Both work as element ids.'};
+    note:'The html has only the ids you gave elements. In get_tree elements have ids like n12; use those as element ids.'};
 };
 API.get_tree=function(a){
   var f=need(a.id),max=typeof a.max_depth==='number'?Math.max(0,Math.min(30,Math.floor(a.max_depth))):6;

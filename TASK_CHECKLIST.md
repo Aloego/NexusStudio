@@ -361,3 +361,19 @@
 - [x] Tests in `test/e2e.js`
 
 **Status:** Approved on 2026-11-20 (user said "Approve" right after the drag-to-reorder summary).
+
+## Export a page to a folder; nothing added without consent
+
+**Request (2026-11-21):** keep the `.nexus` project file (it holds every page, open and closed). Exporting a page writes a folder with the HTML, CSS and JavaScript as separate files. Stop the app adding its own styles or code; the user controls all content, styling and behaviour.
+
+- [x] File > Export page to a folder…: folder name asked in the in-app window; writes `index.html`, `css/index.css`, `js/index.js` (CSS/JS files and their links only when the page has any)
+- [x] File > Export all pages…: same folder layout, first page `index`, others named after the page (`page-2.html`, `css/page-2.css`)
+- [x] Removed what the app added by itself: base reset rules, Google Fonts link, automatic `nx-N` ids and generated `#nx-N` rules, canvas box-sizing rule, default styles on a new blank page
+- [x] Panel styles are written in the CSS file under the id or class the user gave; an element with neither gets a `style` attribute
+- [x] The sample page keeps its reset, now as visible text in its own CSS tab
+- [x] Main process only writes `*.html`, `css/*.css`, `js/*.js` (names checked); folder name checked
+- [x] Tests added and updated (`node test/e2e.js`: 250 passed, 3 failed as before)
+- [x] Commit and push changes to feature branch
+- [ ] User personally tests exporting a page and all pages, and checks the files
+
+**Status:** Awaiting User Approval

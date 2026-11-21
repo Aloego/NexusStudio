@@ -219,29 +219,25 @@ ipcMain.handle('fb:saveProject', function (e, a) {
   if (!fromEditor(e) || !a || typeof a.text !== 'string' || a.text.length > MAX_FILE) return { canceled: true };
   return fbWrite(a, 'project', async function (target) { await fs.promises.writeFile(target, a.text, 'utf8'); currentFile = target; });
 });
-ipcMain.handle('fb:exportHtml', function (e, a) {
-  if (!fromEditor(e) || !a || typeof a.text !== 'string' || a.text.length > MAX_FILE) return { canceled: true };
-  return fbWrite(a, 'html', async function (target) { await fs.promises.writeFile(target, a.text, 'utf8'); });
-});
-ipcMain.handle('fb:exportPages', function (e, a) {
-  if (!fromEditor(e) || !a || !Array.isArray(a.files) || !a.files.length || a.files.length > 30) return { canceled: true };
-  const files = a.files.filter(function (f) { return f && typeof f.text === 'string' && f.text.length <= MAX_FILE; });
-  if (!files.length) return { canceled: true };
-  let count = 0;
-  return fbWrite(a, 'html', async function (target, dir, name) {
-    const stem = name.replace(/\.html?$/i, '');
-    for (let i = 0; i < files.length; i++) {
-      let t = target;
-      if (i > 0) {
-        const slug = String(files[i].name || 'page').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'page';
-        t = path.join(dir, stem + '-' + slug + '.html');
-        let k = 2;
-        while (fs.existsSync(t)) { t = path.join(dir, stem + '-' + slug + '-' + k + '.html'); k++; }
-      }
-      await fs.promises.writeFile(t, files[i].text, 'utf8');
-      count++;
+ipcMain.handle('fb:exportFolder', async function (e, a) {
+  if (!fromEditor(e) || !a || !Array.isArray(a.files) || !a.files.length || a.files.length > 90) return { canceled: true };
+  const parent = fbDir(a.dir), name = String(a.name || '').trim();
+  if (!parent || !name || name.length > 80 || /[\\/:*?"<>|\x00-\x1f]/.test(name) || name.startsWith('.') || name === '..') return { error: 'Choose a folder and type a valid folder name.' };
+  // only these file names, nothing else, can be written
+  const ok = /^(?:[a-z0-9][a-z0-9-]*\.html|css\/[a-z0-9][a-z0-9-]*\.css|js\/[a-z0-9][a-z0-9-]*\.js)$/;
+  const files = a.files.filter(function (f) { return f && typeof f.path === 'string' && ok.test(f.path) && typeof f.text === 'string' && f.text.length <= MAX_FILE; });
+  if (!files.length || files.length !== a.files.length) return { error: 'Nothing valid to export.' };
+  const root = path.join(parent, name);
+  if (fs.existsSync(root) && !a.overwrite) return { exists: true, name: name };
+  try {
+    for (const f of files) {
+      const t = path.join(root, f.path);
+      await fs.promises.mkdir(path.dirname(t), { recursive: true });
+      await fs.promises.writeFile(t, f.text, 'utf8');
     }
-  }).then(function (r) { if (r.ok) r.count = count; return r; });
+  } catch (err) { return { error: 'Could not export: ' + err.message }; }
+  const s = readSettings(); s.lastDir = parent; writeSettings(s);
+  return { ok: true, name: name, folder: root, count: files.length };
 });
 ipcMain.handle('fb:read', async function (e, a) {
   if (!fromEditor(e) || !a || !FB_KINDS[a.kind]) return { canceled: true };

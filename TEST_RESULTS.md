@@ -971,3 +971,9 @@ Manual testing: in the Pages tab, drag a page up or down (a blue line shows wher
 ### Approval
 
 Approved on 2026-11-20 (user said "Approve").
+
+## 2026-11-21 — Folder export, nothing added without consent
+
+- `node test/e2e.js`: 250 passed, 3 failed (same 3 as before).
+- New checks: export asks only for a folder name, existing folder warns, files and links (css/, js/), no empty files, no font link/reset/nx- ids in export, only user ids/classes get CSS rules, others inline. Chooser screenshot checked at 640px tall.
+- Not run: real Electron window.

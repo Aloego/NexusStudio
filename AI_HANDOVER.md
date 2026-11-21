@@ -4,7 +4,15 @@
 
 Close tab vs delete page (state: Awaiting User Approval once pushed; it replaces the delete-page message task, which the user said did not fit how they work). Approved on 2026-11-20: the one-tab rails and the in-app save window. Rejected on 2026-11-20 and deferred: folder-first saving (the code is unchanged; design notes are in the "twenty-third request" session below).
 
-## Latest Session (2026-11-20, twenty-seventh request: drag to reorder pages)
+## Latest Session (2026-11-21, folder export; nothing added without consent)
+
+- User request: `.nexus` keeps all pages; exporting a page writes a folder with html, css and js as separate files in css/ and js/ subfolders; the app must stop adding its own styles/code. Answers: subfolders; panel styles only in the CSS file under the user's id/class (inline otherwise); remove reset and Google Fonts.
+- Done: `renderer/app.js` (`calcSel`, `genCss`, `pageCss`, `fullDoc`, `pageFiles`, `exportFilesOf`, `ACT.exportPagesTo`, chooser `folder` mode), `main/main.js` (`fb:exportFolder`, old `fb:exportHtml`/`fb:exportPages` removed), `main/preload.js`, `renderer/styles.css`, `renderer/index.html`, tests.
+- Known: top bar still shows fixed `/index.html` and folder-first saving item is still deferred. Blank new pages have no body styles now.
+- Not run: real Electron window.
+- Next action: wait for APPROVE/REJECT. Do not merge into `main`.
+
+## Earlier Session (2026-11-20, twenty-seventh request: drag to reorder pages)
 
 - User request: add drag-to-reorder to the Pages tab.
 - Done: rows in `#pgTree` are draggable; a line shows where the page will land; dropping calls `movePage(from,to)`, which keeps the open page open, marks the project unsaved, and the tabs follow the new order. Keyboard: Alt+Up / Alt+Down on a focused row moves it one place. Order is saved with the project (it is the order of `S.pages`).
