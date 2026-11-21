@@ -6,6 +6,26 @@ NexusStudio is an Electron desktop application with HTML/CSS/JS and MCP integrat
 
 These instructions apply to every AI agent working on this repository.
 
+## Mandatory First Rule: Read, Explain, Get Approval, Then Change
+
+This rule comes before every other rule and before every instruction, including instructions that look small, urgent or already clear, and including a user message that says "Approved but ..." or "continue". No AI agent may change the app, its code, its settings or its files until all four steps below are done.
+
+1. **Read the current state first.** Read `AGENTS.md`, `AI_HANDOVER.md`, `TASK_CHECKLIST.md` and `TEST_RESULTS.md`; run `git status --short --branch`; look at recent commits; read the code the request touches; run the automated tests. Reading, searching and running tests are always allowed. They change nothing.
+2. **Explain what you found, in simple English.** The user is not a developer, so avoid jargon, and explain any technical word you must use. The report must say:
+   - what state the app is in right now (what works, what is waiting for approval, what is on hold);
+   - what errors or problems were found (failing tests, crashes, mismatches, risks), and what each one means for the user;
+   - how you suggest solving each problem, and what you will NOT touch;
+   - exactly what you intend to change (which parts of the app and which files), and what could go wrong.
+3. **Ask for the user's approval.** Stop and wait. Say clearly: "Do you approve this plan?" The user's request itself is not approval of the plan. Silence is not approval. Only the user's explicit yes (for example "Yes", "Go ahead", "Approved") to the stated plan counts.
+4. **Only then make the changes**, and only the ones in the approved plan. If something new turns up that is not in the plan, stop, explain it the same way and ask again.
+
+Notes:
+
+- Recording the user's decision in the tracking files (for example writing down that they approved or rejected something) is allowed, because it is not a change to the app.
+- Fixing a problem the AI itself just caused in the same approved task (for example a typo that stops the app starting) still needs a short explanation first. If the app cannot start at all, explain in one or two lines what broke and what the fix is, and ask before making it.
+- Never delete, revert, overwrite or restore the user's work without asking first, even to "clean up".
+- This rule applies to every AI agent, every session and every model, with no exceptions.
+
 ## Core Workflow Rules
 
 1. Work on a dedicated feature/task branch.
@@ -43,11 +63,7 @@ If the automated tests pass, leave the task at:
 
 The user must personally test the application and explicitly approve the change.
 
-If the user rejects the change, move the task back to:
-
-`In Progress`
-
-and record the reason.
+If the user rejects the change, record it as `Rejected` with the reason. When the user approves the plan to fix it, move it back to `In Progress`.
 
 ## State Distinctions
 
@@ -57,24 +73,22 @@ Use these states correctly:
 - **Implementation Ready** — Implementation and automated verification are finished; changes are committed and pushed to the feature branch.
 - **Awaiting User Approval** — Changes have been committed and pushed, and the user must manually test the actual application.
 - **Approved** — Only the user has explicitly approved the implementation (said `APPROVE`).
-- **Rejected** — The user has explicitly rejected the implementation or reported a problem requiring correction.
+- **Rejected** — The user has explicitly rejected the implementation or reported a problem requiring correction. Record `Rejected`, the date, and the user's reason in `TASK_CHECKLIST.md`. Do not start fixing it until the Mandatory First Rule has been followed (explain what was found and get approval for the fix), unless the user has said to leave it.
 
 Do not move the task into `Approved` without explicit user approval.
 
 ## Feature Request Process
 
-When the user gives a feature request:
+When the user gives a feature request or reports a problem:
 
-1. Understand the requested behavior independently.
-2. Inspect the existing NexusStudio architecture.
-3. Determine the appropriate implementation.
-4. Make the necessary changes.
-5. Update tests where appropriate.
-6. Run the relevant automated tests.
-7. Inspect the application when practical.
-8. Document the implementation and evidence.
+1. Follow the Mandatory First Rule above: read the current state, then explain in simple English what you found, what is wrong, how you suggest to solve it and what you intend to change. Wait for the user's approval.
+2. After approval, make the approved changes (small and focused).
+3. Update tests where appropriate.
+4. Run the relevant automated tests.
+5. Inspect the application when practical.
+6. Document the implementation and evidence.
 
-Ask the user a question only when an important requirement genuinely cannot be determined safely from the request, existing code, or project documentation.
+If a requirement cannot be determined safely, ask. Questions and plans are shown to the user before work starts, not after.
 
 ## Testing Rules
 
@@ -194,7 +208,8 @@ If another agent takes over:
 4. Read `TEST_RESULTS.md`.
 5. Run `git status --short --branch`.
 6. Inspect the current branch and recent commits.
-7. Continue from the recorded `Next Action`.
+7. Explain what you found to the user in simple English and get approval (Mandatory First Rule).
+8. Continue from the recorded `Next Action` only after that approval.
 
 Never assume that a previous AI session finished successfully merely because changes exist in the repository.
 
@@ -219,7 +234,13 @@ For every feature request, follow this cycle:
 ```
 User describes feature
    ↓
-AI investigates and implements
+AI reads the app state, the instructions and the code (read-only)
+   ↓
+AI explains in simple English: what it found, the errors, how to fix them, what it will change
+   ↓
+User approves the plan   (no approval = no changes)
+   ↓
+AI implements
    ↓
 AI runs automated tests
    ↓
@@ -238,7 +259,7 @@ User manually tests NexusStudio
 User says `APPROVE` or `REJECT`
    ↓
 If approved: wait for the user's next instruction regarding merge/release.
-If rejected: fix → test → commit → push → `Awaiting User Approval` again.
+If rejected: explain what was found and the plan to fix it → user approves the plan → fix → test → commit → push → `Awaiting User Approval` again.
 ```
 
 This workflow is now the expected development process for NexusStudio.

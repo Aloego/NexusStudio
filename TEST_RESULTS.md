@@ -977,3 +977,12 @@ Approved on 2026-11-20 (user said "Approve").
 - `node test/e2e.js`: 250 passed, 3 failed (same 3 as before).
 - New checks: export asks only for a folder name, existing folder warns, files and links (css/, js/), no empty files, no font link/reset/nx- ids in export, only user ids/classes get CSS rules, others inline. Chooser screenshot checked at 640px tall.
 - Not run: real Electron window.
+
+## 2026-11-21 — Phase 8 workflow verification
+
+- Fresh clone of `feature/ai-development-workflow` (054a26f): `node test/e2e.js` gave 250 passed, 3 failed (get_window_state, get_app_state, get_process_info; failing before).
+- Older checkpoint 6d0e960 in the same clone: 213 passed, 3 failed (same 3).
+- Failed-test check: deliberate break in a throwaway copy: `node test/e2e.js` exit code 2 with a crash and failures; copy discarded, real project untouched.
+- Rules check: 21 `Approved` lines in TASK_CHECKLIST.md, all with the user's approval quoted.
+- GitHub check: `gh api .../branches/main/protection` returned "Branch not protected" (404).
+- Not run: real Electron window; `main-smoke` (crashes in the AI sandbox).

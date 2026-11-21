@@ -332,15 +332,23 @@
 
 ## Phase 8 — End-to-End Workflow Verification
 
-- [ ] Test the complete AI workflow
-- [ ] Test handover to another AI agent
-- [ ] Test recovery from a saved checkpoint
-- [ ] Test failed-test workflow
-- [ ] Test rejected-user-review workflow
-- [ ] Verify merge/release safeguards
-- [ ] Document remaining limitations
+- [x] Test the complete AI workflow — the request, investigate, implement, test, record, commit, push, Awaiting User Approval, APPROVE/REJECT cycle has been followed many times in `git log`; all 21 `Approved` status lines in this file quote the user's approval
+- [x] Test handover to another AI agent — a fresh download of the repository (`git clone`) was done and the handover files read; another AI session already continued this work from the handover (commits 0baf7fe to 6053ea0) and recorded your decisions correctly
+- [x] Test recovery from a saved checkpoint — fresh clone of the feature branch: 250 passed, 3 failed; older checkpoint 6d0e960: 213 passed, 3 failed (same 3 as always)
+- [x] Test failed-test workflow — in a throwaway copy a deliberate break made the tests stop with exit code 2 and show failures; the real project was not touched
+- [x] Test rejected-user-review workflow — rejections are recorded with reasons (lines for folder-first saving, rails, folder window); found a rule mismatch (rules said "move back to In Progress", records say `Rejected`); fixed in AGENTS.md
+- [x] Verify merge/release safeguards — `main` is still the initial commit and the feature branch is 63+ commits ahead, never merged. FOUND A GAP: GitHub does not protect `main` (the protection check says "Branch not protected"), and the Windows build workflow can be started by pushing a tag starting with `v`. Only the written rules prevent a merge or release.
+- [x] Document remaining limitations (see below)
+- [x] New mandatory rule added to AGENTS.md: read the app state first, explain in simple English what was found, the errors and how to fix them, get the user's approval, only then change anything (user request, 2026-11-21)
 
-**Status:** Pending
+**Limitations found:**
+1. `main` is not protected on GitHub. The user can switch on branch protection in the GitHub repository settings (Settings, Branches, add a rule for `main`, require a pull request). An AI should not do this without the user's approval.
+2. A release can be started by pushing a `v...` tag or running the workflow by hand; the rules forbid it but nothing technical stops it.
+3. The rules are text. They only work while each AI reads and follows them; nothing in the code enforces the new approval rule.
+4. An AI cannot open the real Electron desktop window, so every feature depends on the user testing it.
+5. `npm test` also runs `main-smoke`, which crashes in the AI's sandbox, and 3 old tests (get_window_state, get_app_state, get_process_info) still fail.
+
+**Status:** Awaiting User Approval
 
 ## Close a tab without deleting the page
 

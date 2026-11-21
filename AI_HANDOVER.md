@@ -6,6 +6,8 @@ Close tab vs delete page (state: Approved 2026-11-21; it replaces the delete-pag
 
 - 2026-11-21: user explicitly REJECTED folder-first saving (not changed, not being worked on). Phase 8 to be discussed later. No tasks are awaiting approval.
 
+- 2026-11-21: NEW MANDATORY RULE in AGENTS.md (top section): before any change, read the app state, explain in simple English what was found, the errors and how to fix them and what will change, and get the user's explicit approval of the plan. Phase 8 verification done (see TASK_CHECKLIST.md): Awaiting User Approval. Gap found: `main` not protected on GitHub.
+
 ## Latest Session (2026-11-21, follow-up: files named after pages — Approved 2026-11-21)
 
 - Folder export was Approved on 2026-11-21. Follow-up: export files use the page name (`fileStem` in `renderer/app.js`); no more forced `index`. Tests: 250 passed, 3 old failures.
