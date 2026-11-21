@@ -326,9 +326,9 @@
 - [x] Exported html/css/js files are named after the page name instead of index / page-1 (an unrenamed tab uses the name typed at the top)
 - [x] Test updated, run (250 passed, 3 failed as before)
 - [x] Commit and push
-- [ ] User personally tests
+- [x] User personally tests
 
-**Status:** Awaiting User Approval
+**Status:** Approved (user said "Approve" on 2026-11-21)
 
 ## Phase 8 — End-to-End Workflow Verification
 
@@ -392,6 +392,6 @@
 - [x] Exported html/css/js files use the page name instead of index / page-1 (an unrenamed tab uses the name typed at the top)
 - [x] Test updated and run (250 passed, 3 failed as before)
 - [x] Commit and push changes to feature branch
-- [ ] User personally tests
+- [x] User personally tests
 
-**Status:** Awaiting User Approval
+**Status:** Approved (user said "Approve" on 2026-11-21)
