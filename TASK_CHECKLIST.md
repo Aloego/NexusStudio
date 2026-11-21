@@ -398,3 +398,17 @@
 ## Folder-first saving (decision recorded 2026-11-21)
 
 **Status:** Rejected (user said "I reject the Folder-first saving" on 2026-11-21). Not changed; nothing is being worked on. Phase 8 to be discussed later. The old plan to replace `.nexus` with plain `.html` files is cancelled (the user keeps `.nexus`; export-to-folder is separate and approved).
+
+## Add iframe, embed, object and math to the Elements tab
+
+**Request (2026-11-21):** "Add them" (after the plan was explained and approved: "Approve the plan").
+
+- [x] New Elements group "Embeds & Math": iframe, embed, object, math (with documentation entries)
+- [x] iframe/embed/object are no longer blocked in the document; the editor canvas and the Preview show a labelled box, never the real content; the exported file has the real element
+- [x] Kept blocked: script, style, frame, frameset, link, meta, base, head, html, body, title, noscript, template, slot, and `srcdoc`/event handlers; `javascript:` addresses are now dropped from src/data/href-type attributes
+- [x] `embed` is treated as an empty element; `math` is real MathML (namespace value 2)
+- [x] Tests updated and added (254 passed, 3 failed as before); screenshot checked
+- [x] Commit and push changes to feature branch
+- [ ] User personally tests adding the four elements, the boxes, Preview and export
+
+**Status:** Awaiting User Approval

@@ -4,7 +4,7 @@
 /* ---------- helpers + data model ---------- */
 var $=function(s,r){return (r||document).querySelector(s);};
 var D=window.nexus||null;
-var BLOCKED_TAGS={script:1,style:1,iframe:1,frame:1,frameset:1,object:1,embed:1,link:1,meta:1,base:1,head:1,html:1,body:1,title:1,noscript:1,template:1,slot:1,portal:1,applet:1,foreignobject:1,animate:1,set:1};
+var BLOCKED_TAGS={script:1,style:1,frame:1,frameset:1,link:1,meta:1,base:1,head:1,html:1,body:1,title:1,noscript:1,template:1,slot:1,portal:1,applet:1,foreignobject:1,animate:1,set:1};
 var TAG_RE=/^[A-Za-z][A-Za-z0-9-]{0,30}$/;
 var SVGCASE={svg:'svg',g:'g',line:'line',rect:'rect',circle:'circle',ellipse:'ellipse',path:'path',polygon:'polygon',polyline:'polyline',text:'text',tspan:'tspan',defs:'defs',lineargradient:'linearGradient',radialgradient:'radialGradient',stop:'stop',clippath:'clipPath',mask:'mask'};
 function isObj(o){return o&&typeof o==='object'&&!Array.isArray(o);}
@@ -12,7 +12,9 @@ function safeTag(t){t=String(t||'');if(!TAG_RE.test(t)||BLOCKED_TAGS[t.toLowerCa
 function cleanAttrs(a){var o={};if(!isObj(a))return o;Object.keys(a).forEach(function(k){
   if(!/^[a-zA-Z][\w:.-]*$/.test(k))return;var lk=k.toLowerCase();
   if(lk==='style'||lk==='srcdoc'||lk==='contenteditable'||lk==='data-nid')return;
-  var v=a[k];if(v===true)v='';if(v===false||v==null)return;o[k]=String(v).slice(0,20000);});return o;}
+  var v=a[k];if(v===true)v='';if(v===false||v==null)return;v=String(v).slice(0,20000);
+  if(/^(src|data|href|action|formaction|xlink:href|poster|codebase)$/.test(lk)&&/^[\s\u0000-\u001f]*(java\s*script|vbscript):/i.test(v))return;
+  o[k]=v;});return o;}
 var probe=document.createElement('div');
 function cleanStyle(st){var o={};if(!isObj(st))return o;Object.keys(st).forEach(function(p){
   var v=st[p],name=String(p).replace(/[A-Z]/g,function(m){return '-'+m.toLowerCase();});
@@ -25,7 +27,7 @@ function cleanNode(r,d,cnt){
   if(!isObj(r)||d>80||++cnt.n>20000)throw new Error('The file is too large or damaged.');
   var tag=d===0?'body':String(r.tag||'');
   if(d>0&&(!TAG_RE.test(tag)||BLOCKED_TAGS[tag.toLowerCase()]))return null;
-  var n={id:nid(),tag:tag,ns:r.ns?1:0,text:typeof r.text==='string'?r.text:'',style:{},attrs:cleanAttrs(r.attrs),children:[]};
+  var n={id:nid(),tag:tag,ns:r.ns===2?2:r.ns?1:0,text:typeof r.text==='string'?r.text:'',style:{},attrs:cleanAttrs(r.attrs),children:[]};
   if(isObj(r.style))Object.keys(r.style).forEach(function(k){var v=r.style[k];if(/^(--)?[a-z][a-z0-9-]*$/.test(k)&&typeof v==='string'&&!/[{}]|<\/|\/\*/.test(v))n.style[k]=v;});
   (Array.isArray(r.children)?r.children:[]).forEach(function(c){var cn=cleanNode(c,d+1,cnt);if(cn)n.children.push(cn);});
   return n;}
@@ -44,14 +46,16 @@ function cleanState(o){if(!isObj(o)||!isObj(o.root))throw new Error('This is not
     else delete st.pages;
   }
   return st;}
-var VOID={img:1,input:1,hr:1,br:1,wbr:1,source:1,track:1,col:1,area:1};
+var VOID={embed:1,img:1,input:1,hr:1,br:1,wbr:1,source:1,track:1,col:1,area:1};
 var CONT={div:1,section:1,header:1,nav:1,main:1,footer:1,article:1,aside:1,form:1,ul:1,ol:1,details:1,table:1,thead:1,tbody:1,tr:1,svg:1,body:1,select:1,ul2:1,
   tfoot:1,td:1,th:1,colgroup:1,li:1,dl:1,menu:1,figure:1,fieldset:1,blockquote:1,dialog:1,hgroup:1,search:1,picture:1,map:1,datalist:1,optgroup:1,address:1};
-var SVGNS='http://www.w3.org/2000/svg';
+var SVGNS='http://www.w3.org/2000/svg',MATHNS='http://www.w3.org/1998/Math/MathML';
+/* These load other pages or plugins. They are kept in the document and exported as written, but the editor and the Preview only ever show a labelled box for them. */
+var EMBED={iframe:1,embed:1,object:1};
 var KEY='nexusstudio.draft.v2';
 var uid=0;
 function nid(){uid++;return 'n'+uid;}
-function N(tag,o){o=o||{};return {id:nid(),tag:tag,ns:o.ns?1:0,text:o.text||'',style:o.style||{},attrs:o.attrs||{},children:o.children||[]};}
+function N(tag,o){o=o||{};return {id:nid(),tag:tag,ns:o.ns===2?2:o.ns?1:0,text:o.text||'',style:o.style||{},attrs:o.attrs||{},children:o.children||[]};}
 function clone(n){var c=JSON.parse(JSON.stringify(n));(function re(x){x.id=nid();x.children.forEach(re);})(c);return c;}
 
 var S={pages:[],pageIdx:0,root:null,css:'',js:'',title:'nebula-landing-v2',sel:null,collapsed:{},open:{layout:1,box:1,type:1,flex:1,bg:1,border:1},
@@ -106,6 +110,7 @@ var PAL=[
  {g:'Quotes & Code',c:'c-p',b:{blockquote:'BQ',q:'Q',cite:'CIT',pre:'PRE',code:'COD',kbd:'KBD',samp:'SMP',var:'VAR'},i:[['blockquote','Block quotation'],['q','Inline quotation'],['cite','Work title'],['pre','Preformatted text'],['code','Code snippet'],['kbd','Keyboard input'],['samp','Sample output'],['var','Variable name']]},
  {g:'Inline Details',c:'c-p',b:{abbr:'ABR',dfn:'DFN',time:'TIM',data:'DAT',bdi:'BDI',bdo:'BDO',ruby:'RBY',rt:'RT',rp:'RP'},i:[['abbr','Abbreviation'],['dfn','Defined term'],['time','Date or time'],['data','Machine value'],['bdi','Isolated direction'],['bdo','Override direction'],['ruby','Ruby annotation'],['rt','Ruby text (in ruby)'],['rp','Ruby fallback (in ruby)']]},
  {g:'Media',c:'c-m',b:{img:'IMG',video:'VID',audio:'AUD',svg:'SVG',canvas:'CNV',picture:'PIC',source:'SRC',track:'TRK',figure:'FIG',figcaption:'FCP',map:'MAP',area:'ARE'},i:[['img','Image'],['video','Video player'],['audio','Audio player'],['svg','SVG graphic'],['canvas','Drawing surface'],['picture','Responsive image'],['source','Media source (in picture/video/audio)'],['track','Captions (in video/audio)'],['figure','Media with caption'],['figcaption','Caption (in figure)'],['map','Image map'],['area','Map area (in map)']]},
+ {g:'Embeds & Math',c:'c-m',b:{iframe:'IFR',embed:'EMB',object:'OBJ',math:'MTH'},i:[['iframe','Embedded page'],['embed','Embedded content'],['object','Embedded object'],['math','Math formula']]},
  {g:'Links & Buttons',c:'c-t',b:{a:'A',button:'BTN'},i:[['a','Anchor link'],['button','Button element']]},
  {g:'Forms',c:'c-f',b:{input:'IN',textarea:'TX',select:'SEL',form:'FRM',label:'LBL',fieldset:'FS',legend:'LEG'},i:[['input','Text / number'],['textarea','Multiline text'],['select','Dropdown'],['form','Form wrapper'],['label','Field label'],['fieldset','Field group'],['legend','Group title (in fieldset)']]},
  {g:'Form Extras',c:'c-f',b:{option:'OPT',optgroup:'OGR',datalist:'DTL',output:'OUT',progress:'PRG',meter:'MTR'},i:[['option','Choice (in select)'],['optgroup','Choice group (in select)'],['datalist','Suggestions list'],['output','Calculated result'],['progress','Progress bar'],['meter','Gauge']]},
@@ -199,6 +204,10 @@ function makeRaw(tag){
    case 'h2':return N('h2',{text:'A supporting heading',style:{'font-size':'28px','font-weight':'700','line-height':'1.2',margin:'0'}});
    case 'p':return N('p',{text:'Write something helpful here. Double-click this text on the canvas to edit it.',style:{'line-height':'1.6',margin:'0'}});
    case 'span':return N('span',{text:'Inline text'});
+   case 'iframe':return N('iframe',{attrs:{src:'https://example.com',title:'Embedded page',width:'300',height:'200'}});
+   case 'embed':return N('embed',{attrs:{src:'',type:'application/pdf',width:'300',height:'200'}});
+   case 'object':return N('object',{attrs:{data:'',type:'application/pdf',width:'300',height:'200'},text:'Your browser cannot show this content.'});
+   case 'math':return N('math',{ns:2,children:[N('mrow',{ns:2,children:[N('mi',{ns:2,text:'x'}),N('mo',{ns:2,text:'='}),N('mfrac',{ns:2,children:[N('mn',{ns:2,text:'1'}),N('mn',{ns:2,text:'2'})]})]})]});
    case 'img':return N('img',{attrs:{src:PLACE,alt:'Placeholder image'},style:{width:'240px','max-width':'100%','border-radius':'8px',display:'block'}});
    case 'video':return N('video',{attrs:{controls:''},style:{width:'320px','max-width':'100%','background':'#000','border-radius':'8px'}});
    case 'audio':return N('audio',{attrs:{controls:''},style:{display:'block'}});
@@ -509,11 +518,18 @@ function changed(){commit();renderAll();}
 var page=$('#page'),frame=$('#frame'),stage=$('#stage'),inner=$('#inner'),ov=$('#ov');
 function build(n){
   if(BLOCKED_TAGS[n.tag.toLowerCase()])return document.createComment('blocked');
-  var el=n.ns?document.createElementNS(SVGNS,n.tag):document.createElement(n.tag);
+  var box=!n.ns&&EMBED[n.tag];
+  var el=box?document.createElement('div'):n.ns?document.createElementNS(n.ns===2?MATHNS:SVGNS,n.tag):document.createElement(n.tag);
   el.setAttribute('data-nid',n.id);
-  Object.keys(n.attrs).forEach(function(k){if(/^on/i.test(k)||k==='id'||k==='contenteditable'||!k)return;try{el.setAttribute(k,n.attrs[k]);}catch(e){}});
+  if(box){
+    var w=n.attrs.width,h=n.attrs.height,px=function(v,d){return /^\d+(\.\d+)?$/.test(v||'')?v+'px':(v||d);};
+    el.setAttribute('style','display:inline-block;box-sizing:border-box;overflow:hidden;border:1px dashed #71717a;background:#f4f4f5;color:#52525b;font:12px/1.4 monospace;padding:8px;width:'+px(w,'300px')+';height:'+px(h,n.tag==='iframe'?'150px':'auto'));
+    el.appendChild(document.createTextNode('<'+n.tag+'> '+(n.attrs.src||n.attrs.data||'(no address yet)')));
+  }
+  Object.keys(n.attrs).forEach(function(k){if(/^on/i.test(k)||k==='id'||k==='contenteditable'||!k)return;if(box&&/^(src|data|srcdoc|width|height|name|type|codebase|classid)$/i.test(k))return;try{el.setAttribute(k,n.attrs[k]);}catch(e){}});
   Object.keys(n.style).forEach(function(p){el.style.setProperty(p,n.style[p]);});
-  if(n.text)el.appendChild(document.createTextNode(n.text));
+  if(box&&(!n.style.display||n.style.display==='inline'))el.style.setProperty('display','inline-block');
+  if(n.text&&!box)el.appendChild(document.createTextNode(n.text));
   n.children.forEach(function(c){el.appendChild(build(c));});
   return el;
 }
@@ -1111,8 +1127,10 @@ function attrStr(n){
   if(hasStyle(n)&&!selMap[n.id])s+=' style="'+escA(inlineStyle(n))+'"';
   return s;
 }
+var safePreview=false;
 function gen(n,d){
   var pad=new Array(d+1).join('  '),open='<'+n.tag+attrStr(n);
+  if(safePreview&&!n.ns&&EMBED[n.tag])return pad+'<div style="display:inline-block;box-sizing:border-box;border:1px dashed #71717a;background:#f4f4f5;color:#52525b;font:12px/1.4 monospace;padding:8px;width:'+(/^\d+$/.test(n.attrs.width||'')?n.attrs.width+'px':(n.attrs.width||'300px'))+';height:'+(/^\d+$/.test(n.attrs.height||'')?n.attrs.height+'px':(n.attrs.height||(n.tag==='iframe'?'150px':'auto')))+'">'+esc('<'+n.tag+'> '+(n.attrs.src||n.attrs.data||'(no address yet)')+' (shown as a box here; it loads in the exported file)')+'</div>';
   if(VOID[n.tag]&&!n.ns)return pad+open+'>';
   if(n.ns&&!n.children.length&&!n.text)return pad+open+' />';
   if(!n.children.length)return pad+open+'>'+esc(n.text)+'</'+n.tag+'>';
@@ -1155,7 +1173,7 @@ function pageFiles(stem){
 /* ---------- import ---------- */
 function parseEl(el){
   var tag=el.localName;if(BLOCKED_TAGS[tag.toLowerCase()])return null;
-  var n=N(tag,{ns:el.namespaceURI===SVGNS});
+  var n=N(tag,{ns:el.namespaceURI===SVGNS?1:el.namespaceURI===MATHNS?2:0});
   var raw={};Array.prototype.forEach.call(el.attributes,function(a){raw[a.name]=a.value;});n.attrs=cleanAttrs(raw);
   for(var i=0;i<el.style.length;i++){var nm=el.style[i];n.style[nm]=el.style.getPropertyValue(nm);}
   var kids=Array.prototype.filter.call(el.childNodes,function(c){return c.nodeType===1;}),texts=[];
@@ -1472,7 +1490,7 @@ function setView(v){
   renderCodeIfOpen();placeOverlay();
 }
 function refreshPreview(){
-  var pv=$('#pv'),html=fullDoc();
+  var pv=$('#pv'),html;safePreview=true;try{html=fullDoc();}finally{safePreview=false;}
   if(D){D.setPreview(html).then(function(ok){if(ok)pv.src='nx-preview://p/index.html?t='+Date.now();});}
   else pv.srcdoc=html;
 }

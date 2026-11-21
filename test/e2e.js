@@ -133,9 +133,18 @@ page.on('console', function (m) {
   r = await call('add_html', { html: '<div style="padding:8px;color:#222" onclick="x()"><b>Bold</b><script>alert(1)</script><iframe src="https://x.test"></iframe></div><p>tail</p>', parent_id: hero, position: 'inside' });
   ok(!r.isError && r.data.added === 2, 'add_html adds two elements');
   const doc = (await call('get_document')).data;
-  ok(!/<script|<iframe/.test(doc.html), 'script and iframe were dropped');
+  ok(!/<script/.test(doc.html) && /<iframe src="https:\/\/x\.test"><\/iframe>/.test(doc.html), 'script was dropped; iframe is kept in the document');
   ok(/onclick="x\(\)"/.test(doc.html), 'handler kept as an attribute for the exported page');
-  ok((await page.locator('#page script, #page iframe').count()) === 0, 'canvas has no script or iframe');
+  ok((await page.locator('#page script, #page iframe').count()) === 0, 'canvas has no script or real iframe');
+  ok(/<iframe> https:\/\/x\.test/.test(await page.locator('#page [data-nid]', { hasText: '<iframe>' }).first().textContent()), 'the editor shows a labelled box for the iframe');
+  r = await call('add_html', { html: '<embed src="javascript:alert(1)" type="application/pdf"><object data="a.pdf" type="application/pdf">Fallback</object><math><mfrac><mn>1</mn><mn>2</mn></mfrac></math>', parent_id: hero, position: 'inside' });
+  const doc2 = (await call('get_document')).data;
+  ok(!r.isError && /<embed type="application\/pdf">/.test(doc2.html) && !/javascript:/.test(doc2.html) && /<object data="a\.pdf" type="application\/pdf">Fallback<\/object>/.test(doc2.html) && /<math>/.test(doc2.html), 'embed (no javascript: address), object and math are kept ' + doc2.html.slice(-300));
+  ok((await page.locator('#page embed, #page object').count()) === 0 && (await page.evaluate(function () { const m = document.querySelector('#page math'); return !!m && m.namespaceURI === 'http://www.w3.org/1998/Math/MathML'; })), 'embed/object are boxes in the editor and math is real MathML');
+  await page.click('#views [data-v="preview"]');
+  const pvDoc = await page.$eval('#pv', function (f) { return f.srcdoc; });
+  ok(!/<iframe|<embed|<object/.test(pvDoc) && /shown as a box here/.test(pvDoc), 'Preview shows boxes instead of loading embedded content');
+  await page.click('#views [data-v="canvas"]');
 
   console.log('Batch, undo, move, delete');
   const hBefore = await html();
@@ -237,7 +246,7 @@ page.on('console', function (m) {
     'option', 'optgroup', 'datalist', 'output', 'progress', 'meter',
     'ul', 'ol', 'li', 'dl', 'dt', 'dd', 'menu', 'table',
     'caption', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'colgroup', 'col',
-    'article', 'aside', 'details', 'summary', 'dialog', 'address', 'hgroup', 'search'];
+    'article', 'aside', 'details', 'summary', 'dialog', 'address', 'hgroup', 'search', 'iframe', 'embed', 'object', 'math'];
   const groupNames = await page.$$eval('#palette summary span:first-child', function (n) { return n.map(function (x) { return x.textContent; }); });
   ok(groupNames.indexOf('SVG / Drawing') < 0, 'Elements tab has no SVG / Drawing group');
   const haveTags = await page.$$eval('#palette .it em', function (n) { return n.map(function (x) { return x.textContent; }); });

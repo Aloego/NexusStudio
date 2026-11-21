@@ -986,3 +986,9 @@ Approved on 2026-11-20 (user said "Approve").
 - Rules check: 21 `Approved` lines in TASK_CHECKLIST.md, all with the user's approval quoted.
 - GitHub check: `gh api .../branches/main/protection` returned "Branch not protected" (404).
 - Not run: real Electron window; `main-smoke` (crashes in the AI sandbox).
+
+## 2026-11-21 — iframe, embed, object, math
+
+- `node test/e2e.js`: 254 passed, 3 failed (same 3 as before).
+- New checks: iframe kept in the document but shown as a box in the editor and Preview; embed/object boxes; `javascript:` address dropped; math is real MathML; Elements tab lists the four new elements.
+- Not run: real Electron window, a real embedded page loading in an exported file.
