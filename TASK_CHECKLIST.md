@@ -386,3 +386,7 @@
 - [ ] User personally tests exporting a page and all pages, and checks the files
 
 **Status:** Approved (user said "Approved" on 2026-11-21)
+
+## Folder-first saving (decision recorded 2026-11-21)
+
+**Status:** Rejected (user said "I reject the Folder-first saving" on 2026-11-21). Not changed; nothing is being worked on. Phase 8 to be discussed later. The old plan to replace `.nexus` with plain `.html` files is cancelled (the user keeps `.nexus`; export-to-folder is separate and approved).

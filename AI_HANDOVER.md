@@ -4,6 +4,8 @@
 
 Close tab vs delete page (state: Approved 2026-11-21; it replaces the delete-page message task, which the user said did not fit how they work). Approved on 2026-11-20: the one-tab rails and the in-app save window. Rejected on 2026-11-20 and deferred: folder-first saving (the code is unchanged; design notes are in the "twenty-third request" session below).
 
+- 2026-11-21: user explicitly REJECTED folder-first saving (not changed, not being worked on). Phase 8 to be discussed later. No tasks are awaiting approval.
+
 ## Latest Session (2026-11-21, follow-up: files named after pages — Approved 2026-11-21)
 
 - Folder export was Approved on 2026-11-21. Follow-up: export files use the page name (`fileStem` in `renderer/app.js`); no more forced `index`. Tests: 250 passed, 3 old failures.
