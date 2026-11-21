@@ -319,6 +319,15 @@
 - [x] Commit and push changes to feature branch
 - [ ] User personally tests deleting pages (untouched and modified)
 
+**Status:** Approved (user said "Approved" on 2026-11-21)
+
+## Exported files named after the pages
+
+- [x] Exported html/css/js files are named after the page name instead of index / page-1 (an unrenamed tab uses the name typed at the top)
+- [x] Test updated, run (250 passed, 3 failed as before)
+- [x] Commit and push
+- [ ] User personally tests
+
 **Status:** Awaiting User Approval
 
 ## Phase 8 — End-to-End Workflow Verification

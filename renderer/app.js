@@ -1340,11 +1340,16 @@ function withPage(i,fn){
   S.root=p.root;S.css=p.css||'';S.js=p.js||'';S.title=p.title||p.name;
   try{return fn();}finally{S.root=keep.root;S.css=keep.css;S.js=keep.js;S.title=keep.title;}
 }
-/* the files of the pages in "list" (page numbers); the first is index, the others are named after the page */
+/* the name a page's files get: the name given to the page tab; if the tab still has its automatic name (Page 1...), the name typed at the top */
+function fileStem(i){
+  var p=S.pages[i],t=(i===S.pageIdx?S.title:p.title)||'',auto=/^Page \d+$/.test(p.name);
+  return pageSlug(auto&&t&&t!=='untitled-page'?t:p.name);
+}
+/* the files of the pages in "list" (page numbers), each named after its page */
 function exportFilesOf(list){
   var used={},out=[];
   list.forEach(function(i,k){
-    var stem=k===0?'index':pageSlug(S.pages[i].name);if(used[stem]){var n=2;while(used[stem+'-'+n])n++;stem=stem+'-'+n;}used[stem]=1;
+    var stem=fileStem(i);if(used[stem]){var n=2;while(used[stem+'-'+n])n++;stem=stem+'-'+n;}used[stem]=1;
     out=out.concat(withPage(i,function(){return pageFiles(stem);}));
   });
   return out;
@@ -1526,9 +1531,9 @@ var ACT={
     savedProject(r);if(cb)cb();});},
   exportAll:function(){
     if(S.pages.length<2)return toast('This project has only one page. Use Export page.');
-    ACT.exportPagesTo(S.pages.map(function(p,i){return i;}),'Export all pages','Every page is exported into the folder you name: its HTML file, plus its CSS in css/ and its JavaScript in js/. The first page is index.html.');
+    ACT.exportPagesTo(S.pages.map(function(p,i){return i;}),'Export all pages','Every page is exported into the folder you name: its HTML file named after the page, plus its CSS in css/ and its JavaScript in js/.');
   },
-  exportHtml:function(){ACT.exportPagesTo([S.pageIdx],'Export page','The page is exported into the folder you name: index.html, its CSS in css/ and its JavaScript in js/.');},
+  exportHtml:function(){ACT.exportPagesTo([S.pageIdx],'Export page','The page is exported into the folder you name: its HTML file named after the page, plus its CSS in css/ and its JavaScript in js/.');},
   exportPagesTo:function(list,title,help){
     if(!D||!D.exportHtml)return needDesktop();
     var files=exportFilesOf(list);

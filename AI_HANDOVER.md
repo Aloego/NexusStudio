@@ -4,7 +4,11 @@
 
 Close tab vs delete page (state: Awaiting User Approval once pushed; it replaces the delete-page message task, which the user said did not fit how they work). Approved on 2026-11-20: the one-tab rails and the in-app save window. Rejected on 2026-11-20 and deferred: folder-first saving (the code is unchanged; design notes are in the "twenty-third request" session below).
 
-## Latest Session (2026-11-21, folder export; nothing added without consent)
+## Latest Session (2026-11-21, follow-up: files named after pages — Awaiting User Approval)
+
+- Folder export was Approved on 2026-11-21. Follow-up: export files use the page name (`fileStem` in `renderer/app.js`); no more forced `index`. Tests: 250 passed, 3 old failures.
+
+## Earlier Session (2026-11-21, folder export; nothing added without consent)
 
 - User request: `.nexus` keeps all pages; exporting a page writes a folder with html, css and js as separate files in css/ and js/ subfolders; the app must stop adding its own styles/code. Answers: subfolders; panel styles only in the CSS file under the user's id/class (inline otherwise); remove reset and Google Fonts.
 - Done: `renderer/app.js` (`calcSel`, `genCss`, `pageCss`, `fullDoc`, `pageFiles`, `exportFilesOf`, `ACT.exportPagesTo`, chooser `folder` mode), `main/main.js` (`fb:exportFolder`, old `fb:exportHtml`/`fb:exportPages` removed), `main/preload.js`, `renderer/styles.css`, `renderer/index.html`, tests.
