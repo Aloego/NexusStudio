@@ -348,7 +348,7 @@
 4. An AI cannot open the real Electron desktop window, so every feature depends on the user testing it.
 5. `npm test` also runs `main-smoke`, which crashes in the AI's sandbox, and 3 old tests (get_window_state, get_app_state, get_process_info) still fail.
 
-**Status:** Awaiting User Approval
+**Status:** Approved (user said "I approve phase 8 and the new rule" on 2026-11-21)
 
 ## Close a tab without deleting the page
 
