@@ -992,3 +992,9 @@ Approved on 2026-11-20 (user said "Approve").
 - `node test/e2e.js`: 254 passed, 3 failed (same 3 as before).
 - New checks: iframe kept in the document but shown as a box in the editor and Preview; embed/object boxes; `javascript:` address dropped; math is real MathML; Elements tab lists the four new elements.
 - Not run: real Electron window, a real embedded page loading in an exported file.
+
+## 2026-11-21 — CSS panel shows only applicable fields
+
+- `node test/e2e.js`: 261 passed, 3 failed (same 3 as before).
+- New checks: body fields; flex child fields; list section; image fields; set field stays visible.
+- Not run: real Electron window.

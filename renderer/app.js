@@ -343,6 +343,16 @@ var SECTIONS=[
    [{p:'grid-template-columns',l:'Template cols'},{p:'grid-template-rows',l:'Template rows'}],
    [{p:'grid-column'},{p:'grid-auto-flow',t:'select',o:['row','column','dense','row dense','column dense']}],
    [{p:'row-gap'},{p:'column-gap'}]]},
+ {k:'list',name:'Lists',hint:function(n){return n.style['list-style-type']||n.style['list-style']||'';},rows:[
+   [{p:'list-style',l:'List style (shorthand)'}],
+   [{p:'list-style-type',t:'select',o:['disc','circle','square','decimal','decimal-leading-zero','lower-alpha','upper-alpha','lower-roman','upper-roman','lower-greek','none']},{p:'list-style-position',t:'select',o:['outside','inside']}]]},
+ {k:'media',name:'Image & Media',hint:function(n){return n.style['object-fit']||'';},rows:[
+   [{p:'object-fit',t:'select',o:['fill','contain','cover','none','scale-down']},{p:'object-position'}],
+   [{p:'aspect-ratio'}]]},
+ {k:'table',name:'Table',hint:function(n){return n.style['border-collapse']||'';},rows:[
+   [{p:'border-collapse',t:'select',o:['separate','collapse']},{p:'border-spacing'}],
+   [{p:'table-layout',t:'select',o:['auto','fixed']},{p:'caption-side',t:'select',o:['top','bottom']}],
+   [{p:'vertical-align',t:'select',o:['baseline','top','middle','bottom','text-top','text-bottom','sub','super']}]]},
  {k:'bg',name:'Background',hint:function(n){return n.style['background-color']||n.style.background||'transparent';},rows:[
    [{p:'background-color',t:'color',l:'Background color'}],[{p:'background',l:'Background (shorthand, gradients)'}],[{p:'background-image'}],
    [{p:'background-size',t:'select',o:['auto','cover','contain']},{p:'background-repeat',t:'select',o:['repeat','no-repeat','repeat-x','repeat-y','space','round']},{p:'background-position'}]]},
@@ -981,6 +991,31 @@ function sidesBlock(n,prop,el){
   });
   w.appendChild(r);return w;
 }
+/* Which CSS fields make sense for the selected element. A field you have already set always stays visible; the Search box can add any property. */
+var TEXTLESS={img:1,hr:1,br:1,wbr:1,video:1,audio:1,canvas:1,iframe:1,embed:1,object:1,picture:1,source:1,track:1,area:1,col:1};
+var NOCHILD={img:1,hr:1,br:1,wbr:1,video:1,audio:1,canvas:1,iframe:1,embed:1,object:1,input:1,textarea:1,select:1,meter:1,progress:1,source:1,track:1,area:1,col:1};
+var TYPE_PROPS={'font-family':1,'font-size':1,'font-weight':1,'line-height':1,'letter-spacing':1,'text-align':1,'color':1,'text-transform':1,'font-style':1,'text-decoration':1,'text-shadow':1,'white-space':1,'text-wrap':1};
+var CONTAINER_PROPS={'flex-direction':1,'flex-wrap':1,'justify-content':1,'align-items':1,'gap':1,'grid-template-columns':1,'grid-template-rows':1,'grid-auto-flow':1,'row-gap':1,'column-gap':1};
+var TABLE_TAGS={table:1,caption:1,thead:1,tbody:1,tfoot:1,tr:1,th:1,td:1,colgroup:1,col:1};
+function appliesTo(p,n,par){
+  if(n.ns)return true;
+  var t=n.tag,pd=par&&!par.ns?(par.style.display||''):'',inFlex=/flex$/.test(pd),inGrid=/grid$/.test(pd),pos=n.style.position||'static',root=n===S.root;
+  if(n.style[p]||S.pending[p])return true;
+  if(TYPE_PROPS[p])return !TEXTLESS[t];
+  if(CONTAINER_PROPS[p])return !NOCHILD[t];
+  if(p==='flex'||p==='align-self'||p==='order')return inFlex||inGrid;
+  if(p==='grid-column')return inGrid;
+  if(p==='float'||p==='clear')return !root&&!inFlex&&!inGrid&&pos!=='absolute'&&pos!=='fixed';
+  if(p==='z-index')return pos!=='static'||inFlex||inGrid;
+  if(p==='list-style'||p==='list-style-type'||p==='list-style-position')return t==='ul'||t==='ol'||t==='li'||t==='menu';
+  if(p==='object-fit'||p==='object-position')return t==='img'||t==='video'||t==='canvas';
+  if(p==='aspect-ratio')return t==='img'||t==='video'||t==='canvas'||t==='iframe'||t==='embed'||t==='object'||t==='svg';
+  if(p==='border-collapse'||p==='border-spacing'||p==='table-layout')return t==='table';
+  if(p==='caption-side')return t==='table'||t==='caption';
+  if(p==='vertical-align')return t==='td'||t==='th';
+  return true;
+}
+function insetsApply(n){return n.ns||(n.style.position&&n.style.position!=='static')||LOGI.concat(PHYS).some(function(p){return n.style[p];});}
 function secCount(n,key){var c=0;Object.keys(n.style).forEach(function(p){if(KNOWN[p]===key)c++;});return c;}
 function renderProps(){
   var f=find(S.sel);if(!f)return;var n=f.node,box=$('#propBody');box.innerHTML='';
@@ -996,12 +1031,16 @@ function renderProps(){
     var cnt=secCount(n,s.k),h='';try{h=s.hint(n,el);}catch(e){}
     d.innerHTML='<summary><span>'+esc(s.name)+'</span><span class="cnt">'+(cnt?cnt+' set':esc(h))+'</span></summary>';
     var b=document.createElement('div');b.className='body';
+    var shown=0;
     s.rows.forEach(function(r){
-      if(r[0]==='BOXMODEL'){b.appendChild(boxModel(el));return;}
-      if(r[0]==='INSETS'){b.appendChild(insetBlock(n));return;}
-      if(r[0]==='SIDES'){b.appendChild(sidesBlock(n,r[1],el));return;}
-      b.appendChild(row(r.map(function(x){return mkField(x,n,s.k);})));
+      if(r[0]==='BOXMODEL'){b.appendChild(boxModel(el));shown++;return;}
+      if(r[0]==='INSETS'){if(insetsApply(n)){b.appendChild(insetBlock(n));shown++;}return;}
+      if(r[0]==='SIDES'){b.appendChild(sidesBlock(n,r[1],el));shown++;return;}
+      var fs=r.filter(function(x){return appliesTo(x.p,n,f.parent);});
+      if(!fs.length)return;shown++;
+      b.appendChild(row(fs.map(function(x){return mkField(x,n,s.k);})));
     });
+    if(!shown)return;
     d.appendChild(b);box.appendChild(d);
   });
   var extra=Object.keys(n.style).filter(function(p){return !KNOWN[p];});

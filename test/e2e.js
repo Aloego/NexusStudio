@@ -669,6 +669,28 @@ page.on('console', function (m) {
   ok(/#hello \{\s*color: red;/.test(nc.generated_css) && /\.note\.big \{\s*margin: 0;/.test(nc.generated_css) && !/box-sizing|margin: 4px/.test(nc.generated_css) && !/\* \{|body \{\s*margin: 0/.test(nc.generated_css), 'panel styles go under your id or class, with no reset or other rules added ' + nc.generated_css);
   const fh = await pgCall('get_full_html');
   ok(!/googleapis/.test(fh), 'no font link is added to the page');
+  // the CSS panel only shows fields that apply to the selected element
+  await defPage.click('#rtCss');
+  const has = async function (id) { return (await defPage.locator('#propBody #f-' + id).count()) > 0; };
+  const hasSec = async function (name) { return (await defPage.locator('#propBody summary span:first-child', { hasText: name }).count()) > 0; };
+  await pgCall('select_element', { id: 'body' });
+  ok((await has('display')) && (await has('margin')) && (await has('background-color')) && (await has('font-family')) && (await has('flex-direction')), 'body shows display, margin, background, typography and flex container fields');
+  ok(!(await has('float')) && !(await has('z-index')) && !(await has('order')) && !(await has('align-self')) && !(await has('grid-column')) && !(await has('top')), 'body hides float, z-index, flex/grid item fields and inset offsets');
+  ok(!(await hasSec('Lists')) && !(await hasSec('Image & Media')) && !(await hasSec('Table')), 'body has no Lists, Image & Media or Table section');
+  const fx = await pgCall('add_element', { tag: 'div', parent_id: 'body', style: { display: 'flex' } });
+  const kid = await pgCall('add_element', { tag: 'p', text: 'x', parent_id: fx.element.id });
+  await pgCall('select_element', { id: kid.element.id });
+  ok((await has('order')) && (await has('align-self')) && (await has('z-index')) && !(await has('float')), 'a child of a flex box shows flex item fields and z-index, not float');
+  const ul = await pgCall('add_element', { tag: 'ul', parent_id: 'body' });
+  await pgCall('select_element', { id: ul.element.id });
+  ok((await hasSec('Lists')) && (await has('list-style-type')), 'a list shows the Lists section');
+  const im = await pgCall('add_element', { tag: 'img', parent_id: 'body' });
+  await pgCall('select_element', { id: im.element.id });
+  ok((await has('object-fit')) && !(await has('font-size')) && !(await has('flex-direction')), 'an image shows image-fit fields and hides text and flex container fields');
+  await pgCall('update_element', { id: im.element.id, style: { 'font-size': '20px' } });
+  await pgCall('select_element', { id: im.element.id });
+  ok(await has('font-size'), 'a hidden field you have already set stays visible');
+  await pgCall('select_element', { id: 'body' });
   console.log('Device size dropdown');
   ok((await defPage.$$('#devs [data-w]')).length === 0, 'the Mobile / Tablet / Desktop tab buttons are gone');
   ok((await defPage.textContent('#devBtn')).trim() === 'Responsive', 'the dropdown starts as Responsive');

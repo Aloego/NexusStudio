@@ -412,3 +412,17 @@
 - [ ] User personally tests adding the four elements, the boxes, Preview and export
 
 **Status:** Approved (user said "Approve" on 2026-11-21)
+
+## CSS panel shows only fields that apply to the selected element
+
+**Request (2026-11-21):** "i don't want all styling properties displayed except the ones applicable to a selected element ... only styles applicable to body".  Plan explained first and approved ("Approve the plan (Recommended)").
+
+- [x] Read the panel code and explained the findings and plan before changing anything
+- [x] Fields now show only when they apply (`appliesTo` in `renderer/app.js`): body hides float, clear, z-index, offsets, flex/grid item fields; flex item fields only inside a flex or grid parent; text fields hidden for images, hr, media; container (flex/grid) fields hidden for elements that cannot hold children
+- [x] New sections that show only where they apply: Lists (ul, ol, li, menu), Image & Media (img, video, canvas, embeds), Table (table parts)
+- [x] A field the user already set always stays visible; the Search box still adds any property
+- [x] Tests added (261 passed, 3 failed as before); screenshot-style check of the body fields done
+- [x] Commit and push changes to feature branch
+- [ ] User personally tests the CSS panel on body, a box, a list, an image and a table
+
+**Status:** Awaiting User Approval
