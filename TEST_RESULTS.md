@@ -998,3 +998,8 @@ Approved on 2026-11-20 (user said "Approve").
 - `node test/e2e.js`: 261 passed, 3 failed (same 3 as before).
 - New checks: body fields; flex child fields; list section; image fields; set field stays visible.
 - Not run: real Electron window.
+
+## 2026-11-21 — CSS panel spacing
+
+- `node test/e2e.js`: 261 passed, 3 failed (same 3 as before). Screenshot of the body panel checked.
+- Not run: real Electron window.

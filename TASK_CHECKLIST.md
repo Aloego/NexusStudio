@@ -426,3 +426,15 @@
 - [ ] User personally tests the CSS panel on body, a box, a list, an image and a table
 
 **Status:** Approved (user said "Approve" on 2026-11-21)
+
+## CSS panel spacing: one field per line
+
+**Request (2026-11-21):** the CSS section is too crammed; more vertical space and put each style on its own line instead of two columns. Plan explained first and approved; top/right/bottom/left groups stay in one row of four (user's choice).
+
+- [x] Read the panel layout code and explained the plan before changing anything
+- [x] `renderer/styles.css` only: one field per line, bigger gaps (16px), more padding inside sections, taller inputs, more space under labels; 4-box groups unchanged in one row
+- [x] Tests run (261 passed, 3 failed as before); screenshot checked
+- [x] Commit and push changes to feature branch
+- [ ] User personally checks the CSS panel
+
+**Status:** Awaiting User Approval

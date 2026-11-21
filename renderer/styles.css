@@ -190,7 +190,12 @@ iframe.pv{flex:1;border:0;background:#fff;width:100%;min-height:0}
 .phead b{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#d4d4d8}
 .phead span{font:10px var(--mono);color:var(--dim);margin-left:6px}
 .phead i{width:8px;height:8px;border-radius:50%;background:var(--good)}
-.sec .body{padding:10px 12px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+/* the CSS panel: one field per line with room to breathe; the 4-box groups (top/right/bottom/left) stay in one row */
+.sec .body{padding:16px 14px 18px;display:flex;flex-direction:column;gap:16px;background:var(--surface)}
+.sec .body .row.c1,.sec .body .row.c2,.sec .body .row.c3{grid-template-columns:1fr;gap:16px}
+.sec .body .row.c4{gap:10px}
+.sec .body .fld label,.sec .body .lbl{margin-bottom:6px;font-size:11px}
+.sec .body .fld input[type=text],.sec .body .fld select,.sec .body .inp{padding:7px 9px}
 .row{display:grid;gap:8px;min-width:0}
 .row.c1{grid-template-columns:1fr}.row.c2{grid-template-columns:1fr 1fr}.row.c3{grid-template-columns:1fr 1fr 1fr}.row.c4{grid-template-columns:repeat(4,1fr)}
 .fld{min-width:0}
