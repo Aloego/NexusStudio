@@ -352,7 +352,7 @@
 - [x] `closed` saved in the project file and the draft; AI tools `list_pages`/`select_page` updated
 - [x] Tests added to `test/e2e.js`
 
-**Status:** Awaiting User Approval. Replaces the delete-page-message behaviour (that task's own approval is no longer needed).
+**Status:** Approved (user said "I Approve the Close tab without deleting the page and pages tab" on 2026-11-21)
 
 ## Pages tab (file explorer for pages)
 
@@ -361,7 +361,7 @@
 - [x] Delete from the tree asks first; "Closed (n)" button removed
 - [x] Tests in `test/e2e.js`
 
-**Status:** Awaiting User Approval. It replaces the Closed-list part of the previous task.
+**Status:** Approved (user approved with the Close tab task on 2026-11-21)
 
 ## Drag to reorder pages
 
@@ -386,12 +386,3 @@
 - [ ] User personally tests exporting a page and all pages, and checks the files
 
 **Status:** Approved (user said "Approved" on 2026-11-21)
-
-## Exported files named after the pages
-
-- [x] Exported html/css/js files use the page name instead of index / page-1 (an unrenamed tab uses the name typed at the top)
-- [x] Test updated and run (250 passed, 3 failed as before)
-- [x] Commit and push changes to feature branch
-- [x] User personally tests
-
-**Status:** Approved (user said "Approve" on 2026-11-21)
