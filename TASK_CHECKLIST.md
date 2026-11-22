@@ -467,7 +467,7 @@
 - [ ] User personally tests dragging and the click popup
 - [ ] Step 2 (Webstudio-style rows for the rest of the CSS panel: label above a rounded value box with its unit, highlighted label when set): not started; to be explained and approved separately
 
-**Status:** Awaiting User Approval
+**Status:** Approved (user said "Approved." on 2026-11-22 for the Space control popup, the Space/Size split, the removed middle text and the first Space box design)
 
 ## Separate Space and Size sections
 
@@ -479,7 +479,7 @@
 - [x] Commit and push changes to feature branch
 - [ ] User personally checks the two sections
 
-**Status:** Awaiting User Approval (the Space control popup from the previous task is also still awaiting approval)
+**Status:** Approved (user said "Approved." on 2026-11-22 for the Space control popup, the Space/Size split, the removed middle text and the first Space box design)
 
 ## Remove the width × height text from the Space box
 
@@ -490,7 +490,7 @@
 - [x] Commit and push changes to feature branch
 - [ ] User personally checks the Space box
 
-**Status:** Awaiting User Approval (together with the Space/Size split and the Space popup)
+**Status:** Approved (user said "Approved." on 2026-11-22 for the Space control popup, the Space/Size split, the removed middle text and the first Space box design)
 
 ## Space box visual design (first version)
 
@@ -501,4 +501,4 @@
 - [x] Commit and push changes to feature branch
 - [ ] User tells what is still not right (they said it is "still not what i want"); a second design pass needs their direction
 
-**Status:** Awaiting User Approval (first version, accepted by the user "for now")
+**Status:** Approved (user said "Approved." on 2026-11-22 for the Space control popup, the Space/Size split, the removed middle text and the first Space box design)

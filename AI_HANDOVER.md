@@ -24,6 +24,8 @@ Close tab vs delete page (state: Approved 2026-11-21; it replaces the delete-pag
 
 - 2026-11-22: Space box visual redesign (first version, built from the approved mock). The user accepted it only "for now" and said it is still not what they want; ask what to change (colours, shape, size) before a second pass.
 
+- 2026-11-22: user APPROVED the Space control popup, the Space/Size split, the removed middle text and the first Space box design ("Approved."). Step 2 (Webstudio-style rows for the other CSS fields) still not started; a second visual pass on the Space box is only needed if the user asks.
+
 ## Latest Session (2026-11-21, follow-up: files named after pages — Approved 2026-11-21)
 
 - Folder export was Approved on 2026-11-21. Follow-up: export files use the page name (`fileStem` in `renderer/app.js`); no more forced `index`. Tests: 250 passed, 3 old failures.
