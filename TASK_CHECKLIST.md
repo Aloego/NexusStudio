@@ -526,3 +526,18 @@
 - [ ] User personally checks the width
 
 **Status:** Awaiting User Approval
+
+## Tab strips always visible
+
+**Request (2026-11-22):** keep the vertical tabs visible so more tabs can always be opened. Plan explained; user chose the simpler option (clicking a strip tab switches to it) over stacked tabs, and +30px for the strip.
+
+- [x] 30px tab strip stays on the outer edge of both side panels, also while a panel is open
+- [x] The open tab is highlighted on the strip; clicking another strip tab switches to it
+- [x] Panel inner widths unchanged (240 / 200); the strip adds 30px; arrow and collapse still work
+- [x] Tests added/updated (296 passed, 3 failed as before)
+- [x] Commit and push changes to feature branch
+- [ ] User personally checks the strips
+
+**Note:** at 200px the Space box in the right panel is slightly cut off on its right side. Not changed; needs a decision.
+
+**Status:** Awaiting User Approval

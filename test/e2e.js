@@ -683,7 +683,7 @@ page.on('console', function (m) {
   let lastDel = null; try { await pgCall('delete_page', {}); } catch (e) { lastDel = e.message; }
   ok(/at least one page/.test(lastDel || ''), 'the last page cannot be deleted');
   // collapsible panels
-  const colW = function () { return defPage.evaluate(function () { const l = document.querySelector('.left').getBoundingClientRect().width, r = document.querySelector('.right').getBoundingClientRect().width, c = document.querySelector('.center').getBoundingClientRect().width; return { l: Math.round(l), r: Math.round(r), c: Math.round(c) }; }); };
+  const colW = function () { return defPage.evaluate(function () { const l = document.querySelector('.left').getBoundingClientRect().width, r = document.querySelector('.right').getBoundingClientRect().width, c = document.querySelector('.center').getBoundingClientRect().width; /* the 30px tab strip is part of each panel, so it is not counted in the panel width */ return { l: Math.round(l > 40 ? l - 30 : l), r: Math.round(r > 40 ? r - 30 : r), c: Math.round(c) }; }); };
   const w0 = await colW();
   await defPage.click('#colL');
   const w1 = await colW();
@@ -698,6 +698,11 @@ page.on('console', function (m) {
   ok((await colW()).r < 50, 'the right panel is still collapsed here');
   await defPage.click('#railR [data-rail="css"]');
   ok((await colW()).r === 200, 'one tab opened from the strip: the right panel is 200px wide ' + (await colW()).r);
+  ok(await defPage.isVisible('#railR') && await defPage.isVisible('#railR [data-rail="html"]') && await defPage.isVisible('#railL [data-rail="pg"]'), 'the thin tab strips stay visible while panels are open');
+  ok(await defPage.evaluate(function () { return document.querySelector('#railR [data-rail="css"]').classList.contains('on') && !document.querySelector('#railR [data-rail="html"]').classList.contains('on'); }), 'the open tab is highlighted on the strip');
+  await defPage.click('#railR [data-rail="html"]');
+  ok(await defPage.evaluate(function () { return document.querySelector('#railR [data-rail="html"]').classList.contains('on') && !document.querySelector('#railR [data-rail="css"]').classList.contains('on'); }) && (await colW()).r === 200, 'clicking another strip tab switches to it (panel stays 200px)');
+  await defPage.click('#railR [data-rail="css"]');
   await defPage.click('#colR'); await defPage.click('#railRx');
   ok((await colW()).r === 240, 'the whole right panel is 240px (same as left) wide ' + (await colW()).r);
   await defPage.click('#colR');

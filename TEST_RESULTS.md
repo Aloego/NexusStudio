@@ -1030,3 +1030,7 @@ Approved on 2026-11-20 (user said "Approve").
 ## 2026-11-22 — Right panel same width as left
 
 - `node test/e2e.js`: 293 passed, 3 failed (same 3 as before). Width tests now expect 240/200 and minimum 180.
+
+## 2026-11-22 — Tab strips always visible
+
+- `node test/e2e.js`: 296 passed, 3 failed (same 3 as before). New checks: strips visible with panels open, open tab highlighted, clicking another strip tab switches it.

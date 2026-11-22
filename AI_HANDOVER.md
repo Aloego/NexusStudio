@@ -390,3 +390,5 @@ Awaiting User Approval (drag positioned elements on the canvas). Rejected and re
 - Not tested on real Windows/Electron; only the browser stand-in.
 
 - 2026-11-22: right panel widths now equal to left (240/200, min 180). Awaiting User Approval.
+
+- 2026-11-22: tab strips (30px) always visible on both panels; strip click switches tab. Space box slightly clipped at 200px right width (open question). Awaiting User Approval.
