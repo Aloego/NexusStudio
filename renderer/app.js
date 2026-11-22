@@ -321,10 +321,9 @@ var SECTIONS=[
    ['INSETS'],
    [{p:'float',t:'select',o:['none','left','right','inline-start','inline-end']},{p:'clear',t:'select',o:['none','both','left','right','inline-start','inline-end']},{p:'visibility',t:'select',o:['visible','hidden','collapse']},{p:'z-index'}]]},
  {k:'box',name:'Box Model & Spacing',hint:function(n,el){return el?Math.round(el.offsetWidth)+' × '+Math.round(el.offsetHeight):'';},rows:[
-   ['BOXMODEL'],
+   ['SPACE'],
    [{p:'width'},{p:'min-width',l:'Min W'},{p:'max-width',l:'Max W'}],
    [{p:'height'},{p:'min-height',l:'Min H'},{p:'max-height',l:'Max H'}],
-   [{p:'margin',l:'Margin (T R B L)'}],['SIDES','margin'],[{p:'padding',l:'Padding (T R B L)'}],['SIDES','padding'],
    [{p:'box-sizing',t:'select',o:['border-box','content-box']},{p:'overflow',t:'select',o:['visible','hidden','auto','scroll','clip']}]]},
  {k:'type',name:'Typography',hint:function(n,el){return el?(getComputedStyle(el).fontSize):'';},rows:[
    [{p:'font-family',t:'select',o:["'Plus Jakarta Sans', sans-serif","'JetBrains Mono', monospace","system-ui, sans-serif","Georgia, serif","'Courier New', monospace","Arial, Helvetica, sans-serif","'Helvetica Neue', Helvetica, sans-serif","Verdana, Geneva, sans-serif","Tahoma, Geneva, sans-serif","'Trebuchet MS', sans-serif","'Times New Roman', Times, serif","Garamond, serif","'Palatino Linotype', Palatino, serif","'Segoe UI', sans-serif","ui-sans-serif, sans-serif","ui-serif, serif","ui-monospace, monospace","ui-rounded, sans-serif","serif","sans-serif","monospace","cursive","fantasy"]}],
@@ -496,7 +495,7 @@ function valList(prop){
 }
 SECTIONS.forEach(function(s){s.rows.forEach(function(r){r.forEach(function(f){if(f.p)KNOWN[f.p]=s.k;});});});
 PHYS.forEach(function(p){KNOWN[p]='layout';});LOGI.forEach(function(p){KNOWN[p]='layout';});
-['margin','padding'].forEach(function(b){SIDE.forEach(function(sd){KNOWN[b+'-'+sd]='box';});});
+['margin','padding'].forEach(function(b){KNOWN[b]='box';SIDE.forEach(function(sd){KNOWN[b+'-'+sd]='box';});});
 var CSSLIST=('-webkit-appearance -webkit-background-clip -webkit-box-orient -webkit-box-reflect -webkit-font-smoothing -webkit-line-clamp -webkit-tap-highlight-color -webkit-text-fill-color -webkit-text-security -webkit-text-stroke -webkit-text-stroke-color -webkit-text-stroke-width -webkit-user-drag accent-color additive-symbols align-content align-items align-self alignment-baseline all anchor-name anchor-scope animation animation-composition animation-delay animation-direction animation-duration animation-fill-mode animation-iteration-count animation-name animation-play-state animation-range animation-range-end animation-range-start animation-timeline animation-timing-function animation-trigger app-region appearance ascent-override aspect-ratio backdrop-filter backface-visibility background background-attachment background-blend-mode background-clip background-color background-image background-origin background-position background-position-x background-position-y background-repeat background-size base-palette baseline-shift baseline-source block-size border border-block border-block-color border-block-end border-block-end-color border-block-end-style border-block-end-width border-block-start border-block-start-color border-block-start-style border-block-start-width border-block-style border-block-width border-bottom border-bottom-color border-bottom-left-radius border-bottom-right-radius border-bottom-style border-bottom-width border-collapse border-color border-end-end-radius border-end-start-radius border-image border-image-outset border-image-repeat border-image-slice border-image-source border-image-width border-inline border-inline-color border-inline-end border-inline-end-color border-inline-end-style border-inline-end-width border-inline-start border-inline-start-color border-inline-start-style border-inline-start-width border-inline-style border-inline-width border-left border-left-color border-left-style border-left-width border-radius border-right border-right-color border-right-style border-right-width border-shape border-spacing border-start-end-radius border-start-start-radius border-style border-top border-top-color border-top-left-radius border-top-right-radius border-top-style border-top-width border-width bottom box-decoration-break box-shadow box-sizing break-after break-before break-inside buffered-rendering caption-side caret-animation caret-color caret-shape clear clip clip-path clip-rule color color-interpolation color-interpolation-filters color-rendering color-scheme column-count column-fill column-gap column-height column-rule column-rule-break column-rule-color column-rule-inset column-rule-inset-cap column-rule-inset-cap-end column-rule-inset-cap-start column-rule-inset-end column-rule-inset-junction column-rule-inset-junction-end column-rule-inset-junction-start column-rule-inset-start column-rule-style column-rule-visibility-items column-rule-width column-span column-width column-wrap columns contain contain-intrinsic-block-size contain-intrinsic-height contain-intrinsic-inline-size contain-intrinsic-size contain-intrinsic-width container container-name container-type content content-visibility corner-block-end-shape corner-block-start-shape corner-bottom-left-shape corner-bottom-right-shape corner-bottom-shape corner-end-end-shape corner-end-start-shape corner-inline-end-shape corner-inline-start-shape corner-left-shape corner-right-shape corner-shape corner-start-end-shape corner-start-start-shape corner-top-left-shape corner-top-right-shape corner-top-shape counter-increment counter-reset counter-set cursor cx cy d descent-override direction display dominant-baseline dynamic-range-limit empty-cells fallback field-sizing fill fill-opacity fill-rule filter flex flex-basis flex-direction flex-flow flex-grow flex-line-count flex-shrink flex-wrap float flood-color flood-opacity font font-display font-family font-feature-settings font-kerning font-language-override font-optical-sizing font-palette font-size font-size-adjust font-stretch font-style font-synthesis font-synthesis-small-caps font-synthesis-style font-synthesis-weight font-variant font-variant-alternates font-variant-caps font-variant-east-asian font-variant-emoji font-variant-ligatures font-variant-numeric font-variant-position font-variation-settings font-weight forced-color-adjust gap grid grid-area grid-auto-columns grid-auto-flow grid-auto-rows grid-column grid-column-end grid-column-gap grid-column-start grid-gap grid-row grid-row-end grid-row-gap grid-row-start grid-template grid-template-areas grid-template-columns grid-template-rows height hyphenate-character hyphenate-limit-chars hyphens image-orientation image-rendering inherits initial-letter initial-value inline-size inset inset-block inset-block-end inset-block-start inset-inline inset-inline-end inset-inline-start interactivity interest-delay interest-delay-end interest-delay-start interpolate-size isolation justify-content justify-items justify-self left letter-spacing lighting-color line-break line-gap-override line-height list-style list-style-image list-style-position list-style-type margin margin-block margin-block-end margin-block-start margin-bottom margin-inline margin-inline-end margin-inline-start margin-left margin-right margin-top marker marker-end marker-mid marker-start mask mask-clip mask-composite mask-image mask-mode mask-origin mask-position mask-repeat mask-size mask-type math-depth math-shift math-style max-block-size max-height max-inline-size max-width min-block-size min-height min-inline-size min-width mix-blend-mode navigation negative object-fit object-position object-view-box offset offset-anchor offset-distance offset-path offset-position offset-rotate opacity order orphans outline outline-color outline-offset outline-style outline-width overflow overflow-anchor overflow-block overflow-clip-margin overflow-inline overflow-wrap overflow-x overflow-y overlay override-colors overscroll-behavior overscroll-behavior-block overscroll-behavior-inline overscroll-behavior-x overscroll-behavior-y pad padding padding-block padding-block-end padding-block-start padding-bottom padding-inline padding-inline-end padding-inline-start padding-left padding-right padding-top page page-break-after page-break-before page-break-inside page-margin-safety page-orientation paint-order perspective perspective-origin place-content place-items place-self pointer-events position position-anchor position-area position-try position-try-fallbacks position-try-order position-visibility prefix print-color-adjust quotes r range reading-flow reading-order resize result right rotate row-gap row-rule row-rule-break row-rule-color row-rule-inset row-rule-inset-cap row-rule-inset-cap-end row-rule-inset-cap-start row-rule-inset-end row-rule-inset-junction row-rule-inset-junction-end row-rule-inset-junction-start row-rule-inset-start row-rule-style row-rule-visibility-items row-rule-width ruby-align ruby-overhang ruby-position rule rule-break rule-color rule-inset rule-inset-cap rule-inset-end rule-inset-junction rule-inset-start rule-overlap rule-style rule-visibility-items rule-width rx ry scale scroll-axis-lock scroll-behavior scroll-initial-target scroll-margin scroll-margin-block scroll-margin-block-end scroll-margin-block-start scroll-margin-bottom scroll-margin-inline scroll-margin-inline-end scroll-margin-inline-start scroll-margin-left scroll-margin-right scroll-margin-top scroll-marker-group scroll-padding scroll-padding-block scroll-padding-block-end scroll-padding-block-start scroll-padding-bottom scroll-padding-inline scroll-padding-inline-end scroll-padding-inline-start scroll-padding-left scroll-padding-right scroll-padding-top scroll-snap-align scroll-snap-stop scroll-snap-type scroll-target-group scroll-timeline scroll-timeline-axis scroll-timeline-name scrollbar-color scrollbar-gutter scrollbar-width shape-image-threshold shape-margin shape-outside shape-rendering size size-adjust speak speak-as src stop-color stop-opacity stroke stroke-dasharray stroke-dashoffset stroke-linecap stroke-linejoin stroke-miterlimit stroke-opacity stroke-width suffix symbols syntax system tab-size table-layout text-align text-align-last text-anchor text-autospace text-box text-box-edge text-box-trim text-combine-upright text-decoration text-decoration-color text-decoration-line text-decoration-skip-ink text-decoration-style text-decoration-thickness text-emphasis text-emphasis-color text-emphasis-position text-emphasis-style text-fit text-indent text-justify text-orientation text-overflow text-rendering text-shadow text-size-adjust text-spacing-trim text-transform text-underline-offset text-underline-position text-wrap text-wrap-mode text-wrap-style timeline-scope timeline-trigger timeline-trigger-activation-range timeline-trigger-activation-range-end timeline-trigger-activation-range-start timeline-trigger-active-range timeline-trigger-active-range-end timeline-trigger-active-range-start timeline-trigger-name timeline-trigger-source top touch-action transform transform-box transform-origin transform-style transition transition-behavior transition-delay transition-duration transition-property transition-timing-function translate trigger-scope types unicode-bidi unicode-range user-select vector-effect vertical-align view-timeline view-timeline-axis view-timeline-inset view-timeline-name view-transition-class view-transition-group view-transition-name view-transition-scope visibility white-space white-space-collapse widows width will-change window-drag word-break word-spacing word-wrap writing-mode x y z-index zoom').split(' ');
 
 /* ---------- history ---------- */
@@ -936,14 +935,6 @@ function mkField(f,n,secKey){
 }
 function camel(p){return p.replace(/-([a-z])/g,function(m,c){return c.toUpperCase();});}
 function row(fields,cls){var r=document.createElement('div');r.className='row c'+(cls||fields.length);fields.forEach(function(f){r.appendChild(f);});return r;}
-function boxModel(el){
-  var d=document.createElement('div');d.className='bm';if(!el){return d;}
-  var cs=getComputedStyle(el),px=function(p){return parseFloat(cs[p])||0;};
-  var z=1;
-  d.innerHTML='<span class="l">margin</span><div>'+Math.round(px('marginTop'))+'</div><div class="mid"><span>'+Math.round(px('marginLeft'))+'</span><div class="bo"><span class="l">border '+Math.round(px('borderTopWidth'))+'</span>'+
-    '<div class="pa"><span class="l">padding '+Math.round(px('paddingTop'))+' '+Math.round(px('paddingRight'))+' '+Math.round(px('paddingBottom'))+' '+Math.round(px('paddingLeft'))+'</span><div class="ct">'+Math.round(el.offsetWidth*z)+' × '+Math.round(el.offsetHeight*z)+'</div></div></div><span>'+Math.round(px('marginRight'))+'</span></div><div>'+Math.round(px('marginBottom'))+'</div>';
-  return d;
-}
 /* margin / padding: one field per side (top, right, bottom, left), kept in step with the shorthand field above them */
 function splitVals(v){
   var out=[],cur='',d=0;
@@ -977,19 +968,109 @@ function writeSide(prop,i,val){
   var sh=document.getElementById('f-'+prop);if(sh)sh.value=out;
   SIDE.forEach(function(sd,k){if(k===i)return;var inp=document.getElementById('f-'+prop+'-'+sd);if(inp)inp.value=nx[k];});
 }
-function sidesBlock(n,prop,el){
-  var w=document.createElement('div');
-  var h=document.createElement('span');h.className='lbl';h.textContent=cap(prop)+' per side (T · R · B · L)';w.appendChild(h);
-  var r=document.createElement('div');r.className='row c4';
-  var cs=el?getComputedStyle(el):null,vals=sideVals(n,prop);
-  SIDE.forEach(function(sd,i){
-    var pp=prop+'-'+sd,inp=document.createElement('input');
-    inp.type='text';inp.className='inp';inp.id='f-'+pp;inp.value=vals[i];inp.placeholder=cs?cs[camel(pp)]:'0';inp.title=pp;inp.setAttribute('aria-label',pp);inp.setAttribute('list',valList(pp));inp.autocomplete='off';inp.spellcheck=false;inp.style.textAlign='center';
-    inp.addEventListener('input',function(){writeSide(prop,i,inp.value);});
-    inp.addEventListener('change',function(){commit();renderCodeIfOpen();});
-    r.appendChild(inp);
-  });
-  w.appendChild(r);return w;
+/* Space: margin (outer) and padding (inner) as eight small number buttons. Drag a number left or right to change it,
+   click it to type a value (2rem, auto, 10%...). Shift = steps of 10, Alt = all four sides together. Hovering lights up the area on the canvas. */
+var SPNUM=/^(-?\d*\.?\d+)([a-z%]*)$/i;
+function fmtNum(v,u){v=Math.round(v*100)/100;return v===0?'0':v+u;}
+function shorthandOf(n,prop){
+  var v=sideVals(n,prop).map(function(x){return x||'0';}),T=v[0],R=v[1],B=v[2],L=v[3];
+  if(T===R&&R===B&&B===L)return T;if(T===B&&R===L)return T+' '+R;if(R===L)return T+' '+R+' '+B;return v.join(' ');
+}
+var spHi=null;
+function spHighlight(prop,i){
+  var el=elOf(S.sel);if(!el||S.view!=='canvas'){spClear();return;}
+  if(!spHi){spHi=document.createElement('div');spHi.id='spHi';inner.appendChild(spHi);}
+  var cs=getComputedStyle(el),z=S.zoom,r=el.getBoundingClientRect(),b=inner.getBoundingClientRect();
+  var ox=r.left-b.left,oy=r.top-b.top,w=r.width,h=r.height,sd=SIDE[i],pxv=function(p){return (parseFloat(cs[camel(p)])||0)*z;};
+  var m=prop==='margin',amt=Math.max(m?Math.abs(pxv('margin-'+sd)):pxv('padding-'+sd),2);
+  var bt=pxv('border-top-width'),br=pxv('border-right-width'),bb=pxv('border-bottom-width'),bl=pxv('border-left-width'),x,y,ww,hh;
+  if(m){
+    if(i===0){x=ox;y=oy-amt;ww=w;hh=amt;}else if(i===2){x=ox;y=oy+h;ww=w;hh=amt;}else if(i===3){x=ox-amt;y=oy;ww=amt;hh=h;}else{x=ox+w;y=oy;ww=amt;hh=h;}
+  }else{
+    var iw=w-bl-br,ih=h-bt-bb;
+    if(i===0){x=ox+bl;y=oy+bt;ww=iw;hh=amt;}else if(i===2){x=ox+bl;y=oy+bt+ih-amt;ww=iw;hh=amt;}else if(i===3){x=ox+bl;y=oy+bt;ww=amt;hh=ih;}else{x=ox+bl+iw-amt;y=oy+bt;ww=amt;hh=ih;}
+  }
+  spHi.className=m?'m':'p';spHi.hidden=false;spHi.style.left=x+'px';spHi.style.top=y+'px';spHi.style.width=ww+'px';spHi.style.height=hh+'px';
+}
+function spClear(){if(spHi)spHi.hidden=true;}
+function spaceControl(n,el){
+  var d=document.createElement('div');d.className='spx';
+  var cs=el?getComputedStyle(el):null;
+  d.setAttribute('data-margin',shorthandOf(n,'margin'));d.setAttribute('data-padding',shorthandOf(n,'padding'));
+  var btns={};
+  function mk(prop,i){
+    var pp=prop+'-'+SIDE[i],b=document.createElement('button');b.type='button';b.className='spv';b.id='f-'+pp;
+    var set=sideVals(n,prop)[i];
+    b.textContent=set||(cs?String(Math.round(parseFloat(cs[camel(pp)])||0)):'0');if(!set)b.classList.add('dim');
+    b.title=pp+' — drag left or right to change, click to type, Shift = steps of 10, Alt = all four sides';
+    b.setAttribute('aria-label',pp+' '+b.textContent);
+    btns[pp]=b;
+    function setSide(k,val){writeSide(prop,k,val);}
+    function current(){var cur=sideVals(n,prop)[i];var m=SPNUM.exec(cur||'');if(m)return {v:parseFloat(m[1]),u:m[2]||'px'};return {v:cs?Math.round(parseFloat(cs[camel(pp)])||0):0,u:'px'};}
+    function apply(base,delta,e){
+      var u=base.u,step=(u==='em'||u==='rem')?delta/10:(u==='%'?delta/2:delta),v=base.v+step;
+      if(u==='em'||u==='rem')v=e.shiftKey?Math.round(v):Math.round(v*10)/10;else v=e.shiftKey?Math.round(v/10)*10:Math.round(v);
+      if(prop==='padding'&&v<0)v=0;
+      var out=fmtNum(v,u);
+      if(e.altKey){for(var k=0;k<4;k++){setSide(k,out);var o=btns[prop+'-'+SIDE[k]];if(o){o.textContent=out;o.classList.remove('dim');}}}
+      else{setSide(i,out);b.textContent=out;b.classList.remove('dim');}
+      d.setAttribute('data-'+prop,shorthandOf(find(S.sel).node,prop));
+      spHighlight(prop,i);
+    }
+    var drag=null;
+    b.addEventListener('pointerdown',function(e){
+      if(e.button!==0)return;
+      drag={x:e.clientX,base:current(),moved:false};
+      try{b.setPointerCapture(e.pointerId);}catch(x){}
+      e.preventDefault();
+    });
+    b.addEventListener('pointermove',function(e){
+      if(!drag)return;var dx=e.clientX-drag.x;
+      if(!drag.moved&&Math.abs(dx)<3)return;
+      drag.moved=true;b.classList.add('drag');apply(drag.base,dx,e);
+    });
+    b.addEventListener('pointerup',function(e){
+      if(!drag)return;var was=drag;drag=null;b.classList.remove('drag');
+      try{b.releasePointerCapture(e.pointerId);}catch(x){}
+      if(was.moved){commit();renderCodeIfOpen();renderProps();spHighlight(prop,i);}
+      else edit();
+    });
+    b.addEventListener('pointercancel',function(){if(drag){var m=drag.moved;drag=null;b.classList.remove('drag');if(m){commit();renderProps();}}});
+    b.addEventListener('mouseenter',function(){spHighlight(prop,i);});
+    b.addEventListener('mouseleave',function(){if(!drag)spClear();});
+    b.addEventListener('focus',function(){spHighlight(prop,i);});
+    b.addEventListener('blur',function(){spClear();});
+    b.addEventListener('keydown',function(e){
+      if(e.key==='Enter'||e.key===' '){e.preventDefault();edit();return;}
+      if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight'&&e.key!=='ArrowUp'&&e.key!=='ArrowDown')return;
+      e.preventDefault();var dir=(e.key==='ArrowRight'||e.key==='ArrowUp')?1:-1;
+      apply(current(),dir*(e.shiftKey?10:1),{shiftKey:false,altKey:e.altKey});commit();renderCodeIfOpen();
+    });
+    function edit(){
+      var inp=document.createElement('input');inp.type='text';inp.className='spi';inp.id=b.id;inp.value=sideVals(n,prop)[i]||b.textContent;
+      inp.setAttribute('aria-label',pp);inp.setAttribute('list',valList(pp));inp.autocomplete='off';
+      var done=false;
+      function finish(save){
+        if(done)return;done=true;
+        if(save){var v=inp.value.trim();if(v!==(sideVals(n,prop)[i]||'')){setSide(i,v);commit();renderCodeIfOpen();}}
+        renderProps();
+      }
+      inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();finish(true);}else if(e.key==='Escape'){e.preventDefault();e.stopPropagation();finish(false);}});
+      inp.addEventListener('blur',function(){finish(true);});
+      b.replaceWith(inp);inp.focus();inp.select();
+    }
+    return b;
+  }
+  function lab(t){var s=document.createElement('span');s.className='spl';s.textContent=t;return s;}
+  function mid(a,c,z){var m=document.createElement('div');m.className='spm';m.appendChild(a);m.appendChild(c);m.appendChild(z);return m;}
+  var ct=document.createElement('div');ct.className='spc';
+  ct.textContent=el?Math.round(el.getBoundingClientRect().width/S.zoom)+' × '+Math.round(el.getBoundingClientRect().height/S.zoom):'';
+  var pad=document.createElement('div');pad.className='spp';
+  pad.appendChild(lab('padding'));pad.appendChild(mk('padding',0));pad.appendChild(mid(mk('padding',3),ct,mk('padding',1)));pad.appendChild(mk('padding',2));
+  var mar=document.createElement('div');mar.className='spmg';
+  mar.appendChild(lab('margin'));mar.appendChild(mk('margin',0));mar.appendChild(mid(mk('margin',3),pad,mk('margin',1)));mar.appendChild(mk('margin',2));
+  d.appendChild(mar);
+  return d;
 }
 /* Which CSS fields make sense for the selected element. A field you have already set always stays visible; the Search box can add any property. */
 var TEXTLESS={img:1,hr:1,br:1,wbr:1,video:1,audio:1,canvas:1,iframe:1,embed:1,object:1,picture:1,source:1,track:1,area:1,col:1};
@@ -1018,6 +1099,7 @@ function appliesTo(p,n,par){
 function insetsApply(n){return n.ns||(n.style.position&&n.style.position!=='static')||LOGI.concat(PHYS).some(function(p){return n.style[p];});}
 function secCount(n,key){var c=0;Object.keys(n.style).forEach(function(p){if(KNOWN[p]===key)c++;});return c;}
 function renderProps(){
+  spClear();
   var f=find(S.sel);if(!f)return;var n=f.node,box=$('#propBody');box.innerHTML='';
   $('#pTitle').textContent='(<'+n.tag+(n.attrs.id?'#'+n.attrs.id:'')+'>)';
   ['rtHtml','rtCss','rtJs'].forEach(function(t){$('#'+t).classList.toggle('on',t==='rt'+cap(S.rtab));});
@@ -1033,9 +1115,8 @@ function renderProps(){
     var b=document.createElement('div');b.className='body';
     var shown=0;
     s.rows.forEach(function(r){
-      if(r[0]==='BOXMODEL'){b.appendChild(boxModel(el));shown++;return;}
+      if(r[0]==='SPACE'){b.appendChild(spaceControl(n,el));shown++;return;}
       if(r[0]==='INSETS'){if(insetsApply(n)){b.appendChild(insetBlock(n));shown++;}return;}
-      if(r[0]==='SIDES'){b.appendChild(sidesBlock(n,r[1],el));shown++;return;}
       var fs=r.filter(function(x){return appliesTo(x.p,n,f.parent);});
       if(!fs.length)return;shown++;
       b.appendChild(row(fs.map(function(x){return mkField(x,n,s.k);})));

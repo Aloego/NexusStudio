@@ -1003,3 +1003,9 @@ Approved on 2026-11-20 (user said "Approve").
 
 - `node test/e2e.js`: 261 passed, 3 failed (same 3 as before). Screenshot of the body panel checked.
 - Not run: real Electron window.
+
+## 2026-11-22 — Space control (margin/padding drag)
+
+- `node test/e2e.js`: 269 passed, 3 failed (same 3 as before).
+- New checks: typing a side, drag right/left, padding floor 0, Shift steps of 10, Alt all sides, hover highlight on canvas, one drag = one undo, old text boxes gone. Screenshot checked.
+- Not run: real Electron window, touch screens.

@@ -310,7 +310,7 @@ page.on('console', function (m) {
   for (const t of Object.keys(PROBES)) {
     await addPalette(t);
     for (const prop of Object.keys(PROBES[t])) {
-      const got = await defPage.inputValue('#f-' + prop);
+      const got = (prop === 'margin' || prop === 'padding') ? await defPage.getAttribute('#propBody .spx', 'data-' + prop) : await defPage.inputValue('#f-' + prop);
       if (got !== PROBES[t][prop]) probeBad.push(t + ' ' + prop + ': expected "' + PROBES[t][prop] + '" got "' + got + '"');
     }
   }
@@ -346,18 +346,43 @@ page.on('console', function (m) {
     return probe.filter(function (p) { document.querySelector('#propSearch').value = p; document.querySelector('#propSearch').dispatchEvent(new Event('input')); return ![].slice.call(document.querySelectorAll('#dd button span:first-child')).some(function (s) { return s.textContent === p; }); });
   });
   ok(coverage.length === 0, 'search suggests every property that was missing before ' + JSON.stringify(coverage));
-  console.log('Margin and padding have a field for each side');
-  const sideVal = function (id) { return defPage.inputValue('#f-' + id); };
+  console.log('Margin and padding: the Space control');
+  const sideVal = async function (id) { return (await defPage.locator('#f-' + id).evaluate(function (e) { return e.tagName === 'INPUT' ? e.value : e.textContent; })); };
+  const spAttr = function (prop) { return defPage.getAttribute('#propBody .spx', 'data-' + prop); };
+  const typeSide = async function (id, v) { await defPage.click('#f-' + id); await defPage.fill('#f-' + id, v); await defPage.press('#f-' + id, 'Enter'); };
   await addPalette('div');
   ok((await sideVal('padding-top')) === '16px' && (await sideVal('padding-left')) === '16px', 'padding sides show the stored padding (16px each)');
   ok((await sideVal('margin-top')) === '0' && (await sideVal('margin-right')) === '0', 'margin sides show the stored margin');
-  await defPage.fill('#f-padding-left', '8px');
-  ok((await sideVal('padding')) === '16px 16px 16px 8px' || (await sideVal('padding')) === '16px 16px 16px 8px', 'editing one side updates the padding field ' + JSON.stringify(await sideVal('padding')));
-  ok(await defPage.evaluate(function () { return [].slice.call(document.querySelectorAll('#page div')).some(function (d) { return d.style.paddingLeft === '8px' && d.style.paddingTop === '16px' && d.style.paddingRight === '16px'; }); }), 'the canvas shows the new left padding and keeps the others');
-  await defPage.fill('#f-margin-bottom', '24px');
-  ok((await sideVal('margin')) === '0 0 24px' && (await sideVal('margin-bottom')) === '24px', 'a margin side is combined with the others in the margin field ' + JSON.stringify(await sideVal('margin')));
-  await defPage.fill('#f-margin', '10px 20px');
-  ok((await sideVal('margin-top')) === '10px' && (await sideVal('margin-right')) === '20px' && (await sideVal('margin-bottom')) === '10px' && (await sideVal('margin-left')) === '20px', 'typing the margin shorthand fills the four side fields');
+  ok((await defPage.locator('#f-margin').count()) === 0 && (await defPage.locator('#f-padding').count()) === 0, 'the old margin and padding text boxes are gone');
+  await typeSide('padding-left', '8px');
+  ok((await spAttr('padding')) === '16px 16px 16px 8px', 'typing one side updates the padding ' + JSON.stringify(await spAttr('padding')));
+  ok(await defPage.evaluate(function () { return [].slice.call(document.querySelectorAll('#page div')).some(function (d) { return d.style.paddingLeft === '8px' && d.style.paddingTop === '16px' && d.style.paddingRight === '16px'; }); }), 'the element on the canvas has that padding');
+  await typeSide('margin-bottom', '24px');
+  ok((await spAttr('margin')) === '0 0 24px' && (await sideVal('margin-bottom')) === '24px', 'a margin side is combined with the others ' + JSON.stringify(await spAttr('margin')));
+  // dragging a number left or right
+  const dragBy = async function (id, dx, mods) {
+    const bb = await defPage.locator('#f-' + id).boundingBox();
+    const x = bb.x + bb.width / 2, y = bb.y + bb.height / 2;
+    if (mods) for (const m of mods) await defPage.keyboard.down(m);
+    await defPage.mouse.move(x, y); await defPage.mouse.down(); await defPage.mouse.move(x + dx / 2, y, { steps: 3 }); await defPage.mouse.move(x + dx, y, { steps: 3 }); await defPage.mouse.up();
+    if (mods) for (const m of mods) await defPage.keyboard.up(m);
+  };
+  await dragBy('margin-top', 12);
+  ok((await sideVal('margin-top')) === '12px' && /^12px/.test(await spAttr('margin')), 'dragging right raises a margin ' + (await sideVal('margin-top')));
+  await dragBy('margin-top', -5);
+  ok((await sideVal('margin-top')) === '7px', 'dragging left lowers it ' + (await sideVal('margin-top')));
+  await dragBy('padding-top', -100);
+  ok((await sideVal('padding-top')) === '0', 'padding cannot go below 0');
+  await dragBy('padding-right', 30, ['Shift']);
+  ok((await sideVal('padding-right')) === '50px', 'Shift drags in steps of 10 ' + (await sideVal('padding-right')));
+  await dragBy('margin-left', 20, ['Alt']);
+  ok((await spAttr('margin')) === '20px', 'Alt changes all four sides together ' + JSON.stringify(await spAttr('margin')));
+  await defPage.hover('#f-padding-left');
+  ok((await defPage.evaluate(function () { const h = document.getElementById('spHi'); return !!h && !h.hidden && h.className === 'p' && parseFloat(h.style.width) > 0; })), 'hovering a number lights up the area on the canvas');
+  await defPage.mouse.move(5, 5);
+  ok(await defPage.evaluate(function () { const h = document.getElementById('spHi'); return !h || h.hidden; }), 'the highlight goes away when the pointer leaves');
+  await defPage.keyboard.press('Control+z'); await defPage.waitForTimeout(100);
+  ok((await spAttr('margin')) !== '20px', 'one drag is one undo step');
   await addPalette('h3');
   ok((await sideVal('margin-top')) === '1em' && (await sideVal('margin-right')) === '0' && (await sideVal('margin-bottom')) === '1em', 'a heading shows its default vertical margin per side');
   await defPage.fill('#propSearch', 'margin-left'); await defPage.press('#propSearch', 'Enter');
@@ -674,7 +699,7 @@ page.on('console', function (m) {
   const has = async function (id) { return (await defPage.locator('#propBody #f-' + id).count()) > 0; };
   const hasSec = async function (name) { return (await defPage.locator('#propBody summary span:first-child', { hasText: name }).count()) > 0; };
   await pgCall('select_element', { id: 'body' });
-  ok((await has('display')) && (await has('margin')) && (await has('background-color')) && (await has('font-family')) && (await has('flex-direction')), 'body shows display, margin, background, typography and flex container fields');
+  ok((await has('display')) && (await has('margin-top')) && (await has('background-color')) && (await has('font-family')) && (await has('flex-direction')), 'body shows display, margin, background, typography and flex container fields');
   ok(!(await has('float')) && !(await has('z-index')) && !(await has('order')) && !(await has('align-self')) && !(await has('grid-column')) && !(await has('top')), 'body hides float, z-index, flex/grid item fields and inset offsets');
   ok(!(await hasSec('Lists')) && !(await hasSec('Image & Media')) && !(await hasSec('Table')), 'body has no Lists, Image & Media or Table section');
   const fx = await pgCall('add_element', { tag: 'div', parent_id: 'body', style: { display: 'flex' } });

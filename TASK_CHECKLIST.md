@@ -438,3 +438,18 @@
 - [ ] User personally checks the CSS panel
 
 **Status:** Approved (user said "Approve" on 2026-11-21)
+
+## Space control: drag to change margin and padding (step 1 of 2)
+
+**Request (2026-11-21):** a way to add margin and padding by clicking or hovering a button and dragging left or right, like Webstudio; ideally the CSS tab laid out like Webstudio's. Plan explained and approved: step 1 now (Space control, old text boxes removed); step 2 (Webstudio-style rows with label left, value right and a dot when set) later, after the user tries step 1.
+
+- [x] Read the current margin/padding code and explained findings and plan before changing anything
+- [x] Space control in `renderer/app.js`: eight number buttons (margin outside, padding inside); drag left/right to change; click to type any value (2rem, auto, 10%); Shift = steps of 10; Alt = all four sides; arrow keys; padding cannot go below 0; one drag = one undo step
+- [x] Hovering a number highlights that margin/padding area on the canvas
+- [x] Old margin/padding text boxes and the read-only diagram removed; saved values and exported CSS unchanged
+- [x] Tests rewritten and added (269 passed, 3 failed as before); screenshot checked
+- [x] Commit and push changes to feature branch
+- [ ] User personally tests dragging, clicking, Shift/Alt and the canvas highlight
+- [ ] Step 2 (Webstudio-style panel rows): not started; to be explained and approved separately
+
+**Status:** Awaiting User Approval (step 1)
