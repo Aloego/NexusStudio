@@ -223,7 +223,7 @@ iframe.pv{flex:1;border:0;background:#fff;width:100%;min-height:0}
 .spm>.spp,.spm>.spc{flex:1;min-width:0}
 .spl{display:block;font:700 8px var(--mono);letter-spacing:.8px;text-transform:uppercase;text-align:left;opacity:.75}
 .spmg>.spl{color:#fbbf24}.spp>.spl{color:#6ee7b7}
-.spc{background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:8px 6px;font:700 11px var(--mono);color:#e4e4e7}
+.spc{background:var(--bg);border:1px solid var(--line);border-radius:4px;min-height:24px;align-self:stretch}
 .spv{position:relative}
 .spv::before,.spv::after{position:absolute;top:50%;transform:translateY(-50%);font-size:8px;color:var(--accent);opacity:0;transition:opacity .1s;pointer-events:none}
 .spv::before{content:'\25C0';left:3px}.spv::after{content:'\25B6';right:3px}

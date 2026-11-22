@@ -20,6 +20,8 @@ Close tab vs delete page (state: Approved 2026-11-21; it replaces the delete-pag
 
 - 2026-11-22: CSS panel split into Space (margin/padding) and Size (width/height/min/max/box-sizing/overflow). Awaiting User Approval, together with the Space control popup task.
 
+- 2026-11-22: removed the width × height text from the middle of the Space box. Awaiting User Approval (with the Space/Size split and the popup).
+
 ## Latest Session (2026-11-21, follow-up: files named after pages — Approved 2026-11-21)
 
 - Folder export was Approved on 2026-11-21. Follow-up: export files use the page name (`fileStem` in `renderer/app.js`); no more forced `index`. Tests: 250 passed, 3 old failures.

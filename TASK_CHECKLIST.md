@@ -480,3 +480,14 @@
 - [ ] User personally checks the two sections
 
 **Status:** Awaiting User Approval (the Space control popup from the previous task is also still awaiting approval)
+
+## Remove the width × height text from the Space box
+
+**Request (2026-11-22):** remove the page dimension from the middle; only margin and padding. Plan explained first and approved.
+
+- [x] The size text is gone from the middle; an empty inner box remains
+- [x] Test added (286 passed, 3 failed as before)
+- [x] Commit and push changes to feature branch
+- [ ] User personally checks the Space box
+
+**Status:** Awaiting User Approval (together with the Space/Size split and the Space popup)

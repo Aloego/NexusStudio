@@ -1138,7 +1138,6 @@ function spaceControl(n,el){
   function lab(t){var s=document.createElement('span');s.className='spl';s.textContent=t;return s;}
   function mid(a,c,z){var m=document.createElement('div');m.className='spm';m.appendChild(a);m.appendChild(c);m.appendChild(z);return m;}
   var ct=document.createElement('div');ct.className='spc';
-  ct.textContent=el?Math.round(el.getBoundingClientRect().width/S.zoom)+' × '+Math.round(el.getBoundingClientRect().height/S.zoom):'';
   var pad=document.createElement('div');pad.className='spp';
   pad.appendChild(lab('padding'));pad.appendChild(mk('padding',0));pad.appendChild(mid(mk('padding',3),ct,mk('padding',1)));pad.appendChild(mk('padding',2));
   var mar=document.createElement('div');mar.className='spmg';

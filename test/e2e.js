@@ -748,6 +748,7 @@ page.on('console', function (m) {
   await pgCall('select_element', { id: im.element.id });
   ok(await has('font-size'), 'a hidden field you have already set stays visible');
   await pgCall('select_element', { id: 'body' });
+  ok(await defPage.evaluate(function () { const c = document.querySelector('#propBody .spc'); return !!c && c.textContent.trim() === '' && !/×/.test(document.querySelector('#propBody .spx').textContent); }), 'the middle of the Space box has no width and height text');
   // Space and Size are separate sections
   await pgCall('select_element', { id: 'body' }); await defPage.click('#rtCss');
   const secNames = await defPage.$$eval('#propBody details.sec > summary span:first-child', function (e) { return e.map(function (x) { return x.textContent.trim(); }); });
