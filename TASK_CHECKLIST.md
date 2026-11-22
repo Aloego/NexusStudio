@@ -453,3 +453,18 @@
 - [ ] Step 2 (Webstudio-style panel rows): not started; to be explained and approved separately
 
 **Status:** Rejected (user said "Rejected" on 2026-11-22: hovering a number should show a two-arrow left/right cursor for dragging, and clicking should open an option to type the value and also change the unit, like Webstudio). Waiting for the user to approve a plan for the fix.
+
+## Space control fix: click popup with value and unit (after rejection)
+
+**Request (2026-11-22):** after rejecting step 1: hovering a number shows a two-arrow cursor for dragging; clicking opens a popup to type the value and change the unit like Webstudio (screenshots supplied). Plan (and its adjustment after the screenshots) explained and approved.
+
+- [x] Click popup: blue side-name chip (e.g. "Margin Top"), value box, unit label (PX) that opens a tick-marked list: px, %, em, rem, vw, vh, svw, svh, lvw, lvh, dvw, dvh, ch; `auto` and other words are typed in the value box; typing `5vh` sets number and unit
+- [x] Live apply while typing; Enter or click outside applies; Escape puts the old value back; Up/Down arrows change the number (Shift = 10); padding cannot go below 0
+- [x] Two-arrow cursor on hover and kept during a drag; small arrows fade in on hover
+- [x] Drag, Shift, Alt, keyboard arrows, canvas highlight unchanged
+- [x] Tests updated and added (283 passed, 3 failed as before); screenshot checked against the Webstudio screenshot
+- [x] Commit and push changes to feature branch
+- [ ] User personally tests dragging and the click popup
+- [ ] Step 2 (Webstudio-style rows for the rest of the CSS panel: label above a rounded value box with its unit, highlighted label when set): not started; to be explained and approved separately
+
+**Status:** Awaiting User Approval

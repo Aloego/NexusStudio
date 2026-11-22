@@ -16,6 +16,8 @@ Close tab vs delete page (state: Approved 2026-11-21; it replaces the delete-pag
 
 - 2026-11-22: Space control for margin/padding (drag, click to type, Shift/Alt, canvas highlight) replaces the old text boxes. REJECTED 2026-11-22 (needs a click popup with value + unit chooser and a clear two-arrow drag cursor). Step 2 (Webstudio-style rows: label left, value right, dot when set) still to be explained and approved.
 
+- 2026-11-22: Space control fixed after rejection: click popup with side chip, value box and unit list (Webstudio-style), drag cursor kept during drag. Awaiting User Approval. Step 2 (Webstudio-style rows for the rest of the CSS panel) still to be explained and approved. The user's Webstudio screenshots show: label above a rounded value box with the unit at its right (e.g. `100 %`), two per row, label highlighted when the property is set.
+
 ## Latest Session (2026-11-21, follow-up: files named after pages — Approved 2026-11-21)
 
 - Folder export was Approved on 2026-11-21. Follow-up: export files use the page name (`fileStem` in `renderer/app.js`); no more forced `index`. Tests: 250 passed, 3 old failures.

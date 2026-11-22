@@ -349,7 +349,7 @@ page.on('console', function (m) {
   console.log('Margin and padding: the Space control');
   const sideVal = async function (id) { return (await defPage.locator('#f-' + id).evaluate(function (e) { return e.tagName === 'INPUT' ? e.value : e.textContent; })); };
   const spAttr = function (prop) { return defPage.getAttribute('#propBody .spx', 'data-' + prop); };
-  const typeSide = async function (id, v) { await defPage.click('#f-' + id); await defPage.fill('#f-' + id, v); await defPage.press('#f-' + id, 'Enter'); };
+  const typeSide = async function (id, v) { await defPage.click('#f-' + id); await defPage.fill('#fpop-val', v); await defPage.press('#fpop-val', 'Enter'); };
   await addPalette('div');
   ok((await sideVal('padding-top')) === '16px' && (await sideVal('padding-left')) === '16px', 'padding sides show the stored padding (16px each)');
   ok((await sideVal('margin-top')) === '0' && (await sideVal('margin-right')) === '0', 'margin sides show the stored margin');
@@ -377,6 +377,38 @@ page.on('console', function (m) {
   ok((await sideVal('padding-right')) === '50px', 'Shift drags in steps of 10 ' + (await sideVal('padding-right')));
   await dragBy('margin-left', 20, ['Alt']);
   ok((await spAttr('margin')) === '20px', 'Alt changes all four sides together ' + JSON.stringify(await spAttr('margin')));
+  // click opens a popup: side name, value, unit list
+  const pickUnit = async function (u) { await defPage.click('#fpop-unit'); await defPage.click('.spmenu [data-u="' + u + '"]'); };
+  await defPage.click('#f-padding-bottom');
+  ok((await defPage.isVisible('#fpop-val')) && /Padding Bottom/.test(await defPage.textContent('.spchip')) && (await defPage.textContent('#fpop-unit')) === 'PX', 'clicking a number opens a popup with the side name, a value box and the unit');
+  await defPage.click('#fpop-unit');
+  ok(JSON.stringify(await defPage.$$eval('.spmenu [data-u]', function (o) { return o.map(function (x) { return x.getAttribute('data-u'); }); })) === '["px","%","em","rem","vw","vh","svw","svh","lvw","lvh","dvw","dvh","ch"]' && /\u2713/.test(await defPage.textContent('.spmenu [data-u="px"]')), 'the unit label opens a list with a tick on the current unit');
+  await defPage.click('.spmenu [data-u="rem"]');
+  ok((await sideVal('padding-bottom')) === '16rem' && (await defPage.textContent('#fpop-unit')) === 'REM', 'choosing a unit keeps the number and applies it ' + (await sideVal('padding-bottom')));
+  await defPage.fill('#fpop-val', '2');
+  ok((await sideVal('padding-bottom')) === '2rem', 'typing a number applies it straight away');
+  await pickUnit('%');
+  ok((await sideVal('padding-bottom')) === '2%', 'changing only the unit keeps the number');
+  await defPage.press('#fpop-val', 'ArrowUp'); await defPage.press('#fpop-val', 'Shift+ArrowUp');
+  ok((await sideVal('padding-bottom')) === '13%', 'Up arrow adds 1 and Shift+Up adds 10 ' + (await sideVal('padding-bottom')));
+  await defPage.press('#fpop-val', 'Escape');
+  ok(!(await defPage.isVisible('#fpop-val')) && (await sideVal('padding-bottom')) === '16px', 'Escape closes the popup and puts the old value back ' + (await sideVal('padding-bottom')));
+  await defPage.click('#f-margin-right'); await defPage.fill('#fpop-val', 'auto');
+  ok((await sideVal('margin-right')) === 'auto', 'auto can be typed in the value box');
+  await defPage.press('#fpop-val', 'Enter');
+  ok(!(await defPage.isVisible('#fpop-val')) && (await spAttr('margin')).indexOf('auto') >= 0, 'Enter applies and closes');
+  await defPage.click('#f-margin-right'); await defPage.fill('#fpop-val', '5vh'); 
+  ok((await defPage.textContent('#fpop-unit')) === 'VH' && (await sideVal('margin-right')) === '5vh', 'typing a number with a unit (5vh) sets both');
+  await defPage.mouse.click(600, 700);
+  ok(!(await defPage.isVisible('#fpop-val')), 'clicking outside closes the popup');
+  {
+    const bb = await defPage.locator('#f-padding-top').boundingBox();
+    await defPage.mouse.move(bb.x + bb.width / 2, bb.y + bb.height / 2); await defPage.mouse.down(); await defPage.mouse.move(bb.x + bb.width / 2 + 10, bb.y + 5, { steps: 3 });
+    ok(await defPage.evaluate(function () { return document.body.classList.contains('spdrag') && getComputedStyle(document.body).cursor === 'ew-resize'; }), 'the two-arrow cursor stays while dragging');
+    await defPage.mouse.up();
+    ok(await defPage.evaluate(function () { return !document.body.classList.contains('spdrag'); }), 'the drag cursor is released');
+    ok(await defPage.evaluate(function () { return getComputedStyle(document.getElementById('f-padding-top')).cursor === 'ew-resize'; }), 'a number shows the left-right arrow cursor on hover');
+  }
   await defPage.hover('#f-padding-left');
   ok((await defPage.evaluate(function () { const h = document.getElementById('spHi'); return !!h && !h.hidden && h.className === 'p' && parseFloat(h.style.width) > 0; })), 'hovering a number lights up the area on the canvas');
   await defPage.mouse.move(5, 5);

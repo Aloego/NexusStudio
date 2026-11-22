@@ -1009,3 +1009,9 @@ Approved on 2026-11-20 (user said "Approve").
 - `node test/e2e.js`: 269 passed, 3 failed (same 3 as before).
 - New checks: typing a side, drag right/left, padding floor 0, Shift steps of 10, Alt all sides, hover highlight on canvas, one drag = one undo, old text boxes gone. Screenshot checked.
 - Not run: real Electron window, touch screens.
+
+## 2026-11-22 — Space control popup with unit list
+
+- `node test/e2e.js`: 283 passed, 3 failed (same 3 as before).
+- New checks: popup with side chip, value and unit; unit list with tick; keep number when unit changes; arrows; Escape reverts; auto typed; `5vh` typed; outside click closes; drag cursor during drag. Screenshot checked.
+- Not run: real Electron window.
