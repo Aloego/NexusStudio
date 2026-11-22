@@ -452,4 +452,4 @@
 - [ ] User personally tests dragging, clicking, Shift/Alt and the canvas highlight
 - [ ] Step 2 (Webstudio-style panel rows): not started; to be explained and approved separately
 
-**Status:** Awaiting User Approval (step 1)
+**Status:** Rejected (user said "Rejected" on 2026-11-22: hovering a number should show a two-arrow left/right cursor for dragging, and clicking should open an option to type the value and also change the unit, like Webstudio). Waiting for the user to approve a plan for the fix.

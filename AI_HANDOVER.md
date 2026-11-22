@@ -14,7 +14,7 @@ Close tab vs delete page (state: Approved 2026-11-21; it replaces the delete-pag
 
 - 2026-11-21: CSS panel spacing change (one field per line, more space; styles.css only). Approved 2026-11-21.
 
-- 2026-11-22: Space control for margin/padding (drag, click to type, Shift/Alt, canvas highlight) replaces the old text boxes. Awaiting User Approval for step 1. Step 2 (Webstudio-style rows: label left, value right, dot when set) still to be explained and approved.
+- 2026-11-22: Space control for margin/padding (drag, click to type, Shift/Alt, canvas highlight) replaces the old text boxes. REJECTED 2026-11-22 (needs a click popup with value + unit chooser and a clear two-arrow drag cursor). Step 2 (Webstudio-style rows: label left, value right, dot when set) still to be explained and approved.
 
 ## Latest Session (2026-11-21, follow-up: files named after pages — Approved 2026-11-21)
 
