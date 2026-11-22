@@ -1015,3 +1015,8 @@ Approved on 2026-11-20 (user said "Approve").
 - `node test/e2e.js`: 283 passed, 3 failed (same 3 as before).
 - New checks: popup with side chip, value and unit; unit list with tick; keep number when unit changes; arrows; Escape reverts; auto typed; `5vh` typed; outside click closes; drag cursor during drag. Screenshot checked.
 - Not run: real Electron window.
+
+## 2026-11-22 — Space and Size sections
+
+- `node test/e2e.js`: 285 passed, 3 failed (same 3 as before).
+- New checks: section names and order; margin/padding only in Space; width/overflow only in Size.

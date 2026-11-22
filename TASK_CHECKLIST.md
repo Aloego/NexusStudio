@@ -468,3 +468,15 @@
 - [ ] Step 2 (Webstudio-style rows for the rest of the CSS panel: label above a rounded value box with its unit, highlighted label when set): not started; to be explained and approved separately
 
 **Status:** Awaiting User Approval
+
+## Separate Space and Size sections
+
+**Request (2026-11-22):** "separate spacing and the box model". Plan explained first and approved.
+
+- [x] "Box Model & Spacing" split into **Space** (margin and padding control) and **Size** (width, height, min/max, box-sizing, overflow); Space first
+- [x] Adding margin/padding from the Search box opens Space; saved values and exported CSS unchanged
+- [x] Tests added (285 passed, 3 failed as before)
+- [x] Commit and push changes to feature branch
+- [ ] User personally checks the two sections
+
+**Status:** Awaiting User Approval (the Space control popup from the previous task is also still awaiting approval)

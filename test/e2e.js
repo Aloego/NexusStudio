@@ -748,6 +748,16 @@ page.on('console', function (m) {
   await pgCall('select_element', { id: im.element.id });
   ok(await has('font-size'), 'a hidden field you have already set stays visible');
   await pgCall('select_element', { id: 'body' });
+  // Space and Size are separate sections
+  await pgCall('select_element', { id: 'body' }); await defPage.click('#rtCss');
+  const secNames = await defPage.$$eval('#propBody details.sec > summary span:first-child', function (e) { return e.map(function (x) { return x.textContent.trim(); }); });
+  ok(secNames.indexOf('Space') >= 0 && secNames.indexOf('Size') === secNames.indexOf('Space') + 1 && secNames.indexOf('Box Model & Spacing') < 0, 'Space and Size are separate sections, Space first ' + JSON.stringify(secNames.slice(0, 4)));
+  ok(await defPage.evaluate(function () {
+    const secs = [].slice.call(document.querySelectorAll('#propBody details.sec'));
+    const by = function (n) { return secs.filter(function (d) { return d.querySelector('summary span').textContent.trim() === n; })[0]; };
+    const sp = by('Space'), sz = by('Size');
+    return !!sp.querySelector('#f-margin-top') && !!sp.querySelector('#f-padding-left') && !sp.querySelector('#f-width') && !!sz.querySelector('#f-width') && !!sz.querySelector('#f-overflow') && !sz.querySelector('#f-margin-top');
+  }), 'margin and padding are in Space; width, height, box-sizing and overflow are in Size');
   console.log('Device size dropdown');
   ok((await defPage.$$('#devs [data-w]')).length === 0, 'the Mobile / Tablet / Desktop tab buttons are gone');
   ok((await defPage.textContent('#devBtn')).trim() === 'Responsive', 'the dropdown starts as Responsive');

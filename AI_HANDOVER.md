@@ -18,6 +18,8 @@ Close tab vs delete page (state: Approved 2026-11-21; it replaces the delete-pag
 
 - 2026-11-22: Space control fixed after rejection: click popup with side chip, value box and unit list (Webstudio-style), drag cursor kept during drag. Awaiting User Approval. Step 2 (Webstudio-style rows for the rest of the CSS panel) still to be explained and approved. The user's Webstudio screenshots show: label above a rounded value box with the unit at its right (e.g. `100 %`), two per row, label highlighted when the property is set.
 
+- 2026-11-22: CSS panel split into Space (margin/padding) and Size (width/height/min/max/box-sizing/overflow). Awaiting User Approval, together with the Space control popup task.
+
 ## Latest Session (2026-11-21, follow-up: files named after pages — Approved 2026-11-21)
 
 - Folder export was Approved on 2026-11-21. Follow-up: export files use the page name (`fileStem` in `renderer/app.js`); no more forced `index`. Tests: 250 passed, 3 old failures.
