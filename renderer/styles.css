@@ -45,8 +45,8 @@ button{cursor:pointer}
 
 /* workspace */
 /* panel widths: --wl / --wr are set by the app (one tab opened = narrower, whole panel = wider, or the width you dragged) */
-.work{display:grid;grid-template-columns:var(--wl,240px) minmax(0,1fr) var(--wr,320px);min-height:0}
-.work.lc{grid-template-columns:30px minmax(0,1fr) var(--wr,320px)}
+.work{display:grid;grid-template-columns:var(--wl,240px) minmax(0,1fr) var(--wr,240px);min-height:0}
+.work.lc{grid-template-columns:30px minmax(0,1fr) var(--wr,240px)}
 .work.rc{grid-template-columns:var(--wl,240px) minmax(0,1fr) 30px}
 .work.lc.rc{grid-template-columns:30px minmax(0,1fr) 30px}
 .work.lc .left>*:not(.rail),.work.rc .right>*:not(.rail){display:none!important}

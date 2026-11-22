@@ -388,3 +388,5 @@ Awaiting User Approval (drag positioned elements on the canvas). Rejected and re
 - `+` on a fresh desktop project saves first (`addPageAsked`). Page delete uses `#pgDel` when the project has unsaved changes.
 - Rails: `.rtab[data-rail]` buttons set S.ltab/S.rtab then expand the panel.
 - Not tested on real Windows/Electron; only the browser stand-in.
+
+- 2026-11-22: right panel widths now equal to left (240/200, min 180). Awaiting User Approval.

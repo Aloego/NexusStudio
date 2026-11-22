@@ -514,3 +514,15 @@
 - [ ] User personally checks the widths and the drag handles
 
 **Status:** Awaiting User Approval
+
+## Right panel same width as left panel
+
+**Request (2026-11-22):** the left panel width is liked, but the right is still too wide. Plan explained and approved.
+
+- [x] Right panel now 240px (whole panel) / 200px (one tab), same as the left
+- [x] Right panel smallest drag width lowered from 250px to 180px
+- [x] Tests updated (293 passed, 3 failed as before)
+- [x] Commit and push changes to feature branch
+- [ ] User personally checks the width
+
+**Status:** Awaiting User Approval

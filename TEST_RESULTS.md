@@ -1026,3 +1026,7 @@ Approved on 2026-11-20 (user said "Approve").
 - `node test/e2e.js`: 293 passed, 3 failed (same 3 as before).
 - New checks: 260px / 320px right panel, 200px left panel for one tab; drag wider; minimum width; remembered after reload; double-click resets.
 - Not run: real Electron window.
+
+## 2026-11-22 — Right panel same width as left
+
+- `node test/e2e.js`: 293 passed, 3 failed (same 3 as before). Width tests now expect 240/200 and minimum 180.

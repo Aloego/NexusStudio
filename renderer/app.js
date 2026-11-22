@@ -1658,7 +1658,7 @@ document.addEventListener('keydown',function(e){
 var PANEL_KEY='nexusstudio.panels.v1',panels={l:false,r:false},solo={l:false,r:false};
 try{var pr=JSON.parse(localStorage.getItem(PANEL_KEY)||'{}');panels.l=!!pr.l;panels.r=!!pr.r;}catch(e){}
 /* widths: one tab opened from the strip is narrower than the whole panel; a width you dragged is remembered for each of those two cases */
-var WIDTH_KEY='nexusstudio.widths.v1',DEFW={l:240,ls:200,r:320,rs:260},MINW={l:180,ls:160,r:250,rs:250},MAXW={l:420,ls:420,r:620,rs:620},cw={};
+var WIDTH_KEY='nexusstudio.widths.v1',DEFW={l:240,ls:200,r:240,rs:200},MINW={l:180,ls:160,r:180,rs:160},MAXW={l:420,ls:420,r:620,rs:620},cw={};
 try{cw=JSON.parse(localStorage.getItem(WIDTH_KEY)||'{}')||{};}catch(e){cw={};}
 function wKey(side){return side+(solo[side]?'s':'');}
 function wOf(side){var k=wKey(side),v=cw[k];return typeof v==='number'?Math.max(MINW[k],Math.min(MAXW[k],v)):DEFW[k];}
