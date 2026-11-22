@@ -511,9 +511,9 @@
 - [x] Drag handle on each panel's inner edge (col-resize cursor, highlight on hover); minimum 250px (right) and 180px (left); width remembered separately for the one-tab and whole-panel cases; double-click resets
 - [x] Tests updated and added (293 passed, 3 failed as before)
 - [x] Commit and push changes to feature branch
-- [ ] User personally checks the widths and the drag handles
+- [x] User personally checks the widths and the drag handles
 
-**Status:** Awaiting User Approval
+**Status:** Approved by user (2026-11-22)
 
 ## Right panel same width as left panel
 
@@ -523,9 +523,9 @@
 - [x] Right panel smallest drag width lowered from 250px to 180px
 - [x] Tests updated (293 passed, 3 failed as before)
 - [x] Commit and push changes to feature branch
-- [ ] User personally checks the width
+- [x] User personally checks the width
 
-**Status:** Awaiting User Approval
+**Status:** Approved by user (2026-11-22)
 
 ## Tab strips always visible
 
@@ -536,11 +536,11 @@
 - [x] Panel inner widths unchanged (240 / 200); the strip adds 30px; arrow and collapse still work
 - [x] Tests added/updated (296 passed, 3 failed as before)
 - [x] Commit and push changes to feature branch
-- [ ] User personally checks the strips
+- [x] User personally checks the strips
 
 **Note:** at 200px the Space box in the right panel is slightly cut off on its right side. Not changed; needs a decision.
 
-**Status:** Awaiting User Approval
+**Status:** Approved by user (2026-11-22)
 
 ## Arrow reopens the last used tab; Space box fits 200px
 
@@ -551,6 +551,6 @@
 - [x] Space box made smaller so margin and padding boxes fit and can be dragged at 200px
 - [x] Tests updated (296 passed, 3 failed as before)
 - [x] Commit and push changes to feature branch
-- [ ] User personally checks the arrows and the Space box
+- [x] User personally checks the arrows and the Space box
 
-**Status:** Awaiting User Approval
+**Status:** Approved by user (2026-11-22)
