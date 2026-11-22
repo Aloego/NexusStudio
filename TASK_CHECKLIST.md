@@ -491,3 +491,14 @@
 - [ ] User personally checks the Space box
 
 **Status:** Awaiting User Approval (together with the Space/Size split and the Space popup)
+
+## Space box visual design (first version)
+
+**Request (2026-11-22):** make the margin and padding area look more appealing (no black hole, not ugly). A preview picture (mock.png) was shown first. The user answered: "for now, I will go with the AFTER, though still not what i want."
+
+- [x] Built the "after" design in `renderer/styles.css`: soft warm margin ring and cool blue padding ring with gradients and hairline edges, nested rounded corners, inset textured centre block instead of the black hole, numbers without dark boxes (soft highlight on hover/drag), small spaced labels
+- [x] Behaviour unchanged (drag, popup, Shift, Alt, canvas highlight); tests: 286 passed, 3 failed as before; screenshot checked
+- [x] Commit and push changes to feature branch
+- [ ] User tells what is still not right (they said it is "still not what i want"); a second design pass needs their direction
+
+**Status:** Awaiting User Approval (first version, accepted by the user "for now")

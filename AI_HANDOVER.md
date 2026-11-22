@@ -22,6 +22,8 @@ Close tab vs delete page (state: Approved 2026-11-21; it replaces the delete-pag
 
 - 2026-11-22: removed the width × height text from the middle of the Space box. Awaiting User Approval (with the Space/Size split and the popup).
 
+- 2026-11-22: Space box visual redesign (first version, built from the approved mock). The user accepted it only "for now" and said it is still not what they want; ask what to change (colours, shape, size) before a second pass.
+
 ## Latest Session (2026-11-21, follow-up: files named after pages — Approved 2026-11-21)
 
 - Folder export was Approved on 2026-11-21. Follow-up: export files use the page name (`fileStem` in `renderer/app.js`); no more forced `index`. Tests: 250 passed, 3 old failures.
