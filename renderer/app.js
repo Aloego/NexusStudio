@@ -1657,6 +1657,7 @@ document.addEventListener('keydown',function(e){
    the thin strip, so only that tab (and its button) is shown. The arrow on the strip opens the whole panel. */
 var PANEL_KEY='nexusstudio.panels.v1',panels={l:false,r:false},solo={l:false,r:false};
 try{var pr=JSON.parse(localStorage.getItem(PANEL_KEY)||'{}');panels.l=!!pr.l;panels.r=!!pr.r;}catch(e){}
+solo.l=!panels.l;solo.r=!panels.r;/* an open panel always shows just one tab: the one you last used */
 /* widths: one tab opened from the strip is narrower than the whole panel; a width you dragged is remembered for each of those two cases */
 var WIDTH_KEY='nexusstudio.widths.v1',DEFW={l:240,ls:200,r:240,rs:200},MINW={l:180,ls:160,r:180,rs:160},MAXW={l:420,ls:420,r:620,rs:620},cw={};
 try{cw=JSON.parse(localStorage.getItem(WIDTH_KEY)||'{}')||{};}catch(e){cw={};}
@@ -1676,7 +1677,7 @@ function applyPanels(){
   try{localStorage.setItem(PANEL_KEY,JSON.stringify(panels));}catch(e){}
   sizeFrame();placeOverlay();
 }
-function setPanel(side,collapsed,single){panels[side]=collapsed;solo[side]=!!single&&!collapsed;applyPanels();}
+function setPanel(side,collapsed){panels[side]=collapsed;solo[side]=!collapsed;applyPanels();}
 ['l','r'].forEach(function(side){
   var h=document.createElement('div');h.className='rsz '+side;h.setAttribute('role','separator');h.setAttribute('aria-orientation','vertical');h.title='Drag to change the width (double-click to reset)';
   document.querySelector(side==='l'?'.left':'.right').appendChild(h);
@@ -1691,11 +1692,11 @@ function setPanel(side,collapsed,single){panels[side]=collapsed;solo[side]=!!sin
   h.addEventListener('dblclick',function(){delete cw[wKey(side)];applyWidths();sizeFrame();placeOverlay();try{localStorage.setItem(WIDTH_KEY,JSON.stringify(cw));}catch(e){}});
 });
 $('#colL').addEventListener('click',function(){setPanel('l',true);});
-$('#railLx').addEventListener('click',function(){setPanel('l',false,false);});
-$('#railL').addEventListener('click',function(e){var b=e.target.closest('[data-rail]');if(!b)return;S.ltab=b.getAttribute('data-rail');syncLeft();setPanel('l',false,true);});
+$('#railLx').addEventListener('click',function(){setPanel('l',false);});
+$('#railL').addEventListener('click',function(e){var b=e.target.closest('[data-rail]');if(!b)return;S.ltab=b.getAttribute('data-rail');syncLeft();setPanel('l',false);});
 $('#colR').addEventListener('click',function(){setPanel('r',true);});
-$('#railRx').addEventListener('click',function(){setPanel('r',false,false);});
-$('#railR').addEventListener('click',function(e){var b=e.target.closest('[data-rail]');if(!b)return;S.rtab=b.getAttribute('data-rail');setPanel('r',false,true);renderProps();});
+$('#railRx').addEventListener('click',function(){setPanel('r',false);});
+$('#railR').addEventListener('click',function(e){var b=e.target.closest('[data-rail]');if(!b)return;S.rtab=b.getAttribute('data-rail');setPanel('r',false);renderProps();});
 
 /* ---------- views ---------- */
 function setView(v){

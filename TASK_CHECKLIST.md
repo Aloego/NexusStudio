@@ -541,3 +541,16 @@
 **Note:** at 200px the Space box in the right panel is slightly cut off on its right side. Not changed; needs a decision.
 
 **Status:** Awaiting User Approval
+
+## Arrow reopens the last used tab; Space box fits 200px
+
+**Request (2026-11-22):** the arrow should no longer open all tabs but the last active tab. Plan explained and approved (top row of tab buttons removed, strip does the switching). While testing, the Space box was found too wide for 200px; user approved shrinking it.
+
+- [x] An open panel always shows one tab (the last used); the strip arrow reopens that tab at 200px
+- [x] The top row now shows only the open tab's name and the hide arrow
+- [x] Space box made smaller so margin and padding boxes fit and can be dragged at 200px
+- [x] Tests updated (296 passed, 3 failed as before)
+- [x] Commit and push changes to feature branch
+- [ ] User personally checks the arrows and the Space box
+
+**Status:** Awaiting User Approval

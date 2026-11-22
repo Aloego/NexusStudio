@@ -214,12 +214,12 @@ page.on('console', function (m) {
 
   console.log('Editor in a plain browser');
   await page.click('[data-menu="file"]'); await page.keyboard.press('Escape');
-  await page.click('#tabLy');
+  await page.click('#railL [data-rail="ly"]');
   ok((await page.locator('.lrow').count()) > 5, 'layers list is filled');
-  await page.click('#tabEl');
+  await page.click('#railL [data-rail="el"]');
   const before2 = await page.locator('.lrow').count();
   await page.click('#palette .it >> nth=0');
-  await page.click('#tabLy');
+  await page.click('#railL [data-rail="ly"]');
   ok((await page.locator('.lrow').count()) === before2 + 1, 'clicking an element in the palette adds it');
   for (const v of ['html', 'css', 'js', 'preview', 'canvas']) { await page.click('#views [data-v="' + v + '"]'); }
   ok(true, 'all five views open');
@@ -234,7 +234,7 @@ page.on('console', function (m) {
   ok((await page.locator('#page h1').count()) === 1, 'Ctrl+Z brings it back');
 
   console.log('Elements tab');
-  await page.click('#tabEl');
+  await page.click('#railL [data-rail="el"]');
   const WANT = ['div', 'section', 'header', 'nav', 'main', 'footer', 'hr',
     'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'br', 'wbr',
     'strong', 'em', 'b', 'i', 'u', 's', 'small', 'mark', 'sub', 'sup', 'del', 'ins',
@@ -275,7 +275,7 @@ page.on('console', function (m) {
   await defPage.goto(url);
   await defPage.waitForSelector('#page h1');
   await defPage.evaluate(function () { return window.NexusAPI.call('new_document', {}); });
-  await defPage.click('#tabEl');
+  await defPage.click('#railL [data-rail="el"]');
   const addPalette = function (tag) {
     return defPage.evaluate(function (t) {
       const em = [].slice.call(document.querySelectorAll('#palette .it em')).filter(function (e) { return e.textContent === t; })[0];
@@ -425,7 +425,7 @@ page.on('console', function (m) {
   const mvPage = await mvCtx.newPage();
   await mvPage.goto(url);
   await mvPage.waitForSelector('#page h1');
-  await mvPage.click('#tabEl');
+  await mvPage.click('#railL [data-rail="el"]');
   const mvFresh = async function (style) {
     await mvPage.evaluate(function () { return window.NexusAPI.call('new_document', {}); });
     await mvPage.evaluate(function () {
@@ -626,7 +626,7 @@ page.on('console', function (m) {
   // the Pages tab lists every page; closing a tab never removes a page from it
   const openN = function () { return defPage.$$('#pagebar .pg').then(function (l) { return l.length; }); };
   const treeRows = function () { return defPage.$$eval('#pgTree .ptrow', function (l) { return l.map(function (e) { return e.querySelector('.ptn').textContent + (e.classList.contains('cl') ? '|closed' : '') + (e.classList.contains('on') ? '|on' : ''); }); }); };
-  await defPage.click('#tabPg');
+  await defPage.click('#railL [data-rail="pg"]');
   ok((await defPage.isVisible('#pgTree')) && !(await defPage.isVisible('#palette')) && JSON.stringify(await treeRows()) === '["Page 1","About","About copy|on"]', 'the Pages tab shows every page of the project ' + JSON.stringify(await treeRows()));
   await defPage.click('#pagebar .pg.on [data-pgact="close"]');
   ok(!(await defPage.isVisible('#pgDel')) && JSON.stringify(await pgTabs()) === '["Page 1","About"]' && JSON.stringify(await treeRows()) === '["Page 1","About|on","About copy|closed"]', 'closing a tab shows no message and the page stays in the tree as closed ' + JSON.stringify(await treeRows()));
@@ -641,7 +641,7 @@ page.on('console', function (m) {
   await defPage.click('#pagebar .pg.on [data-pgact="close"]');
   ok(!(await defPage.isVisible('#pgDel')) && (await openN()) === 2, 'closing a modified page needs no message because nothing is lost');
   await defPage.reload(); await defPage.waitForTimeout(400);
-  await defPage.click('#tabPg');
+  await defPage.click('#railL [data-rail="pg"]');
   ok((await openN()) === 2 && JSON.stringify(await treeRows()).indexOf('About copy|closed') >= 0, 'a closed page is still in the tree after reopening the project');
   await defPage.click('#pgTree [data-ptpg="2"]');
   const reHtml = (await pgCall('get_document')).html;
@@ -659,7 +659,7 @@ page.on('console', function (m) {
   ok((await openN()) === 1 && (await defPage.$$('#pagebar .pg .pdel')).length === 0, 'the last open tab has no close button');
   // drag to reorder
   await defPage.click('#pgTree [data-ptpg="1"]');
-  await defPage.click('#pgAdd'); await defPage.click('#tabPg');
+  await defPage.click('#pgAdd'); await defPage.click('#railL [data-rail="pg"]');
   await defPage.dragAndDrop('#pgTree [data-ptpg="2"]', '#pgTree [data-ptpg="0"]', { targetPosition: { x: 40, y: 2 } });
   const ord1 = await pgTabs();
   ok(ord1.length === 3 && ord1[0] !== 'Page 1' && ord1[1] === 'Page 1', 'dragging a page above another moves it and the tabs follow ' + JSON.stringify(ord1));
@@ -669,7 +669,7 @@ page.on('console', function (m) {
   ok(ord2[0] === ord1[1] && ord2[1] === ord1[0] && (await defPage.$eval('#pagebar .pg.on .pn', function (e) { return e.textContent; })) === activeBefore, 'Alt+Down moves a page one place and the open page stays open ' + JSON.stringify(ord2));
   await pgCall('delete_page', { page: 'Page 3' });
   await pgCall('select_page', { page: 'About' });
-  await defPage.click('#tabEl');
+  await defPage.click('#railL [data-rail="el"]');
   const lp = await pgCall('list_pages');
   ok(lp.pages.length === 2 && lp.pages[1].name === 'About' && lp.pages[1].closed === false, 'list_pages reports the pages and which are closed');
   await pgCall('select_page', { page: 'Page 1' });
@@ -704,7 +704,7 @@ page.on('console', function (m) {
   ok(await defPage.evaluate(function () { return document.querySelector('#railR [data-rail="html"]').classList.contains('on') && !document.querySelector('#railR [data-rail="css"]').classList.contains('on'); }) && (await colW()).r === 200, 'clicking another strip tab switches to it (panel stays 200px)');
   await defPage.click('#railR [data-rail="css"]');
   await defPage.click('#colR'); await defPage.click('#railRx');
-  ok((await colW()).r === 240, 'the whole right panel is 240px (same as left) wide ' + (await colW()).r);
+  ok((await colW()).r === 200, 'the arrow reopens the right panel at the same 200px width ' + (await colW()).r);
   await defPage.click('#colR');
   await defPage.click('#colL'); await defPage.click('#railL [data-rail="el"]');
   ok((await defPage.isVisible('#palette')) && !(await defPage.isVisible('#lyPane')), 'the Elements rail tab opens Elements alone');
@@ -717,12 +717,12 @@ page.on('console', function (m) {
   await defPage.click('#colL'); await defPage.click('#railL [data-rail="ly"]');
   ok(JSON.stringify(await tabBtns(['#tabEl', '#tabLy'])) === '[false,true]' && (await defPage.isVisible('#lyPane')), 'opened from the Layers rail tab, only the Layers tab button is shown');
   await defPage.click('#colL'); await defPage.click('#railLx');
-  ok(JSON.stringify(await tabBtns(['#tabEl', '#tabLy'])) === '[true,true]', 'the arrow on the strip opens everything: both Elements and Layers tab buttons are back');
+  ok(JSON.stringify(await tabBtns(['#tabEl', '#tabLy'])) === '[false,true]', 'the arrow on the strip reopens only the tab you used last (Layers), not every tab');
   await defPage.click('#colR'); await defPage.click('#railRx');
-  ok(JSON.stringify(await tabBtns(['#rtHtml', '#rtCss', '#rtJs'])) === '[true,true,true]', 'the arrow on the strip opens the whole Properties panel: HTML, CSS and JavaScript tab buttons are back');
+  ok(JSON.stringify(await tabBtns(['#rtHtml', '#rtCss', '#rtJs'])) === '[false,true,false]', 'the arrow on the strip reopens only the CSS tab you used last, not HTML and JavaScript');
   await defPage.click('#colL'); await defPage.click('#railL [data-rail="ly"]'); await defPage.click('#colL'); await defPage.click('#railLx');
-  ok(JSON.stringify(await tabBtns(['#tabEl', '#tabLy'])) === '[true,true]', 'after using a single tab, hiding and using the arrow still opens everything');
-  await defPage.click('#tabEl');
+  ok(JSON.stringify(await tabBtns(['#tabEl', '#tabLy'])) === '[false,true]', 'after hiding and using the arrow again, it is still the last tab only');
+  await defPage.click('#railL [data-rail="el"]');
   await defPage.click('#colL'); await defPage.click('#colR');
   await defPage.click('#railLx'); await defPage.click('#railRx');
   const w3 = await colW();
@@ -738,7 +738,7 @@ page.on('console', function (m) {
   const fh = await pgCall('get_full_html');
   ok(!/googleapis/.test(fh), 'no font link is added to the page');
   // the CSS panel only shows fields that apply to the selected element
-  await defPage.click('#rtCss');
+  await defPage.click('#railR [data-rail="css"]');
   const has = async function (id) { return (await defPage.locator('#propBody #f-' + id).count()) > 0; };
   const hasSec = async function (name) { return (await defPage.locator('#propBody summary span:first-child', { hasText: name }).count()) > 0; };
   await pgCall('select_element', { id: 'body' });
@@ -761,7 +761,7 @@ page.on('console', function (m) {
   await pgCall('select_element', { id: 'body' });
   ok(await defPage.evaluate(function () { const c = document.querySelector('#propBody .spc'); return !!c && c.textContent.trim() === '' && !/×/.test(document.querySelector('#propBody .spx').textContent); }), 'the middle of the Space box has no width and height text');
   // Space and Size are separate sections
-  await pgCall('select_element', { id: 'body' }); await defPage.click('#rtCss');
+  await pgCall('select_element', { id: 'body' }); await defPage.click('#railR [data-rail="css"]');
   const secNames = await defPage.$$eval('#propBody details.sec > summary span:first-child', function (e) { return e.map(function (x) { return x.textContent.trim(); }); });
   ok(secNames.indexOf('Space') >= 0 && secNames.indexOf('Size') === secNames.indexOf('Space') + 1 && secNames.indexOf('Box Model & Spacing') < 0, 'Space and Size are separate sections, Space first ' + JSON.stringify(secNames.slice(0, 4)));
   ok(await defPage.evaluate(function () {
@@ -774,14 +774,14 @@ page.on('console', function (m) {
   await defPage.click('#colR'); await defPage.click('#railRx');
   const rszBox = await defPage.locator('.rsz.r').boundingBox();
   await defPage.mouse.move(rszBox.x + 4, rszBox.y + 200); await defPage.mouse.down(); await defPage.mouse.move(rszBox.x - 36, rszBox.y + 200, { steps: 4 }); await defPage.mouse.up();
-  ok((await colW()).r === 280, 'dragging the right edge left makes the panel wider (280px) ' + (await colW()).r);
+  ok((await colW()).r === 240, 'dragging the right edge left makes the panel wider (240px) ' + (await colW()).r);
   const rszBox2 = await defPage.locator('.rsz.r').boundingBox();
   await defPage.mouse.move(rszBox2.x + 4, rszBox2.y + 200); await defPage.mouse.down(); await defPage.mouse.move(rszBox2.x + 500, rszBox2.y + 200, { steps: 6 }); await defPage.mouse.up();
-  ok((await colW()).r === 180, 'the right panel cannot be made narrower than 180px ' + (await colW()).r);
+  ok((await colW()).r === 160, 'the right panel cannot be made narrower than 160px ' + (await colW()).r);
   await defPage.reload(); await defPage.waitForSelector('#page');
-  ok((await colW()).r === 180, 'the width you set is remembered after a reload ' + (await colW()).r);
+  ok((await colW()).r === 160, 'the width you set is remembered after a reload ' + (await colW()).r);
   await defPage.dblclick('.rsz.r');
-  ok((await colW()).r === 240, 'double-clicking the handle puts the width back to normal ' + (await colW()).r);
+  ok((await colW()).r === 200, 'double-clicking the handle puts the width back to normal ' + (await colW()).r);
   console.log('Device size dropdown');
   ok((await defPage.$$('#devs [data-w]')).length === 0, 'the Mobile / Tablet / Desktop tab buttons are gone');
   ok((await defPage.textContent('#devBtn')).trim() === 'Responsive', 'the dropdown starts as Responsive');
@@ -942,7 +942,7 @@ page.on('console', function (m) {
   });
   await fpage.goto(url); await fpage.waitForSelector('#pgAdd');
   // edit the first page before saving, so it is modified and unsaved
-  await fpage.click('#tabEl');
+  await fpage.click('#railL [data-rail="el"]');
   await fpage.evaluate(function () { const em = [].slice.call(document.querySelectorAll('#palette .it em')).filter(function (e) { return e.textContent === 'h2'; })[0]; em.closest('button').click(); });
   await fpage.click('#pgAdd'); await fpage.waitForTimeout(200);
   ok((await fpage.isVisible('#fbDlg')) && (await fpage.isVisible('#fbFolderName')) && !(await fpage.isVisible('#fbNameRow')) && (await fpage.$$('#pagebar .pg')).length === 1, 'on a fresh project, + asks for a folder first and adds no page yet');
