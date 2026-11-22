@@ -1657,8 +1657,14 @@ document.addEventListener('keydown',function(e){
    the thin strip, so only that tab (and its button) is shown. The arrow on the strip opens the whole panel. */
 var PANEL_KEY='nexusstudio.panels.v1',panels={l:false,r:false},solo={l:false,r:false};
 try{var pr=JSON.parse(localStorage.getItem(PANEL_KEY)||'{}');panels.l=!!pr.l;panels.r=!!pr.r;}catch(e){}
+/* widths: one tab opened from the strip is narrower than the whole panel; a width you dragged is remembered for each of those two cases */
+var WIDTH_KEY='nexusstudio.widths.v1',DEFW={l:240,ls:200,r:320,rs:260},MINW={l:180,ls:160,r:250,rs:250},MAXW={l:420,ls:420,r:620,rs:620},cw={};
+try{cw=JSON.parse(localStorage.getItem(WIDTH_KEY)||'{}')||{};}catch(e){cw={};}
+function wKey(side){return side+(solo[side]?'s':'');}
+function wOf(side){var k=wKey(side),v=cw[k];return typeof v==='number'?Math.max(MINW[k],Math.min(MAXW[k],v)):DEFW[k];}
+function applyWidths(){var w=document.querySelector('.work');w.style.setProperty('--wl',wOf('l')+'px');w.style.setProperty('--wr',wOf('r')+'px');}
 function applyPanels(){
-  var w=document.querySelector('.work');w.classList.toggle('lc',panels.l);w.classList.toggle('rc',panels.r);
+  var w=document.querySelector('.work');applyWidths();w.classList.toggle('lc',panels.l);w.classList.toggle('rc',panels.r);
   w.classList.toggle('sl',solo.l&&!panels.l);w.classList.toggle('sr',solo.r&&!panels.r);
   $('#colL').setAttribute('aria-expanded',String(!panels.l));$('#colR').setAttribute('aria-expanded',String(!panels.r));
   $('#railL').hidden=!panels.l;$('#railR').hidden=!panels.r;
@@ -1666,6 +1672,19 @@ function applyPanels(){
   sizeFrame();placeOverlay();
 }
 function setPanel(side,collapsed,single){panels[side]=collapsed;solo[side]=!!single&&!collapsed;applyPanels();}
+['l','r'].forEach(function(side){
+  var h=document.createElement('div');h.className='rsz '+side;h.setAttribute('role','separator');h.setAttribute('aria-orientation','vertical');h.title='Drag to change the width (double-click to reset)';
+  document.querySelector(side==='l'?'.left':'.right').appendChild(h);
+  var st=null;
+  h.addEventListener('pointerdown',function(e){if(e.button!==0)return;st={x:e.clientX,w:wOf(side)};try{h.setPointerCapture(e.pointerId);}catch(x){}h.classList.add('drag');document.body.classList.add('rszdrag');e.preventDefault();});
+  h.addEventListener('pointermove',function(e){
+    if(!st)return;var k=wKey(side),d=e.clientX-st.x,nw=st.w+(side==='l'?d:-d);
+    cw[k]=Math.round(Math.max(MINW[k],Math.min(MAXW[k],nw)));applyWidths();sizeFrame();placeOverlay();
+  });
+  function end(){if(!st)return;st=null;h.classList.remove('drag');document.body.classList.remove('rszdrag');try{localStorage.setItem(WIDTH_KEY,JSON.stringify(cw));}catch(e){}}
+  h.addEventListener('pointerup',end);h.addEventListener('pointercancel',end);
+  h.addEventListener('dblclick',function(){delete cw[wKey(side)];applyWidths();sizeFrame();placeOverlay();try{localStorage.setItem(WIDTH_KEY,JSON.stringify(cw));}catch(e){}});
+});
 $('#colL').addEventListener('click',function(){setPanel('l',true);});
 $('#railLx').addEventListener('click',function(){setPanel('l',false,false);});
 $('#railL').addEventListener('click',function(e){var b=e.target.closest('[data-rail]');if(!b)return;S.ltab=b.getAttribute('data-rail');syncLeft();setPanel('l',false,true);});

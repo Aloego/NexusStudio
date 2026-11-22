@@ -44,9 +44,10 @@ button{cursor:pointer}
 .primary:hover{background:var(--accent-hi)}
 
 /* workspace */
-.work{display:grid;grid-template-columns:240px minmax(0,1fr) 320px;min-height:0}
-.work.lc{grid-template-columns:30px minmax(0,1fr) 320px}
-.work.rc{grid-template-columns:240px minmax(0,1fr) 30px}
+/* panel widths: --wl / --wr are set by the app (one tab opened = narrower, whole panel = wider, or the width you dragged) */
+.work{display:grid;grid-template-columns:var(--wl,240px) minmax(0,1fr) var(--wr,320px);min-height:0}
+.work.lc{grid-template-columns:30px minmax(0,1fr) var(--wr,320px)}
+.work.rc{grid-template-columns:var(--wl,240px) minmax(0,1fr) 30px}
 .work.lc.rc{grid-template-columns:30px minmax(0,1fr) 30px}
 .work.lc .left>*:not(.rail),.work.rc .right>*:not(.rail){display:none!important}
 /* opened from one tab button on the strip: show only that tab; the collapse arrow stays */
@@ -89,6 +90,13 @@ button{cursor:pointer}
 .pgadd:hover{color:#fff;border-color:var(--accent)}
 .left,.right{background:var(--surface);display:flex;flex-direction:column;min-height:0;min-width:0}
 .left{border-right:1px solid var(--line)}.right{border-left:1px solid var(--line)}
+.left,.right{position:relative}
+.rsz{position:absolute;top:0;bottom:0;width:8px;z-index:20;cursor:col-resize;touch-action:none}
+.rsz.l{right:-4px}.rsz.r{left:-4px}
+.rsz::after{content:'';position:absolute;top:0;bottom:0;left:3px;width:2px;background:var(--accent);opacity:0;transition:opacity .12s}
+.rsz:hover::after,.rsz.drag::after{opacity:.85}
+.work.lc .rsz.l,.work.rc .rsz.r{display:none}
+body.rszdrag,body.rszdrag *{cursor:col-resize!important;user-select:none!important}
 .tabs{display:flex;background:var(--alt);border-bottom:1px solid var(--line);flex:none}
 .tabs button{flex:1;background:none;border:0;padding:9px 6px;color:var(--muted);font-weight:500;font-size:11px;letter-spacing:.02em;position:relative}
 .tabs button:hover{color:#e4e4e7}
@@ -330,7 +338,7 @@ body.spdrag,body.spdrag *{cursor:ew-resize!important;user-select:none!important}
   body{overflow-y:auto;height:auto;min-height:100%}
   #app{height:auto;overflow:visible}
   .work,.work.lc,.work.rc,.work.lc.rc{grid-template-columns:minmax(0,1fr)}
-  .rail,.colb{display:none!important}
+  .rail,.colb,.rsz{display:none!important}
   .work.sl .left .tabs button:not(.on):not(.colb),.work.sr .right .tabs button:not(.on):not(.colb){display:revert}
   .work.lc .left>*:not(.rail),.work.rc .right>*:not(.rail){display:revert!important}
   .center{order:-1;height:72vh;min-height:420px}

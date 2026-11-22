@@ -502,3 +502,15 @@
 - [ ] User tells what is still not right (they said it is "still not what i want"); a second design pass needs their direction
 
 **Status:** Approved (user said "Approved." on 2026-11-22 for the Space control popup, the Space/Size split, the removed middle text and the first Space box design)
+
+## Narrower panels for one open tab, wider for the whole panel, drag to resize
+
+**Request (2026-11-22):** the CSS tab is too wide; reduce the width when an individual tab is opened and let it grow as more tabs are opened. Plan explained first; the user approved it together with drag handles ("Approve, plus drag handles to resize").
+
+- [x] One tab opened from the strip: right panel 260px, left panel 200px. Whole panel opened with the arrow: right 320px, left 240px (as before)
+- [x] Drag handle on each panel's inner edge (col-resize cursor, highlight on hover); minimum 250px (right) and 180px (left); width remembered separately for the one-tab and whole-panel cases; double-click resets
+- [x] Tests updated and added (293 passed, 3 failed as before)
+- [x] Commit and push changes to feature branch
+- [ ] User personally checks the widths and the drag handles
+
+**Status:** Awaiting User Approval

@@ -694,7 +694,13 @@ page.on('console', function (m) {
   await defPage.reload(); await defPage.waitForTimeout(400);
   ok((await colW()).l < 50 && (await colW()).r < 50, 'collapsed panels stay collapsed after reopening');
   await defPage.click('#railL [data-rail="ly"]');
-  ok((await colW()).l === w0.l && (await defPage.isVisible('#lyPane')) && !(await defPage.isVisible('#palette')) && (await colW()).r < 50, 'a rail tab opens only that tab (Layers, not Elements)');
+  ok((await colW()).l === 200 && (await defPage.isVisible('#lyPane')) && !(await defPage.isVisible('#palette')) && (await colW()).r < 50, 'a rail tab opens only that tab (Layers, not Elements)');
+  ok((await colW()).r < 50, 'the right panel is still collapsed here');
+  await defPage.click('#railR [data-rail="css"]');
+  ok((await colW()).r === 260, 'one tab opened from the strip: the right panel is 260px wide ' + (await colW()).r);
+  await defPage.click('#colR'); await defPage.click('#railRx');
+  ok((await colW()).r === 320, 'the whole right panel is 320px wide ' + (await colW()).r);
+  await defPage.click('#colR');
   await defPage.click('#colL'); await defPage.click('#railL [data-rail="el"]');
   ok((await defPage.isVisible('#palette')) && !(await defPage.isVisible('#lyPane')), 'the Elements rail tab opens Elements alone');
   await defPage.click('#railR [data-rail="css"]');
@@ -759,6 +765,18 @@ page.on('console', function (m) {
     const sp = by('Space'), sz = by('Size');
     return !!sp.querySelector('#f-margin-top') && !!sp.querySelector('#f-padding-left') && !sp.querySelector('#f-width') && !!sz.querySelector('#f-width') && !!sz.querySelector('#f-overflow') && !sz.querySelector('#f-margin-top');
   }), 'margin and padding are in Space; width, height, box-sizing and overflow are in Size');
+  // drag handles on the panel edges
+  await defPage.click('#colR'); await defPage.click('#railRx');
+  const rszBox = await defPage.locator('.rsz.r').boundingBox();
+  await defPage.mouse.move(rszBox.x + 4, rszBox.y + 200); await defPage.mouse.down(); await defPage.mouse.move(rszBox.x - 36, rszBox.y + 200, { steps: 4 }); await defPage.mouse.up();
+  ok((await colW()).r === 360, 'dragging the right edge left makes the panel wider (360px) ' + (await colW()).r);
+  const rszBox2 = await defPage.locator('.rsz.r').boundingBox();
+  await defPage.mouse.move(rszBox2.x + 4, rszBox2.y + 200); await defPage.mouse.down(); await defPage.mouse.move(rszBox2.x + 500, rszBox2.y + 200, { steps: 6 }); await defPage.mouse.up();
+  ok((await colW()).r === 250, 'the right panel cannot be made narrower than 250px ' + (await colW()).r);
+  await defPage.reload(); await defPage.waitForSelector('#page');
+  ok((await colW()).r === 250, 'the width you set is remembered after a reload ' + (await colW()).r);
+  await defPage.dblclick('.rsz.r');
+  ok((await colW()).r === 320, 'double-clicking the handle puts the width back to normal ' + (await colW()).r);
   console.log('Device size dropdown');
   ok((await defPage.$$('#devs [data-w]')).length === 0, 'the Mobile / Tablet / Desktop tab buttons are gone');
   ok((await defPage.textContent('#devBtn')).trim() === 'Responsive', 'the dropdown starts as Responsive');
