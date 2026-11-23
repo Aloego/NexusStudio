@@ -568,7 +568,7 @@
 - [ ] User personally tries the Variables tab
 - [ ] Step 2 (apply a variable from a field in the CSS panel) — NOT started, needs a separate plan and approval
 
-**Status:** Awaiting User Approval
+**Status:** Approved by user (2026-11-23)
 
 ## Variables Step 2 (colour fields) and specific size types
 
@@ -580,10 +580,10 @@
 - [x] Variables also work on the canvas (set on the page so they can never clash with the editor's colours)
 - [x] Tests added (315 passed, 3 failed as before); a bug the tests found (chooser closing itself on second use) was fixed
 - [x] Commit and push changes to feature branch
-- [ ] User personally tries it
+- [x] User personally tries it
 - [ ] Choosing size variables in size fields (spacing, font size ...) — NOT started, needs a separate plan and approval
 
-**Status:** Awaiting User Approval (this also completes approval of Variables Step 1, as the user conditioned)
+**Status:** Approved by user (2026-11-23) (this also completes approval of Variables Step 1, as the user conditioned)
 
 ## Variables grouped like Penpot Assets; name / value / unit rows
 
@@ -594,10 +594,10 @@
 - [x] Old values carry over (16px shows as 16 + px); bad numbers refused
 - [x] Tests rewritten and added (321 passed, 3 failed as before)
 - [x] Commit and push changes to feature branch
-- [ ] User personally tries it
+- [x] User personally tries it
 - [ ] Choosing size variables in size fields — NOT started, needs a separate plan and approval
 
-**Status:** Awaiting User Approval
+**Status:** Approved by user (2026-11-23)
 
 ## Variables: full Typography group
 
@@ -607,10 +607,10 @@
 - [x] Font names are limited to letters, numbers, spaces, commas, quotes and dashes (nothing unsafe is written)
 - [x] Tests added (330 passed, 3 failed as before)
 - [x] Commit and push changes to feature branch
-- [ ] User personally tries it
+- [x] User personally tries it
 - [ ] Choosing variables inside the CSS panel's size and text fields — NOT started, needs a separate plan and approval
 
-**Status:** Awaiting User Approval
+**Status:** Approved by user (2026-11-23)
 
 ## Font family variables: ready-made font lists and Google Fonts link (with consent)
 
