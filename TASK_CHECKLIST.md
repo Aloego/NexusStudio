@@ -569,3 +569,18 @@
 - [ ] Step 2 (apply a variable from a field in the CSS panel) — NOT started, needs a separate plan and approval
 
 **Status:** Awaiting User Approval
+
+## Variables Step 2 (colour fields) and specific size types
+
+**Request (2026-11-23):** "Size" is too generic; variables should appear in every element colour picker so they can be chosen as the colour. The user approved Step 1 on that condition and approved this plan.
+
+- [x] Variable types are now Colour, Spacing, Font size, Corner radius, Width / height, Border thickness (old "Size" variables become Spacing); new variables get a matching name (spacing-1, radius-1 ...)
+- [x] Every colour field in the CSS panel (text colour, background colour) has a small ◆ button listing the colour variables; choosing one shows a chip with its name and writes `var(--name)`
+- [x] Editing a variable updates every place using it, on the canvas as well; ✕ on the chip detaches (keeps the current colour); a deleted variable shows as missing
+- [x] Variables also work on the canvas (set on the page so they can never clash with the editor's colours)
+- [x] Tests added (315 passed, 3 failed as before); a bug the tests found (chooser closing itself on second use) was fixed
+- [x] Commit and push changes to feature branch
+- [ ] User personally tries it
+- [ ] Choosing size variables in size fields (spacing, font size ...) — NOT started, needs a separate plan and approval
+
+**Status:** Awaiting User Approval (this also completes approval of Variables Step 1, as the user conditioned)

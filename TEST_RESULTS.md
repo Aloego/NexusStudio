@@ -1042,3 +1042,7 @@ Approved on 2026-11-20 (user said "Approve").
 ## 2026-11-23 — Variables tab (Step 1)
 
 - `node test/e2e.js`: 306 passed, 3 failed (same 3 as before). New checks: empty start, no :root until a variable exists, add, name cleaning, bad value refused, :root output, size variable, duplicate names refused, saved with project, delete removes :root.
+
+## 2026-11-23 — Variables Step 2 (colour fields) and size types
+
+- `node test/e2e.js`: 315 passed, 3 failed (same 3 as before). New checks: specific type list, matching names, colour field lists only colour variables, chip, var() output, canvas, live update, detach, missing variable.

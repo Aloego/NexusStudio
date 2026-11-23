@@ -400,3 +400,15 @@ body{padding:0!important;overflow:hidden}
 .vsw{width:26px;height:26px;padding:0;border:1px solid var(--line);border-radius:5px;background:none;flex:none}
 .vdel{background:none;border:0;color:var(--muted);cursor:pointer;padding:2px 6px}.vdel:hover{color:#f87171}
 .vuse{display:block;margin-top:6px;font:10px var(--mono);color:var(--dim)}
+
+.vadd{display:flex;gap:6px;align-items:center}.vadd select{flex:1;min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:4px;font:11px var(--ui);color:#e4e4e7}
+.vtype{max-width:none;flex:1;min-width:0}
+.vbtn{background:none;border:0;color:var(--muted);cursor:pointer;padding:0 2px;font-size:11px;flex:none}.vbtn:hover{color:var(--accent)}
+.vchip{display:inline-flex;align-items:center;gap:5px;flex:1;min-width:0;background:#1d2a44;border:1px solid #2f4a7a;border-radius:10px;padding:1px 4px 1px 6px;font:11px var(--mono);color:#cfe0ff}
+.vchip.gone{background:#3a1f1f;border-color:#7a2f2f;color:#fecaca}
+.vchip i{width:10px;height:10px;border-radius:50%;border:1px solid #52525b;flex:none}.vchip b{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.vx{background:none;border:0;color:inherit;cursor:pointer;padding:0 2px;font-size:10px}
+.vmenu{position:fixed;z-index:9999;min-width:190px;max-height:260px;overflow:auto;background:#1c1c21;border:1px solid var(--line);border-radius:8px;padding:4px;box-shadow:0 8px 24px #0009}
+.vmenu button{display:flex;align-items:center;gap:8px;width:100%;background:none;border:0;border-radius:5px;padding:6px 8px;color:#e4e4e7;font:11px var(--ui);cursor:pointer;text-align:left}
+.vmenu button:hover{background:#2a2a31}.vmenu i{width:14px;height:14px;border-radius:50%;border:1px solid #52525b;flex:none}.vmenu code{margin-left:auto;font:10px var(--mono);color:var(--dim)}
+.vnone{padding:6px 8px;font-size:11px;color:var(--muted)}

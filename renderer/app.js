@@ -33,6 +33,8 @@ function cleanNode(r,d,cnt){
   return n;}
 /* Variables (design tokens): named colours and sizes written once as CSS custom properties in :root */
 var VARNAME=/^[a-z][a-z0-9-]{0,29}$/;
+var VTYPES=[['color','Colour','color-','#3b82f6'],['spacing','Spacing','spacing-','16px'],['fontsize','Font size','font-size-','16px'],['radius','Corner radius','radius-','8px'],['dimension','Width / height','size-','100px'],['thickness','Border thickness','border-width-','1px']];
+function vtype(t){for(var i=0;i<VTYPES.length;i++)if(VTYPES[i][0]===t)return VTYPES[i];return null;}
 function cleanVarValue(type,v){
   v=String(v==null?'':v).trim();
   if(type==='color'){return /^(#[0-9a-fA-F]{3,8}|[a-zA-Z]{3,25}|(rgb|rgba|hsl|hsla|hwb|lab|lch|oklab|oklch)\([0-9a-zA-Z .,%\/+-]{1,60}\))$/.test(v)?v:'';}
@@ -42,7 +44,7 @@ function cleanVars(a){
   var out=[],seen={};
   (Array.isArray(a)?a:[]).slice(0,100).forEach(function(x){
     if(!isObj(x)||typeof x.name!=='string'||!VARNAME.test(x.name)||seen[x.name])return;
-    var t=x.type==='size'?'size':'color',v=cleanVarValue(t,x.value);if(!v)return;
+    var t=x.type==='size'?'spacing':(vtype(x.type)?x.type:'color'),v=cleanVarValue(t,x.value);if(!v)return;
     seen[x.name]=1;out.push({name:x.name,type:t,value:v});
   });
   return out;
@@ -559,9 +561,37 @@ function build(n){
   n.children.forEach(function(c){el.appendChild(build(c));});
   return el;
 }
+/* make the variables work on the canvas too (set on the page itself so they can never clash with the editor's own colours) */
+function canvasVars(){
+  var rm=[],i;for(i=0;i<page.style.length;i++)if(page.style[i].indexOf('--')===0)rm.push(page.style[i]);
+  rm.forEach(function(n){page.style.removeProperty(n);});
+  S.vars.forEach(function(v){page.style.setProperty('--'+v.name,v.value);});
+}
+function varOf(name){for(var i=0;i<S.vars.length;i++)if(S.vars[i].name===name)return S.vars[i];return null;}
+function varRef(v){var m=/^var\(--([a-z][a-z0-9-]*)\)$/.exec(v||'');return m?m[1]:null;}
+function closeVarMenu(){var m=document.querySelector('.vmenu');if(m&&m.parentNode)m.parentNode.removeChild(m);}
+function openVarMenu(anchor,onPick){
+  closeVarMenu();
+  var m=document.createElement('div');m.className='vmenu';m.setAttribute('role','listbox');
+  var cs=S.vars.filter(function(v){return v.type==='color';});
+  if(!cs.length){var e=document.createElement('div');e.className='vnone';e.textContent='No colour variables yet.';m.appendChild(e);
+    var go=document.createElement('button');go.type='button';go.textContent='Open the Variables tab';go.addEventListener('click',function(){closeVarMenu();S.rtab='vars';setPanel('r',false);renderProps();});m.appendChild(go);}
+  cs.forEach(function(v){
+    var b=document.createElement('button');b.type='button';b.setAttribute('role','option');
+    var d=document.createElement('i');d.style.background=v.value;b.appendChild(d);
+    var t=document.createElement('span');t.textContent=v.name;b.appendChild(t);
+    var c=document.createElement('code');c.textContent=v.value;b.appendChild(c);
+    b.addEventListener('click',function(){closeVarMenu();onPick(v);});m.appendChild(b);
+  });
+  document.body.appendChild(m);
+  var r=anchor.getBoundingClientRect();
+  m.style.left=Math.max(4,Math.min(r.left,window.innerWidth-m.offsetWidth-4))+'px';
+  m.style.top=Math.min(r.bottom+4,window.innerHeight-m.offsetHeight-4)+'px';
+  setTimeout(function(){document.addEventListener('mousedown',function h(ev){if(!m.contains(ev.target)){closeVarMenu();}document.removeEventListener('mousedown',h,true);},true);},0);
+}
 function renderCanvas(){
   while(page.firstChild)page.removeChild(page.firstChild);
-  page.removeAttribute('style');
+  page.removeAttribute('style');canvasVars();
   Object.keys(S.root.style).forEach(function(p){page.style.setProperty(p,S.root.style[p]);});
   page.style.width=S.dw+'px';page.style.minHeight=S.dh+'px';page.style.transform='scale('+S.zoom+')';
   page.setAttribute('data-nid',S.root.id);
@@ -930,11 +960,23 @@ function mkField(f,n,secKey){
     w.appendChild(sg);
   }else if(f.t==='color'){
     var cw=document.createElement('div');cw.className='colr';
-    var sw=document.createElement('input');sw.type='color';sw.setAttribute('aria-label',f.p+' picker');sw.value=toHex(val||(el?getComputedStyle(el)[camel(f.p)]:'#000'));
+    var ref=varRef(val),rv=ref?varOf(ref):null;
+    var sw=document.createElement('input');sw.type='color';sw.setAttribute('aria-label',f.p+' picker');sw.value=toHex(ref?(rv?rv.value:'#000'):(val||(el?getComputedStyle(el)[camel(f.p)]:'#000')));
     inp=document.createElement('input');inp.type='text';inp.id=id;inp.value=val;inp.placeholder=el?getComputedStyle(el)[camel(f.p)]:'';inp.setAttribute('list',valList(f.p));
-    sw.addEventListener('input',function(){inp.value=sw.value;live(sw.value);});sw.addEventListener('change',function(){commit();renderCodeIfOpen();});
-    inp.addEventListener('input',function(){live(inp.value);});inp.addEventListener('change',function(){commit();renderCodeIfOpen();});
-    cw.appendChild(sw);cw.appendChild(inp);w.appendChild(cw);
+    sw.addEventListener('input',function(){inp.value=sw.value;live(sw.value);});sw.addEventListener('change',function(){commit();if(ref)renderProps();renderCodeIfOpen();});
+    inp.addEventListener('input',function(){live(inp.value);});inp.addEventListener('change',function(){commit();renderProps();renderCodeIfOpen();});
+    cw.appendChild(sw);
+    if(ref){
+      var chip=document.createElement('span');chip.className='vchip'+(rv?'':' gone');chip.title=rv?'Uses the variable --'+ref:'The variable --'+ref+' no longer exists';
+      var dot=document.createElement('i');dot.style.background=rv?rv.value:'transparent';chip.appendChild(dot);
+      var nm=document.createElement('b');nm.id=id;nm.textContent=ref;chip.appendChild(nm);
+      var x=document.createElement('button');x.type='button';x.className='vx';x.title='Detach: keep the colour but stop using the variable';x.setAttribute('aria-label','Detach variable '+ref);x.textContent='\u2715';
+      x.addEventListener('click',function(){live(rv?rv.value:'');commit();renderProps();renderCodeIfOpen();});chip.appendChild(x);
+      cw.appendChild(chip);
+    }else cw.appendChild(inp);
+    var vb=document.createElement('button');vb.type='button';vb.className='vbtn';vb.title='Use a colour variable';vb.setAttribute('aria-label','Choose a colour variable for '+f.p);vb.textContent='\u25C6';
+    vb.addEventListener('click',function(){openVarMenu(vb,function(v){live('var(--'+v.name+')');commit();renderProps();renderCodeIfOpen();});});
+    cw.appendChild(vb);w.appendChild(cw);
   }else if(f.t==='range'){
     var rg=document.createElement('div');rg.className='rng';
     inp=document.createElement('input');inp.type='range';inp.min=0;inp.max=100;inp.id=id;inp.value=val===''?100:Math.round(parseFloat(val)*100);
@@ -1188,7 +1230,7 @@ function appliesTo(p,n,par){
 function insetsApply(n){return n.ns||(n.style.position&&n.style.position!=='static')||LOGI.concat(PHYS).some(function(p){return n.style[p];});}
 function secCount(n,key){var c=0;Object.keys(n.style).forEach(function(p){if(KNOWN[p]===key)c++;});return c;}
 function renderProps(){
-  spClear();
+  spClear();closeVarMenu();
   var f=find(S.sel);if(!f)return;var n=f.node,box=$('#propBody');box.innerHTML='';
   $('#pTitle').textContent='(<'+n.tag+(n.attrs.id?'#'+n.attrs.id:'')+'>)';
   ['rtHtml','rtCss','rtJs','rtVars'].forEach(function(t){$('#'+t).classList.toggle('on',t==='rt'+cap(S.rtab));});
@@ -1307,9 +1349,9 @@ function renderJsTab(n,box){
   var c=document.createElement('p');c.className='note';c.innerHTML='Tip: give an element an <code>ID</code> in the HTML tab, then use <code>document.getElementById</code> in the page script.';p.appendChild(c);
 }
 function renderVarsTab(box){
-  var p=document.createElement('div');p.className='pad vars';box.appendChild(p);
+  var p=document.createElement('div');p.className='pad vars';box.appendChild(p);canvasVars();
   var t=document.createElement('p');t.className='note';t.innerHTML='Named colours and sizes you can reuse. They are written once at the top of your CSS as <code>:root { --name: value; }</code>. Nothing is written until you add one.';p.appendChild(t);
-  function done(){S.dirty=true;save();renderCodeIfOpen();}
+  function done(){S.dirty=true;canvasVars();save();renderCodeIfOpen();}
   S.vars.forEach(function(v,i){
     var row=document.createElement('div');row.className='vrow';
     var nm=document.createElement('input');nm.type='text';nm.className='vname';nm.value=v.name;nm.maxLength=30;nm.spellcheck=false;nm.setAttribute('aria-label','Variable name');
@@ -1320,8 +1362,8 @@ function renderVarsTab(box){
       v.name=n;nm.value=n;done();
     });
     var ty=document.createElement('select');ty.className='vtype';ty.setAttribute('aria-label','Variable type');
-    [['color','Colour'],['size','Size']].forEach(function(o){var op=document.createElement('option');op.value=o[0];op.textContent=o[1];if(v.type===o[0])op.selected=true;ty.appendChild(op);});
-    ty.addEventListener('change',function(){v.type=ty.value;v.value=ty.value==='color'?'#3b82f6':'16px';done();renderProps();});
+    VTYPES.forEach(function(o){var op=document.createElement('option');op.value=o[0];op.textContent=o[1];if(v.type===o[0])op.selected=true;ty.appendChild(op);});
+    ty.addEventListener('change',function(){v.type=ty.value;v.value=vtype(ty.value)[3];done();renderProps();});
     var val=document.createElement('input');val.type='text';val.className='vval';val.value=v.value;val.spellcheck=false;val.setAttribute('aria-label','Variable value');
     val.addEventListener('change',function(){
       var c=cleanVarValue(v.type,val.value);
@@ -1339,13 +1381,16 @@ function renderVarsTab(box){
     var use=document.createElement('code');use.className='vuse';use.textContent='var(--'+v.name+')';row.appendChild(use);
     p.appendChild(row);
   });
+  var ar=document.createElement('div');ar.className='vadd';
+  var kt=document.createElement('select');kt.setAttribute('aria-label','Type of the new variable');
+  VTYPES.forEach(function(o){var op=document.createElement('option');op.value=o[0];op.textContent=o[1];kt.appendChild(op);});
   var add=document.createElement('button');add.type='button';add.className='sbtn';add.textContent='+ Add variable';
   add.addEventListener('click',function(){
     if(S.vars.length>=100)return toast('A project can have up to 100 variables');
-    var n=1;while(S.vars.some(function(o){return o.name==='color-'+n;}))n++;
-    S.vars.push({name:'color-'+n,type:'color',value:'#3b82f6'});done();renderProps();
+    var vt=vtype(kt.value),n=1;while(S.vars.some(function(o){return o.name===vt[2]+n;}))n++;
+    S.vars.push({name:vt[2]+n,type:vt[0],value:vt[3]});done();renderProps();
   });
-  p.appendChild(add);
+  ar.appendChild(kt);ar.appendChild(add);p.appendChild(ar);
 }
 function renderCrumbs(){
   var box=$('#crumbPath');box.innerHTML='<button>html</button><i>›</i>';
