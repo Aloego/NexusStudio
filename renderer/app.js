@@ -377,8 +377,8 @@ var SECTIONS=[
    [{p:'background-color',t:'color',l:'Background color'}],[{p:'background',l:'Background (shorthand, gradients)'}],[{p:'background-image'}],
    [{p:'background-size',t:'select',o:['auto','cover','contain']},{p:'background-repeat',t:'select',o:['repeat','no-repeat','repeat-x','repeat-y','space','round']},{p:'background-position'}]]},
  {k:'border',name:'Border & Outline',hint:function(n){return n.style.border||'none';},rows:[
-   [{p:'border',l:'Border (e.g. 1px solid #fff)'}],[{p:'border-radius',l:'Border radius'}],
-   [{p:'outline'},{p:'outline-offset'}],[{p:'box-shadow'}]]},
+   [{p:'border',l:'Border (e.g. 1px solid #fff)'}],[{p:'border-color',t:'color',l:'Border color'}],[{p:'border-radius',l:'Border radius'}],
+   [{p:'outline'},{p:'outline-offset'}],[{p:'outline-color',t:'color',l:'Outline color'}],[{p:'box-shadow'}]]},
  {k:'fx',name:'Effects & Transforms',hint:function(){return 'opacity · filter';},rows:[
    [{p:'opacity',t:'range'}],[{p:'filter'},{p:'backdrop-filter'}],
    [{p:'mix-blend-mode',t:'select',o:['normal','multiply','screen','overlay','difference','darken','lighten','color-dodge','color-burn','hard-light','soft-light','exclusion','hue','saturation','color','luminosity','plus-lighter']},{p:'cursor',t:'select',o:['auto','pointer','text','move','not-allowed','default','none','context-menu','help','progress','wait','cell','crosshair','vertical-text','alias','copy','no-drop','grab','grabbing','all-scroll','col-resize','row-resize','n-resize','e-resize','s-resize','w-resize','ne-resize','nw-resize','se-resize','sw-resize','ew-resize','ns-resize','nesw-resize','nwse-resize','zoom-in','zoom-out']}],

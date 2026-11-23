@@ -1059,3 +1059,7 @@ Approved on 2026-11-20 (user said "Approve").
 
 - `node test/e2e.js`: 341 passed, 3 failed (same 3 as before). New checks: head dropdown, grouped font list, fallbacks add/remove, quoting, no link until consent, link added/removed, saved with project, custom font and unsafe names.
 - Not tested: loading the font from Google over the network.
+
+## 2026-11-23 — Variable choosers Part 1 (border / outline colour)
+
+- `node test/e2e.js`: 343 passed, 3 failed (same 3 as before).

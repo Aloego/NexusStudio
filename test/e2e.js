@@ -888,6 +888,22 @@ page.on('console', function (m) {
   await defPage.click('#railR [data-rail="vars"]');
   while ((await defPage.$$('#propBody .vdel')).length) await defPage.click('#propBody .vdel');
   await defPage.click('#railR [data-rail="css"]');
+  console.log('Variables: border and outline colour fields');
+  await defPage.click('#railR [data-rail="vars"]'); await defPage.click('#propBody .vaddb[data-add="color"]');
+  await defPage.fill('#propBody .vname', 'edge'); await defPage.dispatchEvent('#propBody .vname', 'change');
+  await defPage.fill('#propBody .vval', '#123456'); await defPage.dispatchEvent('#propBody .vval', 'change');
+  await defPage.click('#railR [data-rail="css"]');
+  for (const prop of ['border-color', 'outline-color']) {
+    const fld = '.fld:has(#f-' + prop + ')';
+    await defPage.waitForSelector(fld, { state: 'attached' });
+    await defPage.evaluate(function (id) { var d = document.querySelector('#' + id); var det = d.closest('details'); if (det) det.open = true; }, 'f-' + prop);
+    await defPage.click(fld + ' .vbtn'); await defPage.click('.vmenu button');
+    ok((await defPage.textContent(fld + ' .vchip b')) === 'edge' && new RegExp(prop + ': var\\(--edge\\);').test(await vc()), prop + ' has the colour variable chooser and writes var(--edge)');
+  }
+  await defPage.click('#railR [data-rail="vars"]');
+  while ((await defPage.$$('#propBody .vdel')).length) await defPage.click('#propBody .vdel');
+  await defPage.click('#railR [data-rail="css"]');
+  for (const prop of ['border-color', 'outline-color']) await defPage.click('.fld:has(#f-' + prop + ') .vx');
   console.log('Device size dropdown');
   ok((await defPage.$$('#devs [data-w]')).length === 0, 'the Mobile / Tablet / Desktop tab buttons are gone');
   ok((await defPage.textContent('#devBtn')).trim() === 'Responsive', 'the dropdown starts as Responsive');

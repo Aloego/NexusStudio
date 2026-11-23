@@ -625,3 +625,15 @@
 - [ ] User personally tries it (and opens an exported page online to see a Google font)
 
 **Status:** Awaiting User Approval
+
+## Variable choosers in every field — Part 1 of 3: border and outline colour
+
+**Request (2026-11-23):** plan approved ("all three parts"): Part 1 more colour fields, Part 2 size and text fields, Part 3 margin and padding popup.
+
+- [x] Part 1: new Border color and Outline color fields (swatch, text, ◆ variable chooser) in Border & Outline; the shorthand fields are unchanged
+- [x] Tests added (343 passed, 3 failed as before)
+- [x] Commit and push changes to feature branch
+- [ ] Part 2 (size and text fields) — in progress
+- [ ] Part 3 (margin and padding popup) — not started
+
+**Status:** In progress (Awaiting User Approval after Part 3)
