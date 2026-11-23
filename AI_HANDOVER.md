@@ -402,3 +402,5 @@ Awaiting User Approval (drag positioned elements on the canvas). Rejected and re
 - 2026-11-23: Variables tab grouped (VGROUPS) with name/value/unit rows (VUNITS, splitVal). Awaiting User Approval.
 
 - 2026-11-23: Typography group extended (fontfamily, fontweight, lineheight, letterspacing in VTYPES). Awaiting User Approval.
+
+- 2026-11-23: Font family variables use FHEADS/FONTS/FALLB lists; S.gfonts holds fonts the user approved for a Google Fonts link (gfontsLink() in fullDoc/pageFiles head). App CSP not changed, so Preview does not load Google fonts. Awaiting User Approval.

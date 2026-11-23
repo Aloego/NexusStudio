@@ -611,3 +611,17 @@
 - [ ] Choosing variables inside the CSS panel's size and text fields — NOT started, needs a separate plan and approval
 
 **Status:** Awaiting User Approval
+
+## Font family variables: ready-made font lists and Google Fonts link (with consent)
+
+**Request (2026-11-23):** font family should already be populated with Google fonts and system fonts, as dropdowns: family type, fonts under it, and fallbacks from the same family. User approved, including the Google link button in this step.
+
+- [x] Font family row = three dropdowns: family type (Sans-serif, Serif, Monospace, Display, Handwriting, Custom), Font (about 70 ready-made: "On your computer" and "Google fonts"), and fallbacks from the same family (add several, remove with ✕)
+- [x] Choosing a Google font shows a notice and an "Add Google Fonts link" button; the link is added to exported pages ONLY after you click, and only while a variable uses that font; "Remove link" undoes it; approval is saved in the project
+- [x] "Custom" lets you type a font name (letters, numbers, spaces only)
+- [x] Nothing else changed in the app security rules: the in-app Preview stays offline (it shows fallback fonts); the link only works in exported pages
+- [x] Tests rewritten (341 passed, 3 failed as before); Google link itself not loaded from the real network in tests
+- [x] Commit and push changes to feature branch
+- [ ] User personally tries it (and opens an exported page online to see a Google font)
+
+**Status:** Awaiting User Approval

@@ -33,7 +33,7 @@ function cleanNode(r,d,cnt){
   return n;}
 /* Variables (design tokens): named colours and sizes written once as CSS custom properties in :root */
 var VARNAME=/^[a-z][a-z0-9-]{0,29}$/;
-var VTYPES=[['color','Colour','color-','#3b82f6'],['spacing','Spacing','spacing-','16px'],['fontfamily','Font family','font-family-','system-ui, sans-serif'],['fontsize','Font size','font-size-','16px'],['fontweight','Font weight','font-weight-','400'],['lineheight','Line height','line-height-','1.5'],['letterspacing','Letter spacing','letter-spacing-','0em'],['radius','Corner radius','radius-','8px'],['dimension','Width / height','size-','100px'],['thickness','Border thickness','border-width-','1px']];
+var VTYPES=[['color','Colour','color-','#3b82f6'],['spacing','Spacing','spacing-','16px'],['fontfamily','Font family','font-family-','Arial, sans-serif'],['fontsize','Font size','font-size-','16px'],['fontweight','Font weight','font-weight-','400'],['lineheight','Line height','line-height-','1.5'],['letterspacing','Letter spacing','letter-spacing-','0em'],['radius','Corner radius','radius-','8px'],['dimension','Width / height','size-','100px'],['thickness','Border thickness','border-width-','1px']];
 function vtype(t){for(var i=0;i<VTYPES.length;i++)if(VTYPES[i][0]===t)return VTYPES[i];return null;}
 function cleanVarValue(type,v){
   v=String(v==null?'':v).trim();
@@ -52,7 +52,7 @@ function cleanVars(a){
   return out;
 }
 function cleanState(o){if(!isObj(o)||!isObj(o.root))throw new Error('This is not a NexusStudio project.');
-  var st={vars:cleanVars(o.vars),root:cleanNode(o.root,0,{n:0}),css:typeof o.css==='string'?o.css:'',js:typeof o.js==='string'?o.js:'',title:typeof o.title==='string'&&o.title?o.title.slice(0,120):'untitled-page'};
+  var st={vars:cleanVars(o.vars),gfonts:Array.isArray(o.gfonts)?o.gfonts.slice(0,60):[],root:cleanNode(o.root,0,{n:0}),css:typeof o.css==='string'?o.css:'',js:typeof o.js==='string'?o.js:'',title:typeof o.title==='string'&&o.title?o.title.slice(0,120):'untitled-page'};
   if(Array.isArray(o.pages)&&o.pages.length){
     st.pages=[];
     o.pages.slice(0,30).forEach(function(p,i){
@@ -78,7 +78,7 @@ function nid(){uid++;return 'n'+uid;}
 function N(tag,o){o=o||{};return {id:nid(),tag:tag,ns:o.ns===2?2:o.ns?1:0,text:o.text||'',style:o.style||{},attrs:o.attrs||{},children:o.children||[]};}
 function clone(n){var c=JSON.parse(JSON.stringify(n));(function re(x){x.id=nid();x.children.forEach(re);})(c);return c;}
 
-var S={vars:[],pages:[],pageIdx:0,root:null,css:'',js:'',title:'nebula-landing-v2',sel:null,collapsed:{},open:{layout:1,space:1,box:1,type:1,flex:1,bg:1,border:1},
+var S={vars:[],gfonts:[],pages:[],pageIdx:0,root:null,css:'',js:'',title:'nebula-landing-v2',sel:null,collapsed:{},open:{layout:1,space:1,box:1,type:1,flex:1,bg:1,border:1},
   view:'canvas',zoom:1,dw:880,dh:640,rtab:'css',ltab:'el',logical:false,pending:{},grid:true,rulers:true};
 var hist=[],hi=-1,dragId=null;
 
@@ -530,7 +530,7 @@ function pageSnap(p){return JSON.stringify({root:p.root,css:p.css||'',js:p.js||'
 function markClean(){syncActive();S.pages.forEach(function(p){p.base=pageSnap(p);});}
 function isPageModified(i){syncActive();var p=S.pages[i];return !p||p.base==null?!!S.dirty:pageSnap(p)!==p.base;}
 function allPages(){syncActive();return S.pages.map(function(p){var o={name:p.name,title:p.title,root:p.root,css:p.css,js:p.js};if(p.closed)o.closed=true;return o;});}
-function fullState(){return {vars:S.vars,root:S.root,css:S.css,js:S.js,title:S.title,pages:allPages(),idx:S.pageIdx};}
+function fullState(){return {vars:S.vars,gfonts:S.gfonts,root:S.root,css:S.css,js:S.js,title:S.title,pages:allPages(),idx:S.pageIdx};}
 function setPages(st){
   S.pages=(st.pages&&st.pages.length)?st.pages.map(function(p){return {name:p.name,title:p.title,root:p.root,css:p.css,js:p.js,closed:p.closed===true};}):[{name:'Page 1'}];
   S.pageIdx=st.pages&&st.pages.length?Math.min(st.idx|0,S.pages.length-1):0;
@@ -541,7 +541,7 @@ function syncUndo(){$('#btnUndo').disabled=hi<=0;$('#btnRedo').disabled=hi>=hist
 function restore(s){var o=JSON.parse(s);S.root=o.root;S.css=o.css;S.js=o.js;S.title=o.title||S.title;if(!find(S.sel))S.sel=S.root.id;$('#projName').value=S.title;fixUid();renderAll();}
 function undo(){if(hi>0){hi--;restore(hist[hi]);save();syncUndo();}}
 function redo(){if(hi<hist.length-1){hi++;restore(hist[hi]);save();syncUndo();}}
-function loadState(st){S.vars=cleanVars(st.vars);S.root=st.root;S.css=st.css||'';S.js=st.js||'';S.title=st.title||'untitled-page';S.sel=S.root.id;S.collapsed={};S.pending={};setPages(st);fixUid();$('#projName').value=S.title;hist=[];hi=-1;commit();markClean();renderAll();}
+function loadState(st){S.vars=cleanVars(st.vars);S.gfonts=cleanGfonts(st.gfonts);S.root=st.root;S.css=st.css||'';S.js=st.js||'';S.title=st.title||'untitled-page';S.sel=S.root.id;S.collapsed={};S.pending={};setPages(st);fixUid();$('#projName').value=S.title;hist=[];hi=-1;commit();markClean();renderAll();}
 function changed(){commit();renderAll();}
 
 /* ---------- canvas rendering ---------- */
@@ -1350,6 +1350,31 @@ function renderJsTab(n,box){
   var b=document.createElement('button');b.className='sbtn';b.type='button';b.textContent='Open the page script editor';b.addEventListener('click',function(){setView('js');});p.appendChild(b);
   var c=document.createElement('p');c.className='note';c.innerHTML='Tip: give an element an <code>ID</code> in the HTML tab, then use <code>document.getElementById</code> in the page script.';p.appendChild(c);
 }
+/* ready-made font lists: [name, kind] kind: s = comes with computers, g = Google font (two weights), n = Google font (one weight) */
+var FHEADS=[['sans','Sans-serif'],['serif','Serif'],['mono','Monospace'],['display','Display'],['hand','Handwriting']];
+var FONTS={
+ sans:[['Arial','s'],['Helvetica','s'],['Verdana','s'],['Tahoma','s'],['Trebuchet MS','s'],['Segoe UI','s'],['Inter','g'],['Roboto','g'],['Open Sans','g'],['Poppins','g'],['Lato','g'],['Montserrat','g'],['Nunito','g'],['Raleway','g'],['Work Sans','g'],['DM Sans','g'],['Manrope','g'],['Source Sans 3','g'],['Noto Sans','g'],['Rubik','g'],['Mulish','g'],['Outfit','g']],
+ serif:[['Georgia','s'],['Times New Roman','s'],['Palatino Linotype','s'],['Book Antiqua','s'],['Playfair Display','g'],['Lora','g'],['Merriweather','g'],['Roboto Slab','g'],['PT Serif','g'],['Libre Baskerville','g'],['Crimson Text','g'],['EB Garamond','g'],['Cormorant Garamond','g'],['Bitter','g']],
+ mono:[['Courier New','s'],['Consolas','s'],['Monaco','s'],['Lucida Console','s'],['Roboto Mono','g'],['Fira Code','g'],['JetBrains Mono','g'],['Source Code Pro','g'],['Space Mono','g'],['IBM Plex Mono','g'],['Inconsolata','g']],
+ display:[['Impact','s'],['Arial Black','s'],['Oswald','g'],['Fredoka','g'],['Bebas Neue','n'],['Anton','n'],['Abril Fatface','n'],['Lobster','n'],['Alfa Slab One','n'],['Righteous','n'],['Bangers','n'],['Archivo Black','n']],
+ hand:[['Comic Sans MS','s'],['Brush Script MT','s'],['Dancing Script','g'],['Caveat','g'],['Kalam','g'],['Pacifico','n'],['Permanent Marker','n'],['Satisfy','n'],['Great Vibes','n'],['Shadows Into Light','n'],['Indie Flower','n']]
+};
+var FALLB={sans:['Arial','Helvetica','system-ui','sans-serif'],serif:['Georgia','Times New Roman','serif'],mono:['Courier New','monospace'],display:['Impact','sans-serif'],hand:['Comic Sans MS','cursive']};
+var GENERIC={sans:'sans-serif',serif:'serif',mono:'monospace',display:'sans-serif',hand:'cursive'};
+function fontInfo(name){for(var i=0;i<FHEADS.length;i++){var l=FONTS[FHEADS[i][0]];for(var j=0;j<l.length;j++)if(l[j][0]===name)return {head:FHEADS[i][0],kind:l[j][1]};}return null;}
+function famParse(v){return String(v||'').split(',').map(function(x){return x.trim().replace(/^["']+|["']+$/g,'');}).filter(Boolean);}
+function famQ(n){return /[ 0-9]/.test(n)?'"'+n+'"':n;}
+function famStr(a){return a.map(famQ).join(', ');}
+function famHead(a){var f=fontInfo(a[0]);if(f)return f.head;for(var i=0;i<FHEADS.length;i++)if(FALLB[FHEADS[i][0]].indexOf(a[0])>=0||GENERIC[FHEADS[i][0]]===a[0])return FHEADS[i][0];return 'custom';}
+function cleanGfonts(a){var out=[];(Array.isArray(a)?a:[]).slice(0,60).forEach(function(n){var f=typeof n==='string'?fontInfo(n):null;if(f&&f.kind!=='s'&&out.indexOf(n)<0)out.push(n);});return out;}
+/* the link to Google Fonts: only for fonts you approved, and only while a font family variable uses them */
+function gfontsLink(){
+  var used={};S.vars.forEach(function(v){if(v.type==='fontfamily')famParse(v.value).forEach(function(n){used[n]=1;});});
+  var names=cleanGfonts(S.gfonts).filter(function(n){return used[n];});
+  if(!names.length)return '';
+  var q=names.map(function(n){var f=fontInfo(n);return 'family='+n.replace(/ /g,'+')+(f.kind==='g'?':wght@400;700':'');}).join('&');
+  return '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?'+q+'&display=swap">\n';
+}
 var VGROUPS=[['Colours',['color']],['Typography',['fontfamily','fontsize','fontweight','lineheight','letterspacing']],['Sizes',['spacing','radius','dimension','thickness']]];
 var WEIGHTS=[['100','Thin'],['200','Extra light'],['300','Light'],['400','Regular'],['500','Medium'],['600','Semi bold'],['700','Bold'],['800','Extra bold'],['900','Black']];
 var FALLBACKS=['sans-serif','serif','monospace','cursive','system-ui'];
@@ -1390,22 +1415,57 @@ function renderVarsTab(box){
       });
       bot.appendChild(val);
     }else if(v.type==='fontfamily'){
-      var ff=document.createElement('input');ff.type='text';ff.className='vval';ff.value=v.value;ff.spellcheck=false;ff.setAttribute('aria-label','Font name and fallbacks');ff.placeholder='Inter, sans-serif';
-      ff.addEventListener('change',function(){
-        var c=cleanVarValue('fontfamily',ff.value);
-        if(!c){toast('Use a font name and fallbacks, like Inter, sans-serif');ff.value=v.value;return;}
-        v.value=c;done();renderProps();
+      var fam=famParse(v.value),head=(S.vcustom&&S.vcustom[v.name])?'custom':famHead(fam);
+      function setFam(a){v.value=famStr(a);done();renderProps();}
+      var wrap=document.createElement('div');wrap.className='vfam';
+      var l1=document.createElement('div');l1.className='vbot';
+      var hs=document.createElement('select');hs.className='vhead';hs.setAttribute('aria-label','Font family type');
+      FHEADS.concat([['custom','Custom']]).forEach(function(h){var op=document.createElement('option');op.value=h[0];op.textContent=h[1];if(h[0]===head)op.selected=true;hs.appendChild(op);});
+      hs.addEventListener('change',function(){
+        S.vcustom=S.vcustom||{};
+        if(hs.value==='custom'){S.vcustom[v.name]=true;renderProps();return;}
+        delete S.vcustom[v.name];
+        setFam([FONTS[hs.value][0][0],GENERIC[hs.value]]);
       });
-      var fb=document.createElement('select');fb.className='vunit';fb.setAttribute('aria-label','Add a fallback font');
+      l1.appendChild(hs);
+      if(head==='custom'){
+        var ci=document.createElement('input');ci.type='text';ci.className='vval';ci.value=fam[0]||'';ci.placeholder='Font name';ci.spellcheck=false;ci.setAttribute('aria-label','Custom font name');
+        ci.addEventListener('change',function(){var c=cleanVarValue('fontfamily',famStr([ci.value.trim()].concat(fam.slice(1))));if(!c||!ci.value.trim()){toast('Use letters, numbers and spaces for a font name');ci.value=fam[0]||'';return;}v.value=c;done();renderProps();});
+        l1.appendChild(ci);
+      }else{
+        var fs=document.createElement('select');fs.className='vval';fs.setAttribute('aria-label','Font');
+        var gs=document.createElement('optgroup');gs.label='On your computer';var gg=document.createElement('optgroup');gg.label='Google fonts';
+        FONTS[head].forEach(function(f){var op=document.createElement('option');op.value=f[0];op.textContent=f[0];if(f[0]===fam[0])op.selected=true;(f[1]==='s'?gs:gg).appendChild(op);});
+        if(gs.children.length)fs.appendChild(gs);if(gg.children.length)fs.appendChild(gg);
+        if(!fontInfo(fam[0])){var o2=document.createElement('option');o2.value=fam[0]||'';o2.textContent=(fam[0]||'—');o2.selected=true;fs.insertBefore(o2,fs.firstChild);}
+        fs.addEventListener('change',function(){setFam([fs.value].concat(fam.slice(1)));});
+        l1.appendChild(fs);
+      }
+      wrap.appendChild(l1);
+      var l2=document.createElement('div');l2.className='vchips';
+      fam.slice(1).forEach(function(n,k){
+        var c=document.createElement('span');c.className='vfb';c.textContent=n;
+        var x=document.createElement('button');x.type='button';x.className='vx';x.setAttribute('aria-label','Remove fallback '+n);x.textContent='✕';
+        x.addEventListener('click',function(){var a=fam.slice();a.splice(k+1,1);setFam(a);});c.appendChild(x);l2.appendChild(c);
+      });
+      var fbk=head==='custom'?['Arial','Georgia','Courier New','sans-serif','serif','monospace','cursive','system-ui']:FALLB[head];
+      var fb=document.createElement('select');fb.className='vunit vfbsel';fb.setAttribute('aria-label','Add a fallback font');
       var f0=document.createElement('option');f0.value='';f0.textContent='+ fallback';fb.appendChild(f0);
-      FALLBACKS.forEach(function(x){var op=document.createElement('option');op.value=x;op.textContent=x;fb.appendChild(op);});
-      fb.addEventListener('change',function(){
-        if(!fb.value)return;
-        var parts=v.value.split(',').map(function(x){return x.trim();});
-        if(parts.indexOf(fb.value)<0)v.value=v.value+', '+fb.value;
-        done();renderProps();
-      });
-      bot.appendChild(ff);bot.appendChild(fb);
+      fbk.forEach(function(x){if(fam.indexOf(x)>=0)return;var op=document.createElement('option');op.value=x;op.textContent=x;fb.appendChild(op);});
+      fb.addEventListener('change',function(){if(fb.value)setFam(fam.concat([fb.value]));});
+      l2.appendChild(fb);wrap.appendChild(l2);
+      var info=fontInfo(fam[0]);
+      if(info&&info.kind!=='s'){
+        var ap=S.gfonts.indexOf(fam[0])>=0,gn=document.createElement('div');gn.className='vgn'+(ap?' ok':'');
+        var tx=document.createElement('span');tx.textContent=ap?'✓ The Google Fonts link is added to your exported pages (the in-app Preview stays offline and shows the fallback).':'Google font: other computers only show it if the page loads it.';gn.appendChild(tx);
+        var gb=document.createElement('button');gb.type='button';gb.className='vgb';gb.textContent=ap?'Remove link':'Add Google Fonts link';
+        gb.addEventListener('click',function(){
+          if(ap)S.gfonts.splice(S.gfonts.indexOf(fam[0]),1);else S.gfonts.push(fam[0]);
+          done();renderProps();toast(ap?'Google Fonts link removed for '+fam[0]:'Your pages will now load '+fam[0]+' from Google Fonts');
+        });
+        gn.appendChild(gb);wrap.appendChild(gn);
+      }
+      bot.appendChild(wrap);bot.style.display='block';
     }else if(v.type==='fontweight'){
       var ws=document.createElement('select');ws.className='vval';ws.setAttribute('aria-label','Font weight');
       WEIGHTS.forEach(function(w){var op=document.createElement('option');op.value=w[0];op.textContent=w[0]+' '+w[1];if(w[0]===v.value)op.selected=true;ws.appendChild(op);});
@@ -1514,12 +1574,12 @@ function docWrap(head,body,tail){
 /* one self-contained document (preview, Copy page code) */
 function fullDoc(){
   var body=genBody(),css=pageCss();
-  return docWrap(css?'<style>\n'+css.replace(/<\/style/gi,'<\\/style')+'\n</style>\n':'',body,S.js.trim()?'<script>\n'+S.js.replace(/<\/script/gi,'<\\/script')+'\n<\/script>\n':'');
+  return docWrap(gfontsLink()+(css?'<style>\n'+css.replace(/<\/style/gi,'<\\/style')+'\n</style>\n':''),body,S.js.trim()?'<script>\n'+S.js.replace(/<\/script/gi,'<\\/script')+'\n<\/script>\n':'');
 }
 /* the same page as three files: stem.html links css/stem.css and js/stem.js (a link is only written when the file has content) */
 function pageFiles(stem){
   var body=genBody(),css=pageCss();
-  var files=[{path:stem+'.html',text:docWrap(css?'<link rel="stylesheet" href="css/'+stem+'.css">\n':'',body,S.js.trim()?'<script src="js/'+stem+'.js"><\/script>\n':'')}];
+  var files=[{path:stem+'.html',text:docWrap(gfontsLink()+(css?'<link rel="stylesheet" href="css/'+stem+'.css">\n':''),body,S.js.trim()?'<script src="js/'+stem+'.js"><\/script>\n':'')}];
   if(css)files.push({path:'css/'+stem+'.css',text:css+'\n'});
   if(S.js.trim())files.push({path:'js/'+stem+'.js',text:S.js.replace(/\s+$/,'')+'\n'});
   return files;
@@ -1895,7 +1955,7 @@ function copyText(text,msg){
   try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(function(){toast(msg||'Copied');},fb);return;}}catch(e){}
   fb();
 }
-function projectJson(){var f=fullState();return JSON.stringify({format:'nexusstudio',version:1,vars:f.vars,root:f.root,css:f.css,js:f.js,title:f.title,pages:f.pages,idx:f.idx});}
+function projectJson(){var f=fullState();return JSON.stringify({format:'nexusstudio',version:1,vars:f.vars,gfonts:f.gfonts,root:f.root,css:f.css,js:f.js,title:f.title,pages:f.pages,idx:f.idx});}
 function parseProject(text){var o=JSON.parse(text);if(!o||o.format!=='nexusstudio')throw new Error('This file is not a NexusStudio project.');return cleanState(o);}
 function needDesktop(){toast('This works in the NexusStudio desktop app');}
 function afterNew(){S.file=null;S.dirty=false;if(D)D.newProject();if(D)D.setDocName(S.title);}
@@ -2162,7 +2222,7 @@ function boot(){
   var st=null;
   try{var raw=localStorage.getItem(KEY);if(raw){st=cleanState(JSON.parse(raw));}}catch(e){st=null;}
   if(!st)st=sample();
-  S.vars=cleanVars(st.vars);S.root=st.root;S.css=st.css||'';S.js=st.js||'';S.title=st.title||'nebula-landing-v2';S.sel=S.root.id;setPages(st);fixUid();
+  S.vars=cleanVars(st.vars);S.gfonts=cleanGfonts(st.gfonts);S.root=st.root;S.css=st.css||'';S.js=st.js||'';S.title=st.title||'nebula-landing-v2';S.sel=S.root.id;setPages(st);fixUid();
   $('#projName').value=S.title;
   hist=[snap()];hi=0;
   renderPalette();syncLeft();setDevice(880,640);

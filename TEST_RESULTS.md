@@ -1054,3 +1054,8 @@ Approved on 2026-11-20 (user said "Approve").
 ## 2026-11-23 — Variables Typography group
 
 - `node test/e2e.js`: 330 passed, 3 failed (same 3 as before). New checks: font family, fallback dropdown, unsafe name refused, font weight, line height (unitless and with unit), letter spacing (negative).
+
+## 2026-11-23 — Font family dropdowns + Google link
+
+- `node test/e2e.js`: 341 passed, 3 failed (same 3 as before). New checks: head dropdown, grouped font list, fallbacks add/remove, quoting, no link until consent, link added/removed, saved with project, custom font and unsafe names.
+- Not tested: loading the font from Google over the network.
