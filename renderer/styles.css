@@ -420,3 +420,6 @@ body{padding:0!important;overflow:hidden}
 .vaddb{background:none;border:1px solid var(--line);border-radius:5px;color:#e4e4e7;font:10px var(--ui);padding:2px 8px;cursor:pointer}.vaddb:hover{border-color:var(--accent);color:#fff}
 .vunit{width:58px;flex:none;background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:4px;font:11px var(--ui);color:#e4e4e7}
 .vars .vrow{background:var(--alt)}
+
+select.vval{background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:4px;font:11px var(--ui);color:#e4e4e7}
+.vunit{min-width:58px;max-width:96px}

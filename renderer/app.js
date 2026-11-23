@@ -33,11 +33,13 @@ function cleanNode(r,d,cnt){
   return n;}
 /* Variables (design tokens): named colours and sizes written once as CSS custom properties in :root */
 var VARNAME=/^[a-z][a-z0-9-]{0,29}$/;
-var VTYPES=[['color','Colour','color-','#3b82f6'],['spacing','Spacing','spacing-','16px'],['fontsize','Font size','font-size-','16px'],['radius','Corner radius','radius-','8px'],['dimension','Width / height','size-','100px'],['thickness','Border thickness','border-width-','1px']];
+var VTYPES=[['color','Colour','color-','#3b82f6'],['spacing','Spacing','spacing-','16px'],['fontfamily','Font family','font-family-','system-ui, sans-serif'],['fontsize','Font size','font-size-','16px'],['fontweight','Font weight','font-weight-','400'],['lineheight','Line height','line-height-','1.5'],['letterspacing','Letter spacing','letter-spacing-','0em'],['radius','Corner radius','radius-','8px'],['dimension','Width / height','size-','100px'],['thickness','Border thickness','border-width-','1px']];
 function vtype(t){for(var i=0;i<VTYPES.length;i++)if(VTYPES[i][0]===t)return VTYPES[i];return null;}
 function cleanVarValue(type,v){
   v=String(v==null?'':v).trim();
   if(type==='color'){return /^(#[0-9a-fA-F]{3,8}|[a-zA-Z]{3,25}|(rgb|rgba|hsl|hsla|hwb|lab|lch|oklab|oklch)\([0-9a-zA-Z .,%\/+-]{1,60}\))$/.test(v)?v:'';}
+  if(type==='fontfamily')return /^[A-Za-z0-9 ,'"_-]{1,100}$/.test(v)&&/[A-Za-z0-9]/.test(v)?v:'';
+  if(type==='fontweight')return /^[1-9]00$/.test(v)?v:'';
   return /^-?(\d+\.?\d*|\.\d+)(px|rem|em|%|vw|vh|vmin|vmax|ch|ex|pt|cm|mm|in)?$/.test(v)?v:'';
 }
 function cleanVars(a){
@@ -1348,8 +1350,10 @@ function renderJsTab(n,box){
   var b=document.createElement('button');b.className='sbtn';b.type='button';b.textContent='Open the page script editor';b.addEventListener('click',function(){setView('js');});p.appendChild(b);
   var c=document.createElement('p');c.className='note';c.innerHTML='Tip: give an element an <code>ID</code> in the HTML tab, then use <code>document.getElementById</code> in the page script.';p.appendChild(c);
 }
-var VGROUPS=[['Colours',['color']],['Typography',['fontsize']],['Sizes',['spacing','radius','dimension','thickness']]];
-var VUNITS={spacing:['px','rem','em','%'],fontsize:['px','rem','em','%'],radius:['px','rem','em','%'],thickness:['px','rem','em','%'],dimension:['px','rem','em','%','vw','vh']};
+var VGROUPS=[['Colours',['color']],['Typography',['fontfamily','fontsize','fontweight','lineheight','letterspacing']],['Sizes',['spacing','radius','dimension','thickness']]];
+var WEIGHTS=[['100','Thin'],['200','Extra light'],['300','Light'],['400','Regular'],['500','Medium'],['600','Semi bold'],['700','Bold'],['800','Extra bold'],['900','Black']];
+var FALLBACKS=['sans-serif','serif','monospace','cursive','system-ui'];
+var VUNITS={lineheight:['','px','rem','em','%'],letterspacing:['px','rem','em'],spacing:['px','rem','em','%'],fontsize:['px','rem','em','%'],radius:['px','rem','em','%'],thickness:['px','rem','em','%'],dimension:['px','rem','em','%','vw','vh']};
 function splitVal(v){var m=/^(-?(?:\d+\.?\d*|\.\d+))([a-z%]*)$/.exec(v||'');return m?{n:m[1],u:m[2]}:{n:v||'',u:''};}
 function renderVarsTab(box){
   var p=document.createElement('div');p.className='pad vars';box.appendChild(p);canvasVars();
@@ -1385,11 +1389,33 @@ function renderVarsTab(box){
         v.value=c;done();renderProps();
       });
       bot.appendChild(val);
+    }else if(v.type==='fontfamily'){
+      var ff=document.createElement('input');ff.type='text';ff.className='vval';ff.value=v.value;ff.spellcheck=false;ff.setAttribute('aria-label','Font name and fallbacks');ff.placeholder='Inter, sans-serif';
+      ff.addEventListener('change',function(){
+        var c=cleanVarValue('fontfamily',ff.value);
+        if(!c){toast('Use a font name and fallbacks, like Inter, sans-serif');ff.value=v.value;return;}
+        v.value=c;done();renderProps();
+      });
+      var fb=document.createElement('select');fb.className='vunit';fb.setAttribute('aria-label','Add a fallback font');
+      var f0=document.createElement('option');f0.value='';f0.textContent='+ fallback';fb.appendChild(f0);
+      FALLBACKS.forEach(function(x){var op=document.createElement('option');op.value=x;op.textContent=x;fb.appendChild(op);});
+      fb.addEventListener('change',function(){
+        if(!fb.value)return;
+        var parts=v.value.split(',').map(function(x){return x.trim();});
+        if(parts.indexOf(fb.value)<0)v.value=v.value+', '+fb.value;
+        done();renderProps();
+      });
+      bot.appendChild(ff);bot.appendChild(fb);
+    }else if(v.type==='fontweight'){
+      var ws=document.createElement('select');ws.className='vval';ws.setAttribute('aria-label','Font weight');
+      WEIGHTS.forEach(function(w){var op=document.createElement('option');op.value=w[0];op.textContent=w[0]+' '+w[1];if(w[0]===v.value)op.selected=true;ws.appendChild(op);});
+      ws.addEventListener('change',function(){v.value=ws.value;done();renderProps();});
+      bot.appendChild(ws);
     }else{
       var sp=splitVal(v.value),units=VUNITS[v.type]||VUNITS.spacing;
       var num=document.createElement('input');num.type='text';num.className='vval';num.value=sp.n;num.spellcheck=false;num.inputMode='decimal';num.setAttribute('aria-label','Value');
       var un=document.createElement('select');un.className='vunit';un.setAttribute('aria-label','Unit');
-      units.forEach(function(u){var op=document.createElement('option');op.value=u;op.textContent=u;if(u===sp.u)op.selected=true;un.appendChild(op);});
+      units.forEach(function(u){var op=document.createElement('option');op.value=u;op.textContent=u||'\u2014';if(u===sp.u)op.selected=true;un.appendChild(op);});
       if(units.indexOf(sp.u)<0){var op=document.createElement('option');op.value=sp.u;op.textContent=sp.u||'—';op.selected=true;un.insertBefore(op,un.firstChild);}
       function apply(){
         var c=cleanVarValue(v.type,num.value.trim()+un.value);

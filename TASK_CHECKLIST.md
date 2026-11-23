@@ -598,3 +598,16 @@
 - [ ] Choosing size variables in size fields — NOT started, needs a separate plan and approval
 
 **Status:** Awaiting User Approval
+
+## Variables: full Typography group
+
+**Request (2026-11-23):** Typography only had Font size; font name / family and the rest were missing. Plan explained and approved ("Approve all five").
+
+- [x] Typography now has Font family (name + fallbacks, with a "+ fallback" dropdown), Font size, Font weight (100–900 dropdown), Line height (number + unit or none), Letter spacing (number + px / rem / em, negatives allowed)
+- [x] Font names are limited to letters, numbers, spaces, commas, quotes and dashes (nothing unsafe is written)
+- [x] Tests added (330 passed, 3 failed as before)
+- [x] Commit and push changes to feature branch
+- [ ] User personally tries it
+- [ ] Choosing variables inside the CSS panel's size and text fields — NOT started, needs a separate plan and approval
+
+**Status:** Awaiting User Approval

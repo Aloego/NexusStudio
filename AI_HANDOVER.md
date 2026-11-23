@@ -400,3 +400,5 @@ Awaiting User Approval (drag positioned elements on the canvas). Rejected and re
 - 2026-11-23: Variables Step 2: specific types; colour fields get a variable chooser (openVarMenu, chip, varRef); canvasVars() sets vars on #page. Size variables in size fields not started. Awaiting User Approval.
 
 - 2026-11-23: Variables tab grouped (VGROUPS) with name/value/unit rows (VUNITS, splitVal). Awaiting User Approval.
+
+- 2026-11-23: Typography group extended (fontfamily, fontweight, lineheight, letterspacing in VTYPES). Awaiting User Approval.

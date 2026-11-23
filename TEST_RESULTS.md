@@ -1050,3 +1050,7 @@ Approved on 2026-11-20 (user said "Approve").
 ## 2026-11-23 — Variables groups and unit rows
 
 - `node test/e2e.js`: 321 passed, 3 failed (same 3 as before). New checks: groups, per-group add, name/number/unit rows, unit lists (incl. vw/vh), number + unit output, bad number refused.
+
+## 2026-11-23 — Variables Typography group
+
+- `node test/e2e.js`: 330 passed, 3 failed (same 3 as before). New checks: font family, fallback dropdown, unsafe name refused, font weight, line height (unitless and with unit), letter spacing (negative).
