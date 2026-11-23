@@ -1046,3 +1046,7 @@ Approved on 2026-11-20 (user said "Approve").
 ## 2026-11-23 — Variables Step 2 (colour fields) and size types
 
 - `node test/e2e.js`: 315 passed, 3 failed (same 3 as before). New checks: specific type list, matching names, colour field lists only colour variables, chip, var() output, canvas, live update, detach, missing variable.
+
+## 2026-11-23 — Variables groups and unit rows
+
+- `node test/e2e.js`: 321 passed, 3 failed (same 3 as before). New checks: groups, per-group add, name/number/unit rows, unit lists (incl. vw/vh), number + unit output, bad number refused.

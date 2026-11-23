@@ -584,3 +584,17 @@
 - [ ] Choosing size variables in size fields (spacing, font size ...) — NOT started, needs a separate plan and approval
 
 **Status:** Awaiting User Approval (this also completes approval of Variables Step 1, as the user conditioned)
+
+## Variables grouped like Penpot Assets; name / value / unit rows
+
+**Request (2026-11-23):** group variables into categories instead of one long list; apart from colours, each variable row should be name, value and a unit dropdown. Plan explained; user approved with vw and vh added for Width / height. (The previous Variables Step 2 was approved in the same message.)
+
+- [x] Variables tab is split into collapsible groups: Colours, Typography (Font size), Sizes (Spacing, Corner radius, Width / height, Border thickness), each with a count and its own + Add button
+- [x] Colour rows: name, swatch, value. Every other row: name, number, unit dropdown (px, rem, em, %; Width / height also vw, vh); CSS written as number + unit (e.g. --gap: 1.5rem;)
+- [x] Old values carry over (16px shows as 16 + px); bad numbers refused
+- [x] Tests rewritten and added (321 passed, 3 failed as before)
+- [x] Commit and push changes to feature branch
+- [ ] User personally tries it
+- [ ] Choosing size variables in size fields — NOT started, needs a separate plan and approval
+
+**Status:** Awaiting User Approval

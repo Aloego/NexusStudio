@@ -398,3 +398,5 @@ Awaiting User Approval (drag positioned elements on the canvas). Rejected and re
 - 2026-11-23: Variables tab Step 1 done (project-wide S.vars, :root output via varsCss in pageCss). Step 2 (apply to CSS fields) not started. Awaiting User Approval.
 
 - 2026-11-23: Variables Step 2: specific types; colour fields get a variable chooser (openVarMenu, chip, varRef); canvasVars() sets vars on #page. Size variables in size fields not started. Awaiting User Approval.
+
+- 2026-11-23: Variables tab grouped (VGROUPS) with name/value/unit rows (VUNITS, splitVal). Awaiting User Approval.

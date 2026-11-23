@@ -412,3 +412,11 @@ body{padding:0!important;overflow:hidden}
 .vmenu button{display:flex;align-items:center;gap:8px;width:100%;background:none;border:0;border-radius:5px;padding:6px 8px;color:#e4e4e7;font:11px var(--ui);cursor:pointer;text-align:left}
 .vmenu button:hover{background:#2a2a31}.vmenu i{width:14px;height:14px;border-radius:50%;border:1px solid #52525b;flex:none}.vmenu code{margin-left:auto;font:10px var(--mono);color:var(--dim)}
 .vnone{padding:6px 8px;font-size:11px;color:var(--muted)}
+
+.vg{border:1px solid var(--line);border-radius:8px;margin-bottom:8px;background:#17171b}
+.vg>summary{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;cursor:pointer;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#d4d4d8;list-style:none}
+.vg>summary::-webkit-details-marker{display:none}.vg>summary em{font-style:normal;font-size:10px;color:var(--muted);background:#26262c;border-radius:9px;padding:1px 7px}
+.vsub{padding:0 8px 8px}.vsh{display:flex;justify-content:space-between;align-items:center;margin:2px 0 6px;font-size:11px;color:var(--muted)}
+.vaddb{background:none;border:1px solid var(--line);border-radius:5px;color:#e4e4e7;font:10px var(--ui);padding:2px 8px;cursor:pointer}.vaddb:hover{border-color:var(--accent);color:#fff}
+.vunit{width:58px;flex:none;background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:4px;font:11px var(--ui);color:#e4e4e7}
+.vars .vrow{background:var(--alt)}
