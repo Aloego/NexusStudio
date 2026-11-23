@@ -554,3 +554,18 @@
 - [x] User personally checks the arrows and the Space box
 
 **Status:** Approved by user (2026-11-22)
+
+## Variables tab (design tokens) — Step 1
+
+**Request (2026-11-23):** a visual way to set CSS variables, like Penpot tokens. Plan explained; user approved Step 1 and chose the name "Variables".
+
+- [x] New Variables tab on the right strip: add, rename, change type (Colour / Size), edit value (colour picker for colours), delete
+- [x] Names are cleaned (lowercase letters, numbers, dashes, unique); values are checked so nothing unsafe can be written
+- [x] Written once as `:root { --name: value; }` at the top of the page CSS and the exported css file, only when at least one variable exists
+- [x] Saved with the project (.nexus file and autosave); also listed in the MCP get_document result
+- [x] Tests added (306 passed, 3 failed as before)
+- [x] Commit and push changes to feature branch
+- [ ] User personally tries the Variables tab
+- [ ] Step 2 (apply a variable from a field in the CSS panel) — NOT started, needs a separate plan and approval
+
+**Status:** Awaiting User Approval

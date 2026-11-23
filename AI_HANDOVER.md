@@ -394,3 +394,5 @@ Awaiting User Approval (drag positioned elements on the canvas). Rejected and re
 - 2026-11-22: tab strips (30px) always visible on both panels; strip click switches tab. Space box slightly clipped at 200px right width (open question). Awaiting User Approval.
 
 - 2026-11-22: panels always show one tab (last used); strip arrow reopens it; Space box shrunk to fit 200px. Awaiting User Approval.
+
+- 2026-11-23: Variables tab Step 1 done (project-wide S.vars, :root output via varsCss in pageCss). Step 2 (apply to CSS fields) not started. Awaiting User Approval.

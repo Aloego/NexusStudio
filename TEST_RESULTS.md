@@ -1038,3 +1038,7 @@ Approved on 2026-11-20 (user said "Approve").
 ## 2026-11-22 — Arrow reopens last tab; Space box fits
 
 - `node test/e2e.js`: 296 passed, 3 failed (same 3 as before). Tests now switch tabs from the strip; width tests expect 200 / drag 240 / min 160.
+
+## 2026-11-23 — Variables tab (Step 1)
+
+- `node test/e2e.js`: 306 passed, 3 failed (same 3 as before). New checks: empty start, no :root until a variable exists, add, name cleaning, bad value refused, :root output, size variable, duplicate names refused, saved with project, delete removes :root.

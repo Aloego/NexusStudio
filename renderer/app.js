@@ -31,8 +31,24 @@ function cleanNode(r,d,cnt){
   if(isObj(r.style))Object.keys(r.style).forEach(function(k){var v=r.style[k];if(/^(--)?[a-z][a-z0-9-]*$/.test(k)&&typeof v==='string'&&!/[{}]|<\/|\/\*/.test(v))n.style[k]=v;});
   (Array.isArray(r.children)?r.children:[]).forEach(function(c){var cn=cleanNode(c,d+1,cnt);if(cn)n.children.push(cn);});
   return n;}
+/* Variables (design tokens): named colours and sizes written once as CSS custom properties in :root */
+var VARNAME=/^[a-z][a-z0-9-]{0,29}$/;
+function cleanVarValue(type,v){
+  v=String(v==null?'':v).trim();
+  if(type==='color'){return /^(#[0-9a-fA-F]{3,8}|[a-zA-Z]{3,25}|(rgb|rgba|hsl|hsla|hwb|lab|lch|oklab|oklch)\([0-9a-zA-Z .,%\/+-]{1,60}\))$/.test(v)?v:'';}
+  return /^-?(\d+\.?\d*|\.\d+)(px|rem|em|%|vw|vh|vmin|vmax|ch|ex|pt|cm|mm|in)?$/.test(v)?v:'';
+}
+function cleanVars(a){
+  var out=[],seen={};
+  (Array.isArray(a)?a:[]).slice(0,100).forEach(function(x){
+    if(!isObj(x)||typeof x.name!=='string'||!VARNAME.test(x.name)||seen[x.name])return;
+    var t=x.type==='size'?'size':'color',v=cleanVarValue(t,x.value);if(!v)return;
+    seen[x.name]=1;out.push({name:x.name,type:t,value:v});
+  });
+  return out;
+}
 function cleanState(o){if(!isObj(o)||!isObj(o.root))throw new Error('This is not a NexusStudio project.');
-  var st={root:cleanNode(o.root,0,{n:0}),css:typeof o.css==='string'?o.css:'',js:typeof o.js==='string'?o.js:'',title:typeof o.title==='string'&&o.title?o.title.slice(0,120):'untitled-page'};
+  var st={vars:cleanVars(o.vars),root:cleanNode(o.root,0,{n:0}),css:typeof o.css==='string'?o.css:'',js:typeof o.js==='string'?o.js:'',title:typeof o.title==='string'&&o.title?o.title.slice(0,120):'untitled-page'};
   if(Array.isArray(o.pages)&&o.pages.length){
     st.pages=[];
     o.pages.slice(0,30).forEach(function(p,i){
@@ -58,7 +74,7 @@ function nid(){uid++;return 'n'+uid;}
 function N(tag,o){o=o||{};return {id:nid(),tag:tag,ns:o.ns===2?2:o.ns?1:0,text:o.text||'',style:o.style||{},attrs:o.attrs||{},children:o.children||[]};}
 function clone(n){var c=JSON.parse(JSON.stringify(n));(function re(x){x.id=nid();x.children.forEach(re);})(c);return c;}
 
-var S={pages:[],pageIdx:0,root:null,css:'',js:'',title:'nebula-landing-v2',sel:null,collapsed:{},open:{layout:1,space:1,box:1,type:1,flex:1,bg:1,border:1},
+var S={vars:[],pages:[],pageIdx:0,root:null,css:'',js:'',title:'nebula-landing-v2',sel:null,collapsed:{},open:{layout:1,space:1,box:1,type:1,flex:1,bg:1,border:1},
   view:'canvas',zoom:1,dw:880,dh:640,rtab:'css',ltab:'el',logical:false,pending:{},grid:true,rulers:true};
 var hist=[],hi=-1,dragId=null;
 
@@ -510,7 +526,7 @@ function pageSnap(p){return JSON.stringify({root:p.root,css:p.css||'',js:p.js||'
 function markClean(){syncActive();S.pages.forEach(function(p){p.base=pageSnap(p);});}
 function isPageModified(i){syncActive();var p=S.pages[i];return !p||p.base==null?!!S.dirty:pageSnap(p)!==p.base;}
 function allPages(){syncActive();return S.pages.map(function(p){var o={name:p.name,title:p.title,root:p.root,css:p.css,js:p.js};if(p.closed)o.closed=true;return o;});}
-function fullState(){return {root:S.root,css:S.css,js:S.js,title:S.title,pages:allPages(),idx:S.pageIdx};}
+function fullState(){return {vars:S.vars,root:S.root,css:S.css,js:S.js,title:S.title,pages:allPages(),idx:S.pageIdx};}
 function setPages(st){
   S.pages=(st.pages&&st.pages.length)?st.pages.map(function(p){return {name:p.name,title:p.title,root:p.root,css:p.css,js:p.js,closed:p.closed===true};}):[{name:'Page 1'}];
   S.pageIdx=st.pages&&st.pages.length?Math.min(st.idx|0,S.pages.length-1):0;
@@ -521,7 +537,7 @@ function syncUndo(){$('#btnUndo').disabled=hi<=0;$('#btnRedo').disabled=hi>=hist
 function restore(s){var o=JSON.parse(s);S.root=o.root;S.css=o.css;S.js=o.js;S.title=o.title||S.title;if(!find(S.sel))S.sel=S.root.id;$('#projName').value=S.title;fixUid();renderAll();}
 function undo(){if(hi>0){hi--;restore(hist[hi]);save();syncUndo();}}
 function redo(){if(hi<hist.length-1){hi++;restore(hist[hi]);save();syncUndo();}}
-function loadState(st){S.root=st.root;S.css=st.css||'';S.js=st.js||'';S.title=st.title||'untitled-page';S.sel=S.root.id;S.collapsed={};S.pending={};setPages(st);fixUid();$('#projName').value=S.title;hist=[];hi=-1;commit();markClean();renderAll();}
+function loadState(st){S.vars=cleanVars(st.vars);S.root=st.root;S.css=st.css||'';S.js=st.js||'';S.title=st.title||'untitled-page';S.sel=S.root.id;S.collapsed={};S.pending={};setPages(st);fixUid();$('#projName').value=S.title;hist=[];hi=-1;commit();markClean();renderAll();}
 function changed(){commit();renderAll();}
 
 /* ---------- canvas rendering ---------- */
@@ -1175,10 +1191,11 @@ function renderProps(){
   spClear();
   var f=find(S.sel);if(!f)return;var n=f.node,box=$('#propBody');box.innerHTML='';
   $('#pTitle').textContent='(<'+n.tag+(n.attrs.id?'#'+n.attrs.id:'')+'>)';
-  ['rtHtml','rtCss','rtJs'].forEach(function(t){$('#'+t).classList.toggle('on',t==='rt'+cap(S.rtab));});
+  ['rtHtml','rtCss','rtJs','rtVars'].forEach(function(t){$('#'+t).classList.toggle('on',t==='rt'+cap(S.rtab));});
   $('#addbar').style.display=S.rtab==='css'?'':'none';markRail();
   if(S.rtab==='html')return renderHtmlTab(n,box);
   if(S.rtab==='js')return renderJsTab(n,box);
+  if(S.rtab==='vars')return renderVarsTab(box);
   var el=elOf(S.sel);
   SECTIONS.forEach(function(s){
     var d=document.createElement('details');d.className='sec';d.open=!!S.open[s.k];
@@ -1289,6 +1306,47 @@ function renderJsTab(n,box){
   var b=document.createElement('button');b.className='sbtn';b.type='button';b.textContent='Open the page script editor';b.addEventListener('click',function(){setView('js');});p.appendChild(b);
   var c=document.createElement('p');c.className='note';c.innerHTML='Tip: give an element an <code>ID</code> in the HTML tab, then use <code>document.getElementById</code> in the page script.';p.appendChild(c);
 }
+function renderVarsTab(box){
+  var p=document.createElement('div');p.className='pad vars';box.appendChild(p);
+  var t=document.createElement('p');t.className='note';t.innerHTML='Named colours and sizes you can reuse. They are written once at the top of your CSS as <code>:root { --name: value; }</code>. Nothing is written until you add one.';p.appendChild(t);
+  function done(){S.dirty=true;save();renderCodeIfOpen();}
+  S.vars.forEach(function(v,i){
+    var row=document.createElement('div');row.className='vrow';
+    var nm=document.createElement('input');nm.type='text';nm.className='vname';nm.value=v.name;nm.maxLength=30;nm.spellcheck=false;nm.setAttribute('aria-label','Variable name');
+    nm.addEventListener('change',function(){
+      var n=nm.value.trim().toLowerCase().replace(/^-+/,'').replace(/[^a-z0-9-]+/g,'-');
+      if(!VARNAME.test(n)){toast('A name uses letters, numbers and dashes and starts with a letter');nm.value=v.name;return;}
+      if(S.vars.some(function(o,j){return j!==i&&o.name===n;})){toast('Another variable already has that name');nm.value=v.name;return;}
+      v.name=n;nm.value=n;done();
+    });
+    var ty=document.createElement('select');ty.className='vtype';ty.setAttribute('aria-label','Variable type');
+    [['color','Colour'],['size','Size']].forEach(function(o){var op=document.createElement('option');op.value=o[0];op.textContent=o[1];if(v.type===o[0])op.selected=true;ty.appendChild(op);});
+    ty.addEventListener('change',function(){v.type=ty.value;v.value=ty.value==='color'?'#3b82f6':'16px';done();renderProps();});
+    var val=document.createElement('input');val.type='text';val.className='vval';val.value=v.value;val.spellcheck=false;val.setAttribute('aria-label','Variable value');
+    val.addEventListener('change',function(){
+      var c=cleanVarValue(v.type,val.value);
+      if(!c){toast(v.type==='color'?'Use a colour like #3b82f6, rgb(…) or a name like red':'Use a size like 16px, 1.5rem or 50%');val.value=v.value;return;}
+      v.value=c;val.value=c;done();renderProps();
+    });
+    var del=document.createElement('button');del.type='button';del.className='vdel';del.title='Delete this variable';del.setAttribute('aria-label','Delete '+v.name);del.textContent='\u2715';
+    del.addEventListener('click',function(){S.vars.splice(i,1);done();renderProps();toast('Deleted --'+v.name+'. Any CSS you wrote that uses it will stop working.');});
+    var top=document.createElement('div');top.className='vtop';top.appendChild(nm);top.appendChild(del);row.appendChild(top);
+    var bot=document.createElement('div');bot.className='vbot';
+    if(v.type==='color'){var sw=document.createElement('input');sw.type='color';sw.className='vsw';sw.setAttribute('aria-label','Pick a colour');
+      try{sw.value=/^#[0-9a-fA-F]{6}$/.test(v.value)?v.value:'#000000';}catch(e){}
+      sw.addEventListener('change',function(){v.value=sw.value;done();renderProps();});bot.appendChild(sw);}
+    bot.appendChild(ty);bot.appendChild(val);row.appendChild(bot);
+    var use=document.createElement('code');use.className='vuse';use.textContent='var(--'+v.name+')';row.appendChild(use);
+    p.appendChild(row);
+  });
+  var add=document.createElement('button');add.type='button';add.className='sbtn';add.textContent='+ Add variable';
+  add.addEventListener('click',function(){
+    if(S.vars.length>=100)return toast('A project can have up to 100 variables');
+    var n=1;while(S.vars.some(function(o){return o.name==='color-'+n;}))n++;
+    S.vars.push({name:'color-'+n,type:'color',value:'#3b82f6'});done();renderProps();
+  });
+  p.appendChild(add);
+}
 function renderCrumbs(){
   var box=$('#crumbPath');box.innerHTML='<button>html</button><i>›</i>';
   var p=pathTo(S.sel);
@@ -1345,7 +1403,11 @@ function genCss(){
   return out.join('\n\n');
 }
 /* everything one page needs, with nothing added: its body, its CSS (panel styles + the CSS tab) and its script */
-function pageCss(){return [genCss(),S.css.trim()].filter(Boolean).join('\n\n');}
+function varsCss(){
+  if(!S.vars.length)return '';
+  return ':root {\n'+S.vars.map(function(v){return '  --'+v.name+': '+v.value+';';}).join('\n')+'\n}';
+}
+function pageCss(){return [varsCss(),genCss(),S.css.trim()].filter(Boolean).join('\n\n');}
 function docWrap(head,body,tail){
   return '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>'+esc(S.title)+'</title>\n'+head+'</head>\n<body>\n'+body+'\n'+tail+'</body>\n</html>\n';
 }
@@ -1733,7 +1795,7 @@ function copyText(text,msg){
   try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(function(){toast(msg||'Copied');},fb);return;}}catch(e){}
   fb();
 }
-function projectJson(){var f=fullState();return JSON.stringify({format:'nexusstudio',version:1,root:f.root,css:f.css,js:f.js,title:f.title,pages:f.pages,idx:f.idx});}
+function projectJson(){var f=fullState();return JSON.stringify({format:'nexusstudio',version:1,vars:f.vars,root:f.root,css:f.css,js:f.js,title:f.title,pages:f.pages,idx:f.idx});}
 function parseProject(text){var o=JSON.parse(text);if(!o||o.format!=='nexusstudio')throw new Error('This file is not a NexusStudio project.');return cleanState(o);}
 function needDesktop(){toast('This works in the NexusStudio desktop app');}
 function afterNew(){S.file=null;S.dirty=false;if(D)D.newProject();if(D)D.setDocName(S.title);}
@@ -1931,7 +1993,7 @@ $('#tabEl').addEventListener('click',function(){S.ltab='el';syncLeft();});
 $('#tabLy').addEventListener('click',function(){S.ltab='ly';syncLeft();});
 $('#tabPg').addEventListener('click',function(){S.ltab='pg';syncLeft();});
 function syncLeft(){markRail();$('#tabEl').classList.toggle('on',S.ltab==='el');$('#tabLy').classList.toggle('on',S.ltab==='ly');$('#tabPg').classList.toggle('on',S.ltab==='pg');$('#elPane').hidden=S.ltab!=='el';$('#lyPane').hidden=S.ltab!=='ly';$('#pgPane').hidden=S.ltab!=='pg';}
-['Html','Css','Js'].forEach(function(t){$('#rt'+t).addEventListener('click',function(){S.rtab=t.toLowerCase();renderProps();});});
+['Html','Css','Js','Vars'].forEach(function(t){$('#rt'+t).addEventListener('click',function(){S.rtab=t.toLowerCase();renderProps();});});
 $('#views').addEventListener('click',function(e){var b=e.target.closest('button');if(b)setView(b.getAttribute('data-v'));});
 $('#elSearch').addEventListener('input',renderPalette);
 $('#projName').addEventListener('input',function(){S.title=this.value||'untitled-page';save();});
@@ -2000,7 +2062,7 @@ function boot(){
   var st=null;
   try{var raw=localStorage.getItem(KEY);if(raw){st=cleanState(JSON.parse(raw));}}catch(e){st=null;}
   if(!st)st=sample();
-  S.root=st.root;S.css=st.css||'';S.js=st.js||'';S.title=st.title||'nebula-landing-v2';S.sel=S.root.id;setPages(st);fixUid();
+  S.vars=cleanVars(st.vars);S.root=st.root;S.css=st.css||'';S.js=st.js||'';S.title=st.title||'nebula-landing-v2';S.sel=S.root.id;setPages(st);fixUid();
   $('#projName').value=S.title;
   hist=[snap()];hi=0;
   renderPalette();syncLeft();setDevice(880,640);
@@ -2094,7 +2156,7 @@ function parseSnippet(html){
 }
 
 API.get_document=function(){
-  return {title:S.title,html:genBody(),custom_css:S.css,generated_css:genCss(),js:S.js,selected:pubId(find(S.sel).node),element_count:countNodes(),
+  return {title:S.title,html:genBody(),custom_css:S.css,generated_css:genCss(),variables:S.vars.map(function(v){return {name:v.name,type:v.type,value:v.value};}),js:S.js,selected:pubId(find(S.sel).node),element_count:countNodes(),
     note:'The html has only the ids you gave elements. In get_tree elements have ids like n12; use those as element ids.'};
 };
 API.get_tree=function(a){
