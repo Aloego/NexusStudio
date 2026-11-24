@@ -904,6 +904,47 @@ page.on('console', function (m) {
   while ((await defPage.$$('#propBody .vdel')).length) await defPage.click('#propBody .vdel');
   await defPage.click('#railR [data-rail="css"]');
   for (const prop of ['border-color', 'outline-color']) await defPage.click('.fld:has(#f-' + prop + ') .vx');
+  console.log('Variables: size and text fields');
+  await defPage.click('#railR [data-rail="vars"]');
+  const mk = async function (type, name, set) {
+    await defPage.click('#propBody .vaddb[data-add="' + type + '"]');
+    const row = '#propBody .vsub[data-vtype="' + type + '"] .vrow';
+    await defPage.fill(row + ' .vname', name); await defPage.dispatchEvent(row + ' .vname', 'change');
+    if (set) await set(row);
+  };
+  await mk('dimension', 'wide', async function (r) { await defPage.fill(r + ' .vval', '640'); await defPage.dispatchEvent(r + ' .vval', 'change'); });
+  await mk('spacing', 'gap-l', async function (r) { await defPage.fill(r + ' .vval', '24'); await defPage.dispatchEvent(r + ' .vval', 'change'); });
+  await mk('radius', 'round', async function (r) { await defPage.fill(r + ' .vval', '12'); await defPage.dispatchEvent(r + ' .vval', 'change'); });
+  await mk('fontsize', 'big', async function (r) { await defPage.fill(r + ' .vval', '2'); await defPage.dispatchEvent(r + ' .vval', 'change'); await defPage.selectOption(r + ' .vunit', 'rem'); });
+  await mk('fontweight', 'bold', async function (r) { await defPage.selectOption(r + ' .vval', '700'); });
+  await mk('fontfamily', 'body-font', null);
+  await mk('lineheight', 'loose', async function (r) { await defPage.fill(r + ' .vval', '1.8'); await defPage.dispatchEvent(r + ' .vval', 'change'); });
+  await mk('letterspacing', 'tight', async function (r) { await defPage.fill(r + ' .vval', '-0.02'); await defPage.dispatchEvent(r + ' .vval', 'change'); });
+  await defPage.click('#railR [data-rail="css"]');
+  const cases = [['width', 'wide', '640px'], ['gap', 'gap-l', '24px'], ['border-radius', 'round', '12px'], ['font-size', 'big', '2rem'], ['font-weight', 'bold', '700'], ['font-family', 'body-font', 'Arial, sans-serif'], ['line-height', 'loose', '1.8'], ['letter-spacing', 'tight', '-0.02em']];
+  for (const c of cases) {
+    const fld = '.fld:has(#f-' + c[0] + ')';
+    if (!(await defPage.$(fld))) { ok(false, c[0] + ' field is missing for body'); continue; }
+    await defPage.evaluate(function (id) { var d = document.querySelector('#' + id); var det = d && d.closest('details'); if (det) det.open = true; }, 'f-' + c[0]);
+    await defPage.click(fld + ' .vbtn');
+    const items = await defPage.$$eval('.vmenu button', function (b) { return b.map(function (x) { return x.textContent; }); });
+    ok(items.length === 1 && items[0].indexOf(c[1]) === 0, c[0] + ' offers only its matching variable (' + c[1] + ')');
+    await defPage.click('.vmenu button');
+    ok((await defPage.textContent(fld + ' .vchip b')) === c[1] && (await vc()).indexOf(c[0] + ': var(--' + c[1] + ');') >= 0, c[0] + ' shows a chip and writes var(--' + c[1] + ')');
+  }
+  ok(/--wide: 640px;/.test(await vc()) && /--big: 2rem;/.test(await vc()), 'the variables themselves are still written to :root');
+  await defPage.click('.fld:has(#f-width) .vx');
+  ok((await defPage.inputValue('#f-width')) === '640px' && (await vc()).indexOf('width: 640px;') >= 0, 'Detach keeps the real value (640px)');
+  await defPage.click('#railR [data-rail="vars"]'); await defPage.click('#propBody .vsub[data-vtype="radius"] .vdel');
+  await defPage.click('#railR [data-rail="css"]');
+  ok((await defPage.$$('.fld:has(#f-border-radius) .vchip.gone')).length === 1, 'a deleted variable shows as missing in its field');
+  await defPage.click('.fld:has(#f-width) .vbtn');
+  ok((await defPage.$$eval('.vmenu', function (m) { return m.length; })) === 1, 'the chooser opens for width again');
+  await defPage.keyboard.press('Escape'); await defPage.mouse.click(5, 5);
+  await defPage.click('#railR [data-rail="vars"]');
+  while ((await defPage.$$('#propBody .vdel')).length) await defPage.click('#propBody .vdel');
+  await defPage.click('#railR [data-rail="css"]');
+  for (const c of cases) { const x = '.fld:has(#f-' + c[0] + ') .vx'; if (await defPage.$(x)) await defPage.click(x); }
   console.log('Device size dropdown');
   ok((await defPage.$$('#devs [data-w]')).length === 0, 'the Mobile / Tablet / Desktop tab buttons are gone');
   ok((await defPage.textContent('#devBtn')).trim() === 'Responsive', 'the dropdown starts as Responsive');

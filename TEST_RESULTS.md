@@ -1063,3 +1063,7 @@ Approved on 2026-11-20 (user said "Approve").
 ## 2026-11-23 — Variable choosers Part 1 (border / outline colour)
 
 - `node test/e2e.js`: 343 passed, 3 failed (same 3 as before).
+
+## 2026-11-24 — Variable choosers Part 2 (size and text fields)
+
+- `node test/e2e.js`: 363 passed, 3 failed (same 3 as before). Eight field types checked: offers only the matching variable, chip, var() output, detach, missing.

@@ -572,15 +572,15 @@ function canvasVars(){
 function varOf(name){for(var i=0;i<S.vars.length;i++)if(S.vars[i].name===name)return S.vars[i];return null;}
 function varRef(v){var m=/^var\(--([a-z][a-z0-9-]*)\)$/.exec(v||'');return m?m[1]:null;}
 function closeVarMenu(){var m=document.querySelector('.vmenu');if(m&&m.parentNode)m.parentNode.removeChild(m);}
-function openVarMenu(anchor,onPick){
+function openVarMenu(anchor,type,onPick){
   closeVarMenu();
   var m=document.createElement('div');m.className='vmenu';m.setAttribute('role','listbox');
-  var cs=S.vars.filter(function(v){return v.type==='color';});
-  if(!cs.length){var e=document.createElement('div');e.className='vnone';e.textContent='No colour variables yet.';m.appendChild(e);
+  var cs=S.vars.filter(function(v){return v.type===type;}),tn=(vtype(type)||[0,'matching'])[1].toLowerCase();
+  if(!cs.length){var e=document.createElement('div');e.className='vnone';e.textContent='No '+tn+' variables yet.';m.appendChild(e);
     var go=document.createElement('button');go.type='button';go.textContent='Open the Variables tab';go.addEventListener('click',function(){closeVarMenu();S.rtab='vars';setPanel('r',false);renderProps();});m.appendChild(go);}
   cs.forEach(function(v){
     var b=document.createElement('button');b.type='button';b.setAttribute('role','option');
-    var d=document.createElement('i');d.style.background=v.value;b.appendChild(d);
+    if(type==='color'){var d=document.createElement('i');d.style.background=v.value;b.appendChild(d);}
     var t=document.createElement('span');t.textContent=v.name;b.appendChild(t);
     var c=document.createElement('code');c.textContent=v.value;b.appendChild(c);
     b.addEventListener('click',function(){closeVarMenu();onPick(v);});m.appendChild(b);
@@ -941,6 +941,27 @@ function setStyle(p,v){
 }
 function toHex(v){var t=document.createElement('span');t.style.color=v||'#000';document.body.appendChild(t);var c=getComputedStyle(t).color;document.body.removeChild(t);
   var m=c.match(/\d+(\.\d+)?/g)||[0,0,0];return '#'+[0,1,2].map(function(i){return ('0'+Math.round(+m[i]).toString(16)).slice(-2);}).join('');}
+/* which kind of variable each text / size field can use */
+var VARFOR={'width':'dimension','min-width':'dimension','max-width':'dimension','height':'dimension','min-height':'dimension','max-height':'dimension','gap':'spacing','row-gap':'spacing','column-gap':'spacing','border-radius':'radius','font-size':'fontsize','font-weight':'fontweight','font-family':'fontfamily','line-height':'lineheight','letter-spacing':'letterspacing'};
+function attachVarPicker(w,f,val,live,id){
+  var type=VARFOR[f.p];if(!type||f.t==='color'||f.t==='range'||f.t==='align')return;
+  var ctrl=w.children[1];if(!ctrl)return;
+  var holder=document.createElement('div');holder.className='vfield';w.insertBefore(holder,ctrl);
+  var ref=varRef(val),rv=ref?varOf(ref):null;
+  if(ref){
+    var chip=document.createElement('span');chip.className='vchip'+(rv?'':' gone');chip.title=rv?'Uses the variable --'+ref:'The variable --'+ref+' no longer exists';
+    var nm=document.createElement('b');nm.id=id;nm.textContent=ref;chip.appendChild(nm);
+    if(rv){var vv=document.createElement('em');vv.className='vval2';vv.textContent=rv.value;chip.appendChild(vv);}
+    var x=document.createElement('button');x.type='button';x.className='vx';x.title='Detach: keep the value but stop using the variable';x.setAttribute('aria-label','Detach variable '+ref);x.textContent='\u2715';
+    x.addEventListener('click',function(){live(rv?rv.value:'');commit();renderProps();renderCodeIfOpen();});chip.appendChild(x);
+    holder.appendChild(chip);
+  }else holder.appendChild(ctrl);
+  var tn=vtype(type)[1].toLowerCase();
+  var vb=document.createElement('button');vb.type='button';vb.className='vbtn';vb.title='Use a '+tn+' variable';vb.setAttribute('aria-label','Choose a '+tn+' variable for '+f.p);vb.textContent='\u25C6';
+  vb.addEventListener('click',function(){openVarMenu(vb,type,function(v){live('var(--'+v.name+')');commit();renderProps();renderCodeIfOpen();});});
+  holder.appendChild(vb);
+  if(ref)w.removeChild(ctrl);
+}
 function mkField(f,n,secKey){
   var w=document.createElement('div');w.className='fld';
   var id='f-'+f.p,val=n.style[f.p]||'',inp,el=elOf(S.sel);
@@ -977,7 +998,7 @@ function mkField(f,n,secKey){
       cw.appendChild(chip);
     }else cw.appendChild(inp);
     var vb=document.createElement('button');vb.type='button';vb.className='vbtn';vb.title='Use a colour variable';vb.setAttribute('aria-label','Choose a colour variable for '+f.p);vb.textContent='\u25C6';
-    vb.addEventListener('click',function(){openVarMenu(vb,function(v){live('var(--'+v.name+')');commit();renderProps();renderCodeIfOpen();});});
+    vb.addEventListener('click',function(){openVarMenu(vb,'color',function(v){live('var(--'+v.name+')');commit();renderProps();renderCodeIfOpen();});});
     cw.appendChild(vb);w.appendChild(cw);
   }else if(f.t==='range'){
     var rg=document.createElement('div');rg.className='rng';
@@ -992,6 +1013,7 @@ function mkField(f,n,secKey){
     inp.addEventListener('input',function(){live(inp.value);});inp.addEventListener('change',function(){commit();renderCodeIfOpen();});
     w.appendChild(inp);
   }
+  attachVarPicker(w,f,val,live,id);
   return w;
 }
 function camel(p){return p.replace(/-([a-z])/g,function(m,c){return c.toUpperCase();});}

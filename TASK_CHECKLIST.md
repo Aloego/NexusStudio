@@ -637,3 +637,12 @@
 - [ ] Part 3 (margin and padding popup) — not started
 
 **Status:** In progress (Awaiting User Approval after Part 3)
+
+## Variable choosers — Part 2 of 3: size and text fields
+
+- [x] Width, height, min/max, gap, border radius, font size, font weight, font family, line height and letter spacing each get a ◆ button listing only the matching variable type; a chip shows the name and value; ✕ detaches (keeps the real value); a deleted variable shows as missing
+- [x] Tests added (363 passed, 3 failed as before)
+- [x] Commit and push changes to feature branch
+- [ ] Part 3 (margin and padding popup) — in progress
+
+**Status:** In progress (Awaiting User Approval after Part 3)
