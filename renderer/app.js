@@ -1079,6 +1079,7 @@ function spClear(){if(spHi)spHi.hidden=true;}
 /* the little popup under a margin/padding number: a side-name chip, the value, and the unit as a clickable label that opens a list */
 var SPUNITS=['px','%','em','rem','vw','vh','svw','svh','lvw','lvh','dvw','dvh','ch'],spPopEl=null;
 function spPopClose(apply){if(spPopEl&&spPopEl._close)spPopEl._close(apply);}
+function spLabel(v){var r=varRef(v);return r||v;}
 function spPop(prop,i,n,btn,setSide){
   spPopClose(true);
   var pp=prop+'-'+SIDE[i],keys=[prop].concat(SIDE.map(function(sd){return prop+'-'+sd;}));
@@ -1093,7 +1094,8 @@ function spPop(prop,i,n,btn,setSide){
   var menu=null;
   function showUnit(){ub.textContent=unit?unit.toUpperCase():'–';ub.disabled=!unit&&!/^-?\d*\.?\d+$/.test(inp.value.trim())&&inp.value.trim()!=='';}
   showUnit();
-  row.appendChild(chip);row.appendChild(inp);row.appendChild(ub);pop.appendChild(row);
+  var vbt=document.createElement('button');vbt.type='button';vbt.id='fpop-var';vbt.className='spu spvar';vbt.title='Use a spacing variable';vbt.setAttribute('aria-label','Choose a spacing variable');vbt.setAttribute('aria-haspopup','listbox');vbt.textContent='\u25C6';
+  row.appendChild(chip);row.appendChild(inp);row.appendChild(ub);row.appendChild(vbt);pop.appendChild(row);
   document.body.appendChild(pop);spPopEl=pop;
   var br=btn.getBoundingClientRect(),pw=pop.offsetWidth,ph=pop.offsetHeight;
   var left=Math.max(8,Math.min(window.innerWidth-pw-8,br.left+br.width/2-pw/2)),top=br.bottom+6;
@@ -1108,7 +1110,7 @@ function spPop(prop,i,n,btn,setSide){
   }
   function live(){
     var o=out();if(o==null)return;
-    setSide(i,o);changed=true;btn.textContent=o;btn.classList.remove('dim');
+    setSide(i,o);changed=true;btn.textContent=spLabel(o);btn.classList.remove('dim');
     var d=btn.closest('.spx');if(d)d.setAttribute('data-'+prop,shorthandOf(find(S.sel).node,prop));
     spHighlight(prop,i);
   }
@@ -1134,6 +1136,22 @@ function spPop(prop,i,n,btn,setSide){
     var r=ub.getBoundingClientRect(),pr=pop.getBoundingClientRect();
     menu.style.left=(r.left-pr.left)+'px';menu.style.top=(r.bottom-pr.top+4)+'px';
   });
+  vbt.addEventListener('click',function(e){
+    e.preventDefault();
+    if(menu){closeMenu();return;}
+    menu=document.createElement('div');menu.className='spmenu spvmenu';menu.setAttribute('role','listbox');
+    var sv=S.vars.filter(function(v){return v.type==='spacing';});
+    if(!sv.length){var no=document.createElement('div');no.className='vnone';no.textContent='No spacing variables yet.';menu.appendChild(no);}
+    sv.forEach(function(v){
+      var it=document.createElement('button');it.type='button';it.setAttribute('data-v',v.name);it.setAttribute('role','option');
+      it.innerHTML='<span class="ck"></span>'+esc(v.name)+'<code>'+esc(v.value)+'</code>';
+      it.addEventListener('click',function(){unit='';inp.value='var(--'+v.name+')';closeMenu();showUnit();inp.focus();live();close(true);});
+      menu.appendChild(it);
+    });
+    pop.appendChild(menu);
+    var r=vbt.getBoundingClientRect(),pr=pop.getBoundingClientRect();
+    menu.style.left=Math.max(0,r.right-pr.left-(menu.offsetWidth||150))+'px';menu.style.top=(r.bottom-pr.top+4)+'px';
+  });
   inp.addEventListener('keydown',function(e){
     if(e.key==='ArrowUp'||e.key==='ArrowDown'){
       e.preventDefault();var x=parseFloat(inp.value)||0,st=(unit==='em'||unit==='rem')?(e.shiftKey?1:0.1):(e.shiftKey?10:1);
@@ -1144,7 +1162,7 @@ function spPop(prop,i,n,btn,setSide){
     if(e.key==='Enter'){e.preventDefault();close(true);}
     else if(e.key==='Escape'){e.preventDefault();e.stopPropagation();if(menu)closeMenu();else close(false);}
   }
-  function onDown(e){if(menu&&!menu.contains(e.target)&&e.target!==ub)closeMenu();if(!pop.contains(e.target)&&e.target!==btn)close(true);}
+  function onDown(e){if(menu&&!menu.contains(e.target)&&e.target!==ub&&e.target!==vbt)closeMenu();if(!pop.contains(e.target)&&e.target!==btn)close(true);}
   pop.addEventListener('keydown',onKey);
   document.addEventListener('pointerdown',onDown,true);
   function close(apply){
@@ -1167,7 +1185,7 @@ function spaceControl(n,el){
   function mk(prop,i){
     var pp=prop+'-'+SIDE[i],b=document.createElement('button');b.type='button';b.className='spv';b.id='f-'+pp;
     var set=sideVals(n,prop)[i];
-    b.textContent=set||(cs?String(Math.round(parseFloat(cs[camel(pp)])||0)):'0');if(!set)b.classList.add('dim');
+    b.textContent=set?spLabel(set):(cs?String(Math.round(parseFloat(cs[camel(pp)])||0)):'0');if(!set)b.classList.add('dim');if(set&&varRef(set))b.title='Uses the variable --'+varRef(set);
     b.title=pp+' — drag left or right to change, click to type, Shift = steps of 10, Alt = all four sides';
     b.setAttribute('aria-label',pp+' '+b.textContent);
     btns[pp]=b;
@@ -1179,7 +1197,7 @@ function spaceControl(n,el){
       if(prop==='padding'&&v<0)v=0;
       var out=fmtNum(v,u);
       if(e.altKey){for(var k=0;k<4;k++){setSide(k,out);var o=btns[prop+'-'+SIDE[k]];if(o){o.textContent=out;o.classList.remove('dim');}}}
-      else{setSide(i,out);b.textContent=out;b.classList.remove('dim');}
+      else{setSide(i,out);b.textContent=spLabel(out);b.classList.remove('dim');}
       d.setAttribute('data-'+prop,shorthandOf(find(S.sel).node,prop));
       spHighlight(prop,i);
     }

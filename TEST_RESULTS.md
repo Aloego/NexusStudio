@@ -1067,3 +1067,7 @@ Approved on 2026-11-20 (user said "Approve").
 ## 2026-11-24 — Variable choosers Part 2 (size and text fields)
 
 - `node test/e2e.js`: 363 passed, 3 failed (same 3 as before). Eight field types checked: offers only the matching variable, chip, var() output, detach, missing.
+
+## 2026-11-24 — Variable choosers Part 3 (margin and padding popup)
+
+- `node test/e2e.js`: 369 passed, 3 failed (same 3 as before). Checks: lists only spacing variables, closes on pick, box shows name, var() in shorthand, margin works, typing a number replaces it.

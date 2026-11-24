@@ -646,3 +646,12 @@
 - [ ] Part 3 (margin and padding popup) — in progress
 
 **Status:** In progress (Awaiting User Approval after Part 3)
+
+## Variable choosers — Part 3 of 3: margin and padding popup
+
+- [x] The Space box popup (value + unit) gets a ◆ button listing only Spacing variables; choosing one closes the popup, the box shows the variable name (long names shortened with …), and the CSS is written with var(--name) inside the normal margin / padding shorthand; typing a number replaces the variable again
+- [x] Tests added (369 passed, 3 failed as before)
+- [x] Commit and push changes to feature branch
+- [ ] User personally tries Parts 1 to 3
+
+**Status:** Awaiting User Approval (Parts 1, 2 and 3)
