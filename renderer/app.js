@@ -1302,7 +1302,7 @@ function renderProps(){
     d.innerHTML='<summary><span>'+esc(s.name)+'</span><span class="cnt">'+(cnt?cnt+' set':esc(h))+'</span></summary>';
     var b=document.createElement('div');b.className='body';
     var shown=0;
-    if(s.k==='type'){b.appendChild(tsRow(n));shown++;}
+    if(s.k==='type'&&appliesTo('font-size',n,f.parent)){b.appendChild(tsRow(n));shown++;}
     s.rows.forEach(function(r){
       if(r[0]==='SPACE'){b.appendChild(spaceControl(n,el));shown++;return;}
       if(r[0]==='INSETS'){if(insetsApply(n)){b.appendChild(insetBlock(n));shown++;}return;}

@@ -668,6 +668,17 @@
 - [x] Saved with the project, shared by all pages; also listed in MCP get_document as text_styles
 - [x] Tests added (381 passed, 3 failed as before)
 - [x] Commit and push changes to feature branch
-- [ ] User personally tries it
+- [x] User personally tries it
+
+**Status:** Approved by user (2026-11-25)
+
+## Fix: Text style dropdown only where text settings apply
+
+**Found (2026-11-25):** the new Text style dropdown made the Typography section appear on images, lines, line breaks and videos, against the standing rule that the CSS panel shows only what applies to the selected element. Fix approved by the user.
+
+- [x] The dropdown (and the Typography section it forced open) now only shows where font size applies
+- [x] Test added for img, hr and div (384 passed, 3 failed as before)
+- [x] Commit and push changes to feature branch
+- [ ] User personally checks an image and a heading
 
 **Status:** Awaiting User Approval

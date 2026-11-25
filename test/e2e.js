@@ -1009,6 +1009,13 @@ page.on('console', function (m) {
   ok(!/text-title/.test(await vc()) && !/\.text-/.test(await vc()), 'deleting a style removes it from the elements and from the CSS');
   while ((await defPage.$$('#propBody .vsub:not([data-vtype="textstyle"]) .vdel')).length) await defPage.click('#propBody .vsub:not([data-vtype="textstyle"]) .vdel');
   await defPage.click('#railR [data-rail="css"]');
+  console.log('Text style dropdown only where text applies');
+  for (const tag of ['img', 'hr', 'div']) {
+    await pgCall('add_element', { tag: tag });
+    const hasTs = await defPage.evaluate(function () { return !!document.getElementById('f-textstyle'); });
+    const hasType = await defPage.evaluate(function () { return [].some.call(document.querySelectorAll('#propBody > details.sec > summary > span:first-child'), function (x) { return x.textContent === 'Typography'; }); });
+    ok(hasTs === (tag === 'div') && hasType === (tag === 'div'), '<' + tag + '>: the Typography section and Text style dropdown ' + (tag === 'div' ? 'show' : 'are hidden (no text settings apply)'));
+  }
   console.log('Device size dropdown');
   ok((await defPage.$$('#devs [data-w]')).length === 0, 'the Mobile / Tablet / Desktop tab buttons are gone');
   ok((await defPage.textContent('#devBtn')).trim() === 'Responsive', 'the dropdown starts as Responsive');

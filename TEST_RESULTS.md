@@ -1075,3 +1075,7 @@ Approved on 2026-11-20 (user said "Approve").
 ## 2026-11-25 — Text styles
 
 - `node test/e2e.js`: 381 passed, 3 failed (same 3 as before). Checks: nothing written until a style exists, name cleaning, five slots, invalid value refused, variable in a slot, class output, dropdown, class on element, canvas, live update, rename, delete.
+
+## 2026-11-25 — Text style dropdown only where text applies
+
+- `node test/e2e.js`: 384 passed, 3 failed (same 3 as before).
