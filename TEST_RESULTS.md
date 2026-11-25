@@ -1071,3 +1071,7 @@ Approved on 2026-11-20 (user said "Approve").
 ## 2026-11-24 — Variable choosers Part 3 (margin and padding popup)
 
 - `node test/e2e.js`: 369 passed, 3 failed (same 3 as before). Checks: lists only spacing variables, closes on pick, box shows name, var() in shorthand, margin works, typing a number replaces it.
+
+## 2026-11-25 — Text styles
+
+- `node test/e2e.js`: 381 passed, 3 failed (same 3 as before). Checks: nothing written until a style exists, name cleaning, five slots, invalid value refused, variable in a slot, class output, dropdown, class on element, canvas, live update, rename, delete.

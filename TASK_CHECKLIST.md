@@ -636,7 +636,7 @@
 - [ ] Part 2 (size and text fields) — in progress
 - [ ] Part 3 (margin and padding popup) — not started
 
-**Status:** In progress (Awaiting User Approval after Part 3)
+**Status:** Approved by user (2026-11-25)
 
 ## Variable choosers — Part 2 of 3: size and text fields
 
@@ -645,13 +645,29 @@
 - [x] Commit and push changes to feature branch
 - [ ] Part 3 (margin and padding popup) — in progress
 
-**Status:** In progress (Awaiting User Approval after Part 3)
+**Status:** Approved by user (2026-11-25)
 
 ## Variable choosers — Part 3 of 3: margin and padding popup
 
 - [x] The Space box popup (value + unit) gets a ◆ button listing only Spacing variables; choosing one closes the popup, the box shows the variable name (long names shortened with …), and the CSS is written with var(--name) inside the normal margin / padding shorthand; typing a number replaces the variable again
 - [x] Tests added (369 passed, 3 failed as before)
 - [x] Commit and push changes to feature branch
-- [ ] User personally tries Parts 1 to 3
+- [x] User personally tries Parts 1 to 3
 
-**Status:** Awaiting User Approval (Parts 1, 2 and 3)
+**Status:** Approved by user (2026-11-25), Parts 1, 2 and 3
+
+## Text styles (one name for a whole set of text settings)
+
+**Request (2026-11-25):** group font family, size and the rest under one name, define once, pick it when working on text. Plan explained; user approved the "class, updates everywhere" way.
+
+- [x] New "Text styles" group in the Variables tab: name + five slots (font family, size, weight, line height, letter spacing); each slot takes a plain value or a Typography variable (◆)
+- [x] Written once as a class after :root, for example `.text-heading-1 { ... }`, only for styles that exist and only slots that are filled
+- [x] Typography section of the CSS panel has a Text style dropdown; picking adds the class `text-<name>` to the element; "none" removes it
+- [x] Editing a style updates every element using it (canvas and export); renaming renames the class on all elements on all pages; deleting removes it from the elements and the CSS
+- [x] The element's own panel styles are never written under a text-style class, so the two can't clash; an element's own value (for example an inline font size) still wins over the style
+- [x] Saved with the project, shared by all pages; also listed in MCP get_document as text_styles
+- [x] Tests added (381 passed, 3 failed as before)
+- [x] Commit and push changes to feature branch
+- [ ] User personally tries it
+
+**Status:** Awaiting User Approval

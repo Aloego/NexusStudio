@@ -52,7 +52,7 @@ function cleanVars(a){
   return out;
 }
 function cleanState(o){if(!isObj(o)||!isObj(o.root))throw new Error('This is not a NexusStudio project.');
-  var st={vars:cleanVars(o.vars),gfonts:Array.isArray(o.gfonts)?o.gfonts.slice(0,60):[],root:cleanNode(o.root,0,{n:0}),css:typeof o.css==='string'?o.css:'',js:typeof o.js==='string'?o.js:'',title:typeof o.title==='string'&&o.title?o.title.slice(0,120):'untitled-page'};
+  var st={vars:cleanVars(o.vars),tstyles:cleanTstyles(o.tstyles),gfonts:Array.isArray(o.gfonts)?o.gfonts.slice(0,60):[],root:cleanNode(o.root,0,{n:0}),css:typeof o.css==='string'?o.css:'',js:typeof o.js==='string'?o.js:'',title:typeof o.title==='string'&&o.title?o.title.slice(0,120):'untitled-page'};
   if(Array.isArray(o.pages)&&o.pages.length){
     st.pages=[];
     o.pages.slice(0,30).forEach(function(p,i){
@@ -78,7 +78,7 @@ function nid(){uid++;return 'n'+uid;}
 function N(tag,o){o=o||{};return {id:nid(),tag:tag,ns:o.ns===2?2:o.ns?1:0,text:o.text||'',style:o.style||{},attrs:o.attrs||{},children:o.children||[]};}
 function clone(n){var c=JSON.parse(JSON.stringify(n));(function re(x){x.id=nid();x.children.forEach(re);})(c);return c;}
 
-var S={vars:[],gfonts:[],pages:[],pageIdx:0,root:null,css:'',js:'',title:'nebula-landing-v2',sel:null,collapsed:{},open:{layout:1,space:1,box:1,type:1,flex:1,bg:1,border:1},
+var S={vars:[],gfonts:[],tstyles:[],pages:[],pageIdx:0,root:null,css:'',js:'',title:'nebula-landing-v2',sel:null,collapsed:{},open:{layout:1,space:1,box:1,type:1,flex:1,bg:1,border:1},
   view:'canvas',zoom:1,dw:880,dh:640,rtab:'css',ltab:'el',logical:false,pending:{},grid:true,rulers:true};
 var hist=[],hi=-1,dragId=null;
 
@@ -530,7 +530,7 @@ function pageSnap(p){return JSON.stringify({root:p.root,css:p.css||'',js:p.js||'
 function markClean(){syncActive();S.pages.forEach(function(p){p.base=pageSnap(p);});}
 function isPageModified(i){syncActive();var p=S.pages[i];return !p||p.base==null?!!S.dirty:pageSnap(p)!==p.base;}
 function allPages(){syncActive();return S.pages.map(function(p){var o={name:p.name,title:p.title,root:p.root,css:p.css,js:p.js};if(p.closed)o.closed=true;return o;});}
-function fullState(){return {vars:S.vars,gfonts:S.gfonts,root:S.root,css:S.css,js:S.js,title:S.title,pages:allPages(),idx:S.pageIdx};}
+function fullState(){return {vars:S.vars,tstyles:S.tstyles,gfonts:S.gfonts,root:S.root,css:S.css,js:S.js,title:S.title,pages:allPages(),idx:S.pageIdx};}
 function setPages(st){
   S.pages=(st.pages&&st.pages.length)?st.pages.map(function(p){return {name:p.name,title:p.title,root:p.root,css:p.css,js:p.js,closed:p.closed===true};}):[{name:'Page 1'}];
   S.pageIdx=st.pages&&st.pages.length?Math.min(st.idx|0,S.pages.length-1):0;
@@ -541,7 +541,7 @@ function syncUndo(){$('#btnUndo').disabled=hi<=0;$('#btnRedo').disabled=hi>=hist
 function restore(s){var o=JSON.parse(s);S.root=o.root;S.css=o.css;S.js=o.js;S.title=o.title||S.title;if(!find(S.sel))S.sel=S.root.id;$('#projName').value=S.title;fixUid();renderAll();}
 function undo(){if(hi>0){hi--;restore(hist[hi]);save();syncUndo();}}
 function redo(){if(hi<hist.length-1){hi++;restore(hist[hi]);save();syncUndo();}}
-function loadState(st){S.vars=cleanVars(st.vars);S.gfonts=cleanGfonts(st.gfonts);S.root=st.root;S.css=st.css||'';S.js=st.js||'';S.title=st.title||'untitled-page';S.sel=S.root.id;S.collapsed={};S.pending={};setPages(st);fixUid();$('#projName').value=S.title;hist=[];hi=-1;commit();markClean();renderAll();}
+function loadState(st){S.vars=cleanVars(st.vars);S.tstyles=cleanTstyles(st.tstyles);S.gfonts=cleanGfonts(st.gfonts);S.root=st.root;S.css=st.css||'';S.js=st.js||'';S.title=st.title||'untitled-page';S.sel=S.root.id;S.collapsed={};S.pending={};setPages(st);fixUid();$('#projName').value=S.title;hist=[];hi=-1;commit();markClean();renderAll();}
 function changed(){commit();renderAll();}
 
 /* ---------- canvas rendering ---------- */
@@ -597,7 +597,7 @@ function renderCanvas(){
   Object.keys(S.root.style).forEach(function(p){page.style.setProperty(p,S.root.style[p]);});
   page.style.width=S.dw+'px';page.style.minHeight=S.dh+'px';page.style.transform='scale('+S.zoom+')';
   page.setAttribute('data-nid',S.root.id);
-  var sty=document.createElement('style');sty.textContent=S.css;page.appendChild(sty);
+  var sty=document.createElement('style');sty.textContent=tstylesCss()+'\n'+S.css;page.appendChild(sty);
   S.root.children.forEach(function(c){page.appendChild(build(c));});
   sizeFrame();
 }
@@ -1271,6 +1271,20 @@ function appliesTo(p,n,par){
 }
 function insetsApply(n){return n.ns||(n.style.position&&n.style.position!=='static')||LOGI.concat(PHYS).some(function(p){return n.style[p];});}
 function secCount(n,key){var c=0;Object.keys(n.style).forEach(function(p){if(KNOWN[p]===key)c++;});return c;}
+function tsRow(n){
+  var w=document.createElement('div');w.className='fld tsrow';
+  var lab=document.createElement('label');lab.htmlFor='f-textstyle';lab.textContent='Text style';w.appendChild(lab);
+  var cur=tsClassOn(n),sel=document.createElement('select');sel.id='f-textstyle';
+  var o0=document.createElement('option');o0.value='';o0.textContent=S.tstyles.length?'\u2014 none \u2014':'No text styles yet (create one in Variables)';sel.appendChild(o0);
+  S.tstyles.forEach(function(t){var op=document.createElement('option');op.value=t.name;op.textContent=t.name;if(t.name===cur)op.selected=true;sel.appendChild(op);});
+  sel.addEventListener('change',function(){
+    var c=(n.attrs['class']||'').split(/\s+/).filter(Boolean).filter(function(x){return !(x.indexOf('text-')===0&&tsByName(x.slice(5)));});
+    if(sel.value)c.push(tsClass(sel.value));
+    if(c.length)n.attrs['class']=c.join(' ');else delete n.attrs['class'];
+    renderCanvas();placeOverlay();commit();renderProps();renderCodeIfOpen();
+  });
+  w.appendChild(sel);return w;
+}
 function renderProps(){
   spClear();closeVarMenu();
   var f=find(S.sel);if(!f)return;var n=f.node,box=$('#propBody');box.innerHTML='';
@@ -1288,6 +1302,7 @@ function renderProps(){
     d.innerHTML='<summary><span>'+esc(s.name)+'</span><span class="cnt">'+(cnt?cnt+' set':esc(h))+'</span></summary>';
     var b=document.createElement('div');b.className='body';
     var shown=0;
+    if(s.k==='type'){b.appendChild(tsRow(n));shown++;}
     s.rows.forEach(function(r){
       if(r[0]==='SPACE'){b.appendChild(spaceControl(n,el));shown++;return;}
       if(r[0]==='INSETS'){if(insetsApply(n)){b.appendChild(insetBlock(n));shown++;}return;}
@@ -1414,6 +1429,34 @@ function gfontsLink(){
   if(!names.length)return '';
   var q=names.map(function(n){var f=fontInfo(n);return 'family='+n.replace(/ /g,'+')+(f.kind==='g'?':wght@400;700':'');}).join('&');
   return '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?'+q+'&display=swap">\n';
+}
+/* Text styles: one name for a whole set of text settings; picked on an element it adds the class text-<name> */
+var TSSLOTS=[['ff','font-family','fontfamily','Font family'],['fs','font-size','fontsize','Font size'],['fw','font-weight','fontweight','Font weight'],['lh','line-height','lineheight','Line height'],['ls','letter-spacing','letterspacing','Letter spacing']];
+function tsClass(name){return 'text-'+name;}
+function tsByName(name){for(var i=0;i<S.tstyles.length;i++)if(S.tstyles[i].name===name)return S.tstyles[i];return null;}
+function cleanTsVal(type,v){v=String(v==null?'':v).trim();if(!v)return '';if(/^var\(--[a-z][a-z0-9-]{0,29}\)$/.test(v))return v;return cleanVarValue(type,v);}
+function cleanTstyles(a){
+  var out=[],seen={};
+  (Array.isArray(a)?a:[]).slice(0,50).forEach(function(x){
+    if(!isObj(x)||typeof x.name!=='string'||!VARNAME.test(x.name)||seen[x.name])return;
+    var o={name:x.name};TSSLOTS.forEach(function(sl){o[sl[0]]=cleanTsVal(sl[2],x[sl[0]]);});
+    seen[x.name]=1;out.push(o);
+  });
+  return out;
+}
+function tstylesCss(){
+  return S.tstyles.map(function(t){
+    var d=TSSLOTS.filter(function(sl){return t[sl[0]];}).map(function(sl){return '  '+sl[1]+': '+t[sl[0]]+';';});
+    return d.length?'.'+tsClass(t.name)+' {\n'+d.join('\n')+'\n}':'';
+  }).filter(Boolean).join('\n\n');
+}
+function tsClassOn(n){var c=(n.attrs['class']||'').split(/\s+/);for(var i=0;i<c.length;i++)if(c[i].indexOf('text-')===0&&tsByName(c[i].slice(5)))return c[i].slice(5);return '';}
+function tsEachClass(fn){var seen=[];S.pages.map(function(p){return p.root;}).concat([S.root]).forEach(function(r){if(!r||seen.indexOf(r)>=0)return;seen.push(r);walk(r,fn);});}
+function tsReplaceClass(oldName,newName){
+  var o=tsClass(oldName);
+  tsEachClass(function(n){var c=(n.attrs['class']||'').split(/\s+/).filter(Boolean);if(c.indexOf(o)<0)return;
+    c=c.map(function(x){return x===o?(newName?tsClass(newName):''):x;}).filter(Boolean);
+    if(c.length)n.attrs['class']=c.join(' ');else delete n.attrs['class'];});
 }
 var VGROUPS=[['Colours',['color']],['Typography',['fontfamily','fontsize','fontweight','lineheight','letterspacing']],['Sizes',['spacing','radius','dimension','thickness']]];
 var WEIGHTS=[['100','Thin'],['200','Extra light'],['300','Light'],['400','Regular'],['500','Medium'],['600','Semi bold'],['700','Bold'],['800','Extra bold'],['900','Black']];
@@ -1546,6 +1589,59 @@ function renderVarsTab(box){
     });
     p.appendChild(d);
   });
+  renderTextStyles(p,done);
+}
+function renderTextStyles(p,done){
+  var d=document.createElement('details');d.className='vg';d.setAttribute('data-vgroup','Text styles');d.open=!S.vclosed['g:Text styles'];
+  d.addEventListener('toggle',function(){S.vclosed['g:Text styles']=!d.open;});
+  var sm=document.createElement('summary');sm.innerHTML='<span>Text styles</span><em>'+S.tstyles.length+'</em>';d.appendChild(sm);
+  var sub=document.createElement('div');sub.className='vsub';sub.setAttribute('data-vtype','textstyle');
+  var h=document.createElement('div');h.className='vsh';var lb=document.createElement('span');lb.textContent='One name for font, size, weight and spacing';h.appendChild(lb);
+  var ab=document.createElement('button');ab.type='button';ab.className='vaddb';ab.setAttribute('data-add','textstyle');ab.textContent='+ Add';
+  ab.addEventListener('click',function(){
+    if(S.tstyles.length>=50)return toast('A project can have up to 50 text styles');
+    var n=1;while(tsByName('style-'+n))n++;
+    S.tstyles.push({name:'style-'+n,ff:'',fs:'16px',fw:'',lh:'',ls:''});S.vclosed['g:Text styles']=false;done();renderProps();
+  });
+  h.appendChild(ab);sub.appendChild(h);
+  S.tstyles.forEach(function(t){
+    var row=document.createElement('div');row.className='vrow tsc';
+    var nm=document.createElement('input');nm.type='text';nm.className='vname';nm.value=t.name;nm.maxLength=30;nm.spellcheck=false;nm.setAttribute('aria-label','Text style name');
+    nm.addEventListener('change',function(){
+      var n=nm.value.trim().toLowerCase().replace(/^-+/,'').replace(/[^a-z0-9-]+/g,'-');
+      if(!VARNAME.test(n)){toast('A name uses letters, numbers and dashes and starts with a letter');nm.value=t.name;return;}
+      if(S.tstyles.some(function(o){return o!==t&&o.name===n;})){toast('Another text style already has that name');nm.value=t.name;return;}
+      tsReplaceClass(t.name,n);t.name=n;done();renderCanvas();renderProps();
+    });
+    var del=document.createElement('button');del.type='button';del.className='vdel';del.setAttribute('aria-label','Delete '+t.name);del.title='Delete this text style';del.textContent='\u2715';
+    del.addEventListener('click',function(){tsReplaceClass(t.name,'');S.tstyles.splice(S.tstyles.indexOf(t),1);done();renderCanvas();renderProps();toast('Deleted the text style. Elements that used it lost it.');});
+    var top=document.createElement('div');top.className='vtop';top.appendChild(nm);top.appendChild(del);row.appendChild(top);
+    TSSLOTS.forEach(function(sl){
+      var line=document.createElement('div');line.className='tsl';line.setAttribute('data-slot',sl[0]);
+      var l=document.createElement('span');l.textContent=sl[3];line.appendChild(l);
+      var ref=varRef(t[sl[0]]),rv=ref?varOf(ref):null;
+      if(ref){
+        var chip=document.createElement('span');chip.className='vchip'+(rv?'':' gone');
+        var b=document.createElement('b');b.textContent=ref;chip.appendChild(b);
+        var x=document.createElement('button');x.type='button';x.className='vx';x.setAttribute('aria-label','Detach variable '+ref);x.title='Detach: keep the value but stop using the variable';x.textContent='\u2715';
+        x.addEventListener('click',function(){t[sl[0]]=rv?rv.value:'';done();renderCanvas();renderProps();});chip.appendChild(x);line.appendChild(chip);
+      }else{
+        var inp=document.createElement('input');inp.type='text';inp.className='vval';inp.value=t[sl[0]];inp.spellcheck=false;inp.setAttribute('aria-label',sl[3]);inp.placeholder='not set';
+        inp.addEventListener('change',function(){
+          var c=cleanTsVal(sl[2],inp.value);
+          if(inp.value.trim()&&!c){toast('That is not a valid '+sl[3].toLowerCase());inp.value=t[sl[0]];return;}
+          t[sl[0]]=c;done();renderCanvas();renderProps();
+        });
+        line.appendChild(inp);
+      }
+      var vb=document.createElement('button');vb.type='button';vb.className='vbtn';vb.setAttribute('aria-label','Choose a variable for '+sl[3]);vb.title='Use a '+vtype(sl[2])[1].toLowerCase()+' variable';vb.textContent='\u25C6';
+      vb.addEventListener('click',function(){openVarMenu(vb,sl[2],function(v){t[sl[0]]='var(--'+v.name+')';done();renderCanvas();renderProps();});});
+      line.appendChild(vb);row.appendChild(line);
+    });
+    var use=document.createElement('code');use.className='vuse';use.textContent='class="'+tsClass(t.name)+'"';row.appendChild(use);
+    sub.appendChild(row);
+  });
+  d.appendChild(sub);p.appendChild(d);
 }
 function renderCrumbs(){
   var box=$('#crumbPath');box.innerHTML='<button>html</button><i>›</i>';
@@ -1563,7 +1659,7 @@ function calcSel(){
   var used={},m={};
   S.root.children.forEach(function(c){walk(c,function(n){
     if(!hasStyle(n))return;
-    var sel='',id=n.attrs.id,cl=(n.attrs['class']||'').trim();
+    var sel='',id=n.attrs.id,cl=(n.attrs['class']||'').split(/\s+/).filter(function(c){return !(c.indexOf('text-')===0&&tsByName(c.slice(5)));}).join(' ').trim();
     if(id&&/^[A-Za-z_][\w-]*$/.test(id))sel='#'+id;
     else if(cl&&cl.split(/\s+/).every(function(c){return /^[A-Za-z_-][\w-]*$/.test(c);}))sel='.'+cl.split(/\s+/).join('.');
     if(sel&&!used[sel]){used[sel]=1;m[n.id]=sel;}
@@ -1607,7 +1703,7 @@ function varsCss(){
   if(!S.vars.length)return '';
   return ':root {\n'+S.vars.map(function(v){return '  --'+v.name+': '+v.value+';';}).join('\n')+'\n}';
 }
-function pageCss(){return [varsCss(),genCss(),S.css.trim()].filter(Boolean).join('\n\n');}
+function pageCss(){return [varsCss(),tstylesCss(),genCss(),S.css.trim()].filter(Boolean).join('\n\n');}
 function docWrap(head,body,tail){
   return '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>'+esc(S.title)+'</title>\n'+head+'</head>\n<body>\n'+body+'\n'+tail+'</body>\n</html>\n';
 }
@@ -1995,7 +2091,7 @@ function copyText(text,msg){
   try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(function(){toast(msg||'Copied');},fb);return;}}catch(e){}
   fb();
 }
-function projectJson(){var f=fullState();return JSON.stringify({format:'nexusstudio',version:1,vars:f.vars,gfonts:f.gfonts,root:f.root,css:f.css,js:f.js,title:f.title,pages:f.pages,idx:f.idx});}
+function projectJson(){var f=fullState();return JSON.stringify({format:'nexusstudio',version:1,vars:f.vars,tstyles:f.tstyles,gfonts:f.gfonts,root:f.root,css:f.css,js:f.js,title:f.title,pages:f.pages,idx:f.idx});}
 function parseProject(text){var o=JSON.parse(text);if(!o||o.format!=='nexusstudio')throw new Error('This file is not a NexusStudio project.');return cleanState(o);}
 function needDesktop(){toast('This works in the NexusStudio desktop app');}
 function afterNew(){S.file=null;S.dirty=false;if(D)D.newProject();if(D)D.setDocName(S.title);}
@@ -2262,7 +2358,7 @@ function boot(){
   var st=null;
   try{var raw=localStorage.getItem(KEY);if(raw){st=cleanState(JSON.parse(raw));}}catch(e){st=null;}
   if(!st)st=sample();
-  S.vars=cleanVars(st.vars);S.gfonts=cleanGfonts(st.gfonts);S.root=st.root;S.css=st.css||'';S.js=st.js||'';S.title=st.title||'nebula-landing-v2';S.sel=S.root.id;setPages(st);fixUid();
+  S.vars=cleanVars(st.vars);S.tstyles=cleanTstyles(st.tstyles);S.gfonts=cleanGfonts(st.gfonts);S.root=st.root;S.css=st.css||'';S.js=st.js||'';S.title=st.title||'nebula-landing-v2';S.sel=S.root.id;setPages(st);fixUid();
   $('#projName').value=S.title;
   hist=[snap()];hi=0;
   renderPalette();syncLeft();setDevice(880,640);
@@ -2356,7 +2452,7 @@ function parseSnippet(html){
 }
 
 API.get_document=function(){
-  return {title:S.title,html:genBody(),custom_css:S.css,generated_css:genCss(),variables:S.vars.map(function(v){return {name:v.name,type:v.type,value:v.value};}),js:S.js,selected:pubId(find(S.sel).node),element_count:countNodes(),
+  return {title:S.title,html:genBody(),custom_css:S.css,generated_css:genCss(),text_styles:S.tstyles.map(function(t){return JSON.parse(JSON.stringify(t));}),variables:S.vars.map(function(v){return {name:v.name,type:v.type,value:v.value};}),js:S.js,selected:pubId(find(S.sel).node),element_count:countNodes(),
     note:'The html has only the ids you gave elements. In get_tree elements have ids like n12; use those as element ids.'};
 };
 API.get_tree=function(a){

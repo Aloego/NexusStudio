@@ -406,3 +406,5 @@ Awaiting User Approval (drag positioned elements on the canvas). Rejected and re
 - 2026-11-23: Font family variables use FHEADS/FONTS/FALLB lists; S.gfonts holds fonts the user approved for a Google Fonts link (gfontsLink() in fullDoc/pageFiles head). App CSP not changed, so Preview does not load Google fonts. Awaiting User Approval.
 
 - 2026-11-24: Variable choosers done in three parts: border/outline colour fields, attachVarPicker() for size and text fields (VARFOR map), and the Space popup ◆ (spPop). Awaiting User Approval.
+
+- 2026-11-25: Text styles (S.tstyles, tstylesCss, tsRow, renderTextStyles, TSSLOTS). Class name = text-<name>; calcSel ignores text-style classes. Awaiting User Approval.

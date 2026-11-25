@@ -440,3 +440,6 @@ select.vval{background:var(--bg);border:1px solid var(--line);border-radius:5px;
 .spvmenu{min-width:150px;max-height:200px;overflow:auto}.spvmenu code{margin-left:auto;font:10px var(--mono);color:var(--dim)}
 .spvar{min-width:26px;padding:0 6px}
 .spv{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:52px}
+
+.tsl{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11px;color:var(--muted)}.tsl>span:first-child{width:78px;flex:none}.tsl .vval,.tsl .vchip{flex:1;min-width:0}
+.tsc .vuse{margin-top:8px}
