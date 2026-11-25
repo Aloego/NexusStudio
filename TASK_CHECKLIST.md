@@ -679,6 +679,6 @@
 - [x] The dropdown (and the Typography section it forced open) now only shows where font size applies
 - [x] Test added for img, hr and div (384 passed, 3 failed as before)
 - [x] Commit and push changes to feature branch
-- [ ] User personally checks an image and a heading
+- [x] User personally checks an image and a heading
 
-**Status:** Awaiting User Approval
+**Status:** Approved by user (2026-11-25)
