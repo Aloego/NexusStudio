@@ -26,6 +26,8 @@ Close tab vs delete page (state: Approved 2026-11-21; it replaces the delete-pag
 
 - 2026-11-22: user APPROVED the Space control popup, the Space/Size split, the removed middle text and the first Space box design ("Approved."). Step 2 (Webstudio-style rows for the other CSS fields) still not started; a second visual pass on the Space box is only needed if the user asks.
 
+- 2026-11-26: Space box rebuilt to the approved bowtie design (eight shaped sides, darker hover, up-down / left-right cursors, popup on the clicked spot with blue label + info note, unit list, ◆ variables). Files: renderer/app.js (spaceControl, spPop, SPINFO), renderer/styles.css, test/e2e.js. 393 passed, 3 failed as before. Awaiting User Approval. Next: user tests it; then Step 2 (Webstudio-style CSS rows) and the Techpoint site test steps.
+
 - 2026-11-22: panel widths: one open tab narrower (right 260, left 200), whole panel as before (320/240), plus drag handles that remember the width. Awaiting User Approval.
 
 ## Latest Session (2026-11-21, follow-up: files named after pages — Approved 2026-11-21)

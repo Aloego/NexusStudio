@@ -682,3 +682,19 @@
 - [x] User personally checks an image and a heading
 
 **Status:** Approved by user (2026-11-25)
+
+## Space box: Webstudio-style bowtie, hover, click box and info note
+
+**Request (2026-11-26):** the Space box built from the approved design: eight shaped sides (margin outside, padding inside), the side under the mouse turns darker, two-arrow cursors, a click box right on the clicked side with the blue side label, the value and the unit list, and a click on the blue label shows a short info note. Design approved by the user 2026-11-26 ("Approved. Implement this."); plan explained and approved earlier.
+
+- [x] Space box drawn as one picture with eight clickable shapes (top and bottom lighter, left and right darker in the same way as the design), the centre rectangle and the Margin / Padding tags
+- [x] Hover: only that side turns darker; top and bottom sides show the up-down arrow cursor, left and right sides the left-right one (also kept during a drag)
+- [x] Drag: top and bottom sides change by moving up or down, left and right sides by moving left or right; Shift = steps of 10, Alt = all four sides; keyboard arrows still work
+- [x] Click: the value box opens on the clicked side with the blue side label, the value box, the unit (list: px, %, em, rem, vw, vh, svw, svh, lvw, lvh, dvw, dvh, ch, tick on the current one) and the ◆ spacing-variable button (kept)
+- [x] Clicking the blue label opens a short info note for that side (all eight written in plain English, with a "Good to know" line); Escape closes the note first, opening the unit or variable list closes it
+- [x] Nothing is added to the user's pages; only the app panel changed (renderer/app.js, renderer/styles.css)
+- [x] Tests updated and added (393 passed, 3 failed as before)
+- [x] Commit and push changes to feature branch
+- [ ] User personally tries it (hover, drag, click, blue label)
+
+**Status:** Awaiting User Approval

@@ -1077,10 +1077,20 @@ function spHighlight(prop,i){
 }
 function spClear(){if(spHi)spHi.hidden=true;}
 /* the little popup under a margin/padding number: a side-name chip, the value, and the unit as a clickable label that opens a list */
+var SPINFO={
+  'margin-top':['Margin-top is empty space outside the element, above it. Raise it to push the element down, away from whatever sits above it. Margin is see-through, so the element\'s background never fills it.','Good to know: when two elements touch vertically, their margins can overlap and the larger one wins. A negative value pulls the element upwards.'],
+  'margin-right':['Margin-right is empty space outside the element, on its right side. Raise it to push the next element sideways, away from this one. Margin is see-through, so the background never fills it.','Good to know: set margin-left and margin-right to auto on an element with a fixed width and it sits in the centre.'],
+  'margin-bottom':['Margin-bottom is empty space outside the element, below it. Raise it to push the next element further down the page. Margin is see-through, so the background never fills it.','Good to know: when two elements touch vertically, their margins can overlap and the larger one wins.'],
+  'margin-left':['Margin-left is empty space outside the element, on its left side. Raise it to push the element to the right, away from whatever sits beside it. Margin is see-through, so the background never fills it.','Good to know: auto on both left and right centres an element that has a fixed width.'],
+  'padding-top':['Padding-top is empty space inside the element, between its top edge and its content (text, images, other elements). Raise it so the content sits lower. The element\'s background colour fills this space.','Good to know: padding can never be negative, and it makes the element bigger unless it uses box-sizing: border-box.'],
+  'padding-right':['Padding-right is empty space inside the element, between its right edge and its content. Raise it to keep the content away from the right edge. The element\'s background colour fills this space.','Good to know: padding can never be negative, and it makes the element bigger unless it uses box-sizing: border-box.'],
+  'padding-bottom':['Padding-bottom is empty space inside the element, between its bottom edge and its content. Raise it to give the content more room at the bottom. The element\'s background colour fills this space.','Good to know: padding can never be negative, and it makes the element bigger unless it uses box-sizing: border-box.'],
+  'padding-left':['Padding-left is empty space inside the element, between its left edge and its content. Raise it to push the content away from the left edge. The element\'s background colour fills this space.','Good to know: padding can never be negative, and it makes the element bigger unless it uses box-sizing: border-box.']
+};
 var SPUNITS=['px','%','em','rem','vw','vh','svw','svh','lvw','lvh','dvw','dvh','ch'],spPopEl=null;
 function spPopClose(apply){if(spPopEl&&spPopEl._close)spPopEl._close(apply);}
 function spLabel(v){var r=varRef(v);return r||v;}
-function spPop(prop,i,n,btn,setSide){
+function spPop(prop,i,n,btn,setSide,pt){
   spPopClose(true);
   var pp=prop+'-'+SIDE[i],keys=[prop].concat(SIDE.map(function(sd){return prop+'-'+sd;}));
   var saved={};keys.forEach(function(k){saved[k]=n.style[k];});
@@ -1088,7 +1098,8 @@ function spPop(prop,i,n,btn,setSide){
   if(m&&(m[2]===''||SPUNITS.indexOf(m[2])>=0)){unit=m[2]||'px';val=m[1];}else unit='';
   var pop=document.createElement('div');pop.className='sppop';pop.setAttribute('role','dialog');pop.setAttribute('aria-label',pp);
   var row=document.createElement('div');row.className='sppr';
-  var chip=document.createElement('span');chip.className='spchip';chip.textContent=cap(prop)+' '+cap(SIDE[i]);
+  var chip=document.createElement('button');chip.type='button';chip.className='spchip';chip.id='fpop-chip';chip.title='What is '+pp+'? Click for a short explanation';chip.setAttribute('aria-expanded','false');chip.textContent=cap(prop)+' '+cap(SIDE[i]);
+  var info=null;
   var inp=document.createElement('input');inp.type='text';inp.id='fpop-val';inp.value=val;inp.setAttribute('aria-label',pp+' value');inp.autocomplete='off';
   var ub=document.createElement('button');ub.type='button';ub.id='fpop-unit';ub.className='spu';ub.setAttribute('aria-haspopup','listbox');
   var menu=null;
@@ -1096,10 +1107,10 @@ function spPop(prop,i,n,btn,setSide){
   showUnit();
   var vbt=document.createElement('button');vbt.type='button';vbt.id='fpop-var';vbt.className='spu spvar';vbt.title='Use a spacing variable';vbt.setAttribute('aria-label','Choose a spacing variable');vbt.setAttribute('aria-haspopup','listbox');vbt.textContent='\u25C6';
   row.appendChild(chip);row.appendChild(inp);row.appendChild(ub);row.appendChild(vbt);pop.appendChild(row);
-  document.body.appendChild(pop);spPopEl=pop;
+  document.body.appendChild(pop);spPopEl=pop;btn.classList.add('on');
   var br=btn.getBoundingClientRect(),pw=pop.offsetWidth,ph=pop.offsetHeight;
-  var left=Math.max(8,Math.min(window.innerWidth-pw-8,br.left+br.width/2-pw/2)),top=br.bottom+6;
-  if(top+ph>window.innerHeight-8)top=Math.max(8,br.top-ph-6);
+  var cx=pt?pt.x:br.left+br.width/2,cy=pt?pt.y:br.top+br.height/2;
+  var left=Math.max(8,Math.min(window.innerWidth-pw-8,cx-pw/2)),top=Math.max(8,Math.min(window.innerHeight-ph-8,cy-ph/2));
   pop.style.left=left+'px';pop.style.top=top+'px';
   var changed=false,closed=false;
   function out(){
@@ -1110,11 +1121,21 @@ function spPop(prop,i,n,btn,setSide){
   }
   function live(){
     var o=out();if(o==null)return;
-    setSide(i,o);changed=true;btn.textContent=spLabel(o);btn.classList.remove('dim');
+    setSide(i,o);changed=true;btn._set(spLabel(o));btn.classList.remove('dim');
     var d=btn.closest('.spx');if(d)d.setAttribute('data-'+prop,shorthandOf(find(S.sel).node,prop));
     spHighlight(prop,i);
   }
   function closeMenu(){if(menu){menu.remove();menu=null;}}
+  function closeInfo(){if(info){info.remove();info=null;chip.classList.remove('on');chip.setAttribute('aria-expanded','false');}}
+  chip.addEventListener('click',function(e){
+    e.preventDefault();
+    if(info){closeInfo();return;}
+    closeMenu();
+    var t=SPINFO[pp]||['',''];
+    info=document.createElement('div');info.className='spinfo';info.id='fpop-info';info.setAttribute('role','note');
+    info.innerHTML='<code>'+esc(pp)+'</code><p>'+esc(t[0])+'</p><p class="spgood">'+esc(t[1])+'</p>';
+    pop.appendChild(info);chip.classList.add('on');chip.setAttribute('aria-expanded','true');
+  });
   inp.addEventListener('input',function(){
     var v=inp.value.trim(),mm=SPNUM.exec(v);
     if(mm&&mm[2]&&SPUNITS.indexOf(mm[2].toLowerCase())>=0){unit=mm[2].toLowerCase();inp.value=mm[1];}
@@ -1125,6 +1146,7 @@ function spPop(prop,i,n,btn,setSide){
   ub.addEventListener('click',function(e){
     e.preventDefault();
     if(menu){closeMenu();return;}
+    closeInfo();
     menu=document.createElement('div');menu.className='spmenu';menu.setAttribute('role','listbox');
     SPUNITS.forEach(function(u){
       var it=document.createElement('button');it.type='button';it.setAttribute('data-u',u);it.setAttribute('role','option');
@@ -1139,6 +1161,7 @@ function spPop(prop,i,n,btn,setSide){
   vbt.addEventListener('click',function(e){
     e.preventDefault();
     if(menu){closeMenu();return;}
+    closeInfo();
     menu=document.createElement('div');menu.className='spmenu spvmenu';menu.setAttribute('role','listbox');
     var sv=S.vars.filter(function(v){return v.type==='spacing';});
     if(!sv.length){var no=document.createElement('div');no.className='vnone';no.textContent='No spacing variables yet.';menu.appendChild(no);}
@@ -1160,7 +1183,7 @@ function spPop(prop,i,n,btn,setSide){
   });
   function onKey(e){
     if(e.key==='Enter'){e.preventDefault();close(true);}
-    else if(e.key==='Escape'){e.preventDefault();e.stopPropagation();if(menu)closeMenu();else close(false);}
+    else if(e.key==='Escape'){e.preventDefault();e.stopPropagation();if(menu)closeMenu();else if(info)closeInfo();else close(false);}
   }
   function onDown(e){if(menu&&!menu.contains(e.target)&&e.target!==ub&&e.target!==vbt)closeMenu();if(!pop.contains(e.target)&&e.target!==btn)close(true);}
   pop.addEventListener('keydown',onKey);
@@ -1168,7 +1191,7 @@ function spPop(prop,i,n,btn,setSide){
   function close(apply){
     if(closed)return;closed=true;
     document.removeEventListener('pointerdown',onDown,true);
-    pop.remove();spPopEl=null;
+    pop.remove();spPopEl=null;btn.classList.remove('on');
     if(!apply&&changed){keys.forEach(function(k){setStyle(k,saved[k]||'');});}
     else if(changed){commit();renderCodeIfOpen();}
     spClear();renderProps();
@@ -1177,17 +1200,32 @@ function spPop(prop,i,n,btn,setSide){
   inp.focus();inp.select();
   spHighlight(prop,i);
 }
+/* The Space box: a 188 x 132 picture. Each of the eight sides is one clickable shape (margin outside, padding inside). */
+var SPREG={
+  margin:[[[0,0],[188,0],[152,34],[36,34]],[[188,0],[188,132],[152,98],[152,34]],[[188,132],[0,132],[36,98],[152,98]],[[0,132],[0,0],[36,34],[36,98]]],
+  padding:[[[36,34],[152,34],[122,56],[66,56]],[[152,34],[152,98],[122,76],[122,56]],[[152,98],[36,98],[66,76],[122,76]],[[36,98],[36,34],[66,56],[66,76]]]
+};
+var SPSIGN=[1,-1,-1,1];
 function spaceControl(n,el){
   var d=document.createElement('div');d.className='spx';
   var cs=el?getComputedStyle(el):null;
   d.setAttribute('data-margin',shorthandOf(n,'margin'));d.setAttribute('data-padding',shorthandOf(n,'padding'));
   var btns={};
   function mk(prop,i){
-    var pp=prop+'-'+SIDE[i],b=document.createElement('button');b.type='button';b.className='spv';b.id='f-'+pp;
+    var pp=prop+'-'+SIDE[i],b=document.createElement('button');b.type='button';b.id='f-'+pp;
+    var vert=(i===0||i===2),sign=SPSIGN[i];
+    b.className='spr '+(prop==='margin'?'m':'p')+' '+(vert?'v':'h');
+    var pts=SPREG[prop][i],x0=999,y0=999,x1=0,y1=0;
+    pts.forEach(function(q){x0=Math.min(x0,q[0]);y0=Math.min(y0,q[1]);x1=Math.max(x1,q[0]);y1=Math.max(y1,q[1]);});
+    var pc=function(v,a,w){return (Math.round((v-a)/w*1000)/10)+'%';};
+    b.style.left=(Math.round(x0/188*1000)/10)+'%';b.style.top=(Math.round(y0/132*1000)/10)+'%';
+    b.style.width=(Math.round((x1-x0)/188*1000)/10)+'%';b.style.height=(Math.round((y1-y0)/132*1000)/10)+'%';
+    b.style.clipPath='polygon('+pts.map(function(q){return pc(q[0],x0,x1-x0)+' '+pc(q[1],y0,y1-y0);}).join(',')+')';
+    var vt=document.createElement('span');vt.className='vt';b.appendChild(vt);
+    b._set=function(t){vt.textContent=t;b.setAttribute('aria-label',pp+' '+t);};
     var set=sideVals(n,prop)[i];
-    b.textContent=set?spLabel(set):(cs?String(Math.round(parseFloat(cs[camel(pp)])||0)):'0');if(!set)b.classList.add('dim');if(set&&varRef(set))b.title='Uses the variable --'+varRef(set);
-    b.title=pp+' — drag left or right to change, click to type, Shift = steps of 10, Alt = all four sides';
-    b.setAttribute('aria-label',pp+' '+b.textContent);
+    b._set(set?spLabel(set):(cs?String(Math.round(parseFloat(cs[camel(pp)])||0)):'0'));if(!set)b.classList.add('dim');
+    b.title=pp+(set&&varRef(set)?' (uses the variable --'+varRef(set)+')':'')+' \u2014 drag '+(vert?'up or down':'left or right')+' to change, click to type, Shift = steps of 10, Alt = all four sides';
     btns[pp]=b;
     function setSide(k,val){writeSide(prop,k,val);}
     function current(){var cur=sideVals(n,prop)[i];var m=SPNUM.exec(cur||'');if(m)return {v:parseFloat(m[1]),u:m[2]||'px'};return {v:cs?Math.round(parseFloat(cs[camel(pp)])||0):0,u:'px'};}
@@ -1196,53 +1234,52 @@ function spaceControl(n,el){
       if(u==='em'||u==='rem')v=e.shiftKey?Math.round(v):Math.round(v*10)/10;else v=e.shiftKey?Math.round(v/10)*10:Math.round(v);
       if(prop==='padding'&&v<0)v=0;
       var out=fmtNum(v,u);
-      if(e.altKey){for(var k=0;k<4;k++){setSide(k,out);var o=btns[prop+'-'+SIDE[k]];if(o){o.textContent=out;o.classList.remove('dim');}}}
-      else{setSide(i,out);b.textContent=spLabel(out);b.classList.remove('dim');}
+      if(e.altKey){for(var k=0;k<4;k++){setSide(k,out);var o=btns[prop+'-'+SIDE[k]];if(o){o._set(out);o.classList.remove('dim');}}}
+      else{setSide(i,out);b._set(spLabel(out));b.classList.remove('dim');}
       d.setAttribute('data-'+prop,shorthandOf(find(S.sel).node,prop));
       spHighlight(prop,i);
     }
+    function dragCls(on){document.body.classList.toggle('spdrag',on);document.body.classList.toggle('spv',on&&vert);}
     var drag=null;
     b.addEventListener('pointerdown',function(e){
       if(e.button!==0)return;
-      drag={x:e.clientX,base:current(),moved:false};document.body.classList.add('spdrag');
+      drag={x:e.clientX,y:e.clientY,base:current(),moved:false};dragCls(true);
       try{b.setPointerCapture(e.pointerId);}catch(x){}
       e.preventDefault();
     });
     b.addEventListener('pointermove',function(e){
-      if(!drag)return;var dx=e.clientX-drag.x;
-      if(!drag.moved&&Math.abs(dx)<3)return;
-      drag.moved=true;b.classList.add('drag');apply(drag.base,dx,e);
+      if(!drag)return;var dd=((vert?e.clientY-drag.y:e.clientX-drag.x))*sign;
+      if(!drag.moved&&Math.abs(dd)<3)return;
+      drag.moved=true;b.classList.add('drag');apply(drag.base,dd,e);
     });
     b.addEventListener('pointerup',function(e){
-      if(!drag)return;var was=drag;drag=null;b.classList.remove('drag');document.body.classList.remove('spdrag');
+      if(!drag)return;var was=drag;drag=null;b.classList.remove('drag');dragCls(false);
       try{b.releasePointerCapture(e.pointerId);}catch(x){}
       if(was.moved){commit();renderCodeIfOpen();renderProps();spHighlight(prop,i);}
-      else edit();
+      else edit({x:e.clientX,y:e.clientY});
     });
-    b.addEventListener('pointercancel',function(){document.body.classList.remove('spdrag');if(drag){var m=drag.moved;drag=null;b.classList.remove('drag');if(m){commit();renderProps();}}});
+    b.addEventListener('pointercancel',function(){dragCls(false);if(drag){var m=drag.moved;drag=null;b.classList.remove('drag');if(m){commit();renderProps();}}});
     b.addEventListener('mouseenter',function(){spHighlight(prop,i);});
     b.addEventListener('mouseleave',function(){if(!drag)spClear();});
     b.addEventListener('focus',function(){spHighlight(prop,i);});
     b.addEventListener('blur',function(){spClear();});
     b.addEventListener('keydown',function(e){
-      if(e.key==='Enter'||e.key===' '){e.preventDefault();edit();return;}
+      if(e.key==='Enter'||e.key===' '){e.preventDefault();edit(null);return;}
       if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight'&&e.key!=='ArrowUp'&&e.key!=='ArrowDown')return;
       e.preventDefault();var dir=(e.key==='ArrowRight'||e.key==='ArrowUp')?1:-1;
       apply(current(),dir*(e.shiftKey?10:1),{shiftKey:false,altKey:e.altKey});commit();renderCodeIfOpen();
     });
-    function edit(){
-      spPop(prop,i,n,b,setSide);
+    function edit(pt){
+      spPop(prop,i,n,b,setSide,pt);
     }
     return b;
   }
-  function lab(t){var s=document.createElement('span');s.className='spl';s.textContent=t;return s;}
-  function mid(a,c,z){var m=document.createElement('div');m.className='spm';m.appendChild(a);m.appendChild(c);m.appendChild(z);return m;}
-  var ct=document.createElement('div');ct.className='spc';
-  var pad=document.createElement('div');pad.className='spp';
-  pad.appendChild(lab('padding'));pad.appendChild(mk('padding',0));pad.appendChild(mid(mk('padding',3),ct,mk('padding',1)));pad.appendChild(mk('padding',2));
-  var mar=document.createElement('div');mar.className='spmg';
-  mar.appendChild(lab('margin'));mar.appendChild(mk('margin',0));mar.appendChild(mid(mk('margin',3),pad,mk('margin',1)));mar.appendChild(mk('margin',2));
-  d.appendChild(mar);
+  var svg='<svg viewBox="0 0 188 132" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0L36 34M188 0L152 34M188 132L152 98M0 132L36 98" /><path d="M36 34L66 56M152 34L122 56M152 98L122 76M36 98L66 76" /></svg>';
+  [['margin',0],['margin',1],['margin',2],['margin',3],['padding',0],['padding',1],['padding',2],['padding',3]].forEach(function(q){d.appendChild(mk(q[0],q[1]));});
+  d.insertAdjacentHTML('beforeend',svg);
+  var c=document.createElement('div');c.className='spc';d.appendChild(c);
+  var t1=document.createElement('span');t1.className='spt';t1.style.left='2.7%';t1.style.top='2.3%';t1.textContent='Margin';d.appendChild(t1);
+  var t2=document.createElement('span');t2.className='spt';t2.style.left='21.3%';t2.style.top='28%';t2.textContent='Padding';d.appendChild(t2);
   return d;
 }
 /* Which CSS fields make sense for the selected element. A field you have already set always stays visible; the Search box can add any property. */

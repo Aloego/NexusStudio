@@ -359,18 +359,20 @@ page.on('console', function (m) {
   ok(await defPage.evaluate(function () { return [].slice.call(document.querySelectorAll('#page div')).some(function (d) { return d.style.paddingLeft === '8px' && d.style.paddingTop === '16px' && d.style.paddingRight === '16px'; }); }), 'the element on the canvas has that padding');
   await typeSide('margin-bottom', '24px');
   ok((await spAttr('margin')) === '0 0 24px' && (await sideVal('margin-bottom')) === '24px', 'a margin side is combined with the others ' + JSON.stringify(await spAttr('margin')));
-  // dragging a number left or right
-  const dragBy = async function (id, dx, mods) {
+  // dragging a side: top and bottom sides move up/down, left and right sides move left/right. 'amt' is how much the VALUE should change.
+  const dragBy = async function (id, amt, mods) {
     const bb = await defPage.locator('#f-' + id).boundingBox();
     const x = bb.x + bb.width / 2, y = bb.y + bb.height / 2;
+    const vert = /top|bottom/.test(id), sign = /top|left/.test(id) ? 1 : -1, mv = amt * sign;
+    const at = function (f) { return vert ? [x, y + mv * f] : [x + mv * f, y]; };
     if (mods) for (const m of mods) await defPage.keyboard.down(m);
-    await defPage.mouse.move(x, y); await defPage.mouse.down(); await defPage.mouse.move(x + dx / 2, y, { steps: 3 }); await defPage.mouse.move(x + dx, y, { steps: 3 }); await defPage.mouse.up();
+    await defPage.mouse.move(x, y); await defPage.mouse.down(); await defPage.mouse.move(at(0.5)[0], at(0.5)[1], { steps: 3 }); await defPage.mouse.move(at(1)[0], at(1)[1], { steps: 3 }); await defPage.mouse.up();
     if (mods) for (const m of mods) await defPage.keyboard.up(m);
   };
   await dragBy('margin-top', 12);
-  ok((await sideVal('margin-top')) === '12px' && /^12px/.test(await spAttr('margin')), 'dragging right raises a margin ' + (await sideVal('margin-top')));
+  ok((await sideVal('margin-top')) === '12px' && /^12px/.test(await spAttr('margin')), 'dragging down raises the top margin ' + (await sideVal('margin-top')));
   await dragBy('margin-top', -5);
-  ok((await sideVal('margin-top')) === '7px', 'dragging left lowers it ' + (await sideVal('margin-top')));
+  ok((await sideVal('margin-top')) === '7px', 'dragging up lowers it ' + (await sideVal('margin-top')));
   await dragBy('padding-top', -100);
   ok((await sideVal('padding-top')) === '0', 'padding cannot go below 0');
   await dragBy('padding-right', 30, ['Shift']);
@@ -381,6 +383,16 @@ page.on('console', function (m) {
   const pickUnit = async function (u) { await defPage.click('#fpop-unit'); await defPage.click('.spmenu [data-u="' + u + '"]'); };
   await defPage.click('#f-padding-bottom');
   ok((await defPage.isVisible('#fpop-val')) && /Padding Bottom/.test(await defPage.textContent('.spchip')) && (await defPage.textContent('#fpop-unit')) === 'PX', 'clicking a number opens a popup with the side name, a value box and the unit');
+  ok(await defPage.evaluate(function () { const p = document.querySelector('.sppop').getBoundingClientRect(), b = document.getElementById('f-padding-bottom').getBoundingClientRect(); return p.left < b.right && p.right > b.left && p.top < b.bottom && p.bottom > b.top; }), 'the popup opens right on the side that was clicked');
+  ok(await defPage.evaluate(function () { return getComputedStyle(document.querySelector('.spchip')).color === 'rgb(147, 197, 253)'; }), 'the side name in the popup is blue');
+  ok(!(await defPage.isVisible('#fpop-info')), 'no info note until the name is clicked');
+  await defPage.click('#fpop-chip');
+  ok((await defPage.isVisible('#fpop-info')) && /padding-bottom/.test(await defPage.textContent('#fpop-info code')) && /inside the element/i.test(await defPage.textContent('#fpop-info')), 'clicking the blue name shows a short info note about that side');
+  await defPage.click('#fpop-unit');
+  ok(!(await defPage.isVisible('#fpop-info')) && (await defPage.locator('.spmenu').count()) === 1, 'opening the unit list closes the info note');
+  await defPage.click('#fpop-unit');
+  await defPage.click('#fpop-chip'); await defPage.press('#fpop-val', 'Escape');
+  ok(!(await defPage.isVisible('#fpop-info')) && (await defPage.isVisible('#fpop-val')), 'Escape closes the info note first and keeps the popup');
   await defPage.click('#fpop-unit');
   ok(JSON.stringify(await defPage.$$eval('.spmenu [data-u]', function (o) { return o.map(function (x) { return x.getAttribute('data-u'); }); })) === '["px","%","em","rem","vw","vh","svw","svh","lvw","lvh","dvw","dvh","ch"]' && /\u2713/.test(await defPage.textContent('.spmenu [data-u="px"]')), 'the unit label opens a list with a tick on the current unit');
   await defPage.click('.spmenu [data-u="rem"]');
@@ -403,11 +415,21 @@ page.on('console', function (m) {
   ok(!(await defPage.isVisible('#fpop-val')), 'clicking outside closes the popup');
   {
     const bb = await defPage.locator('#f-padding-top').boundingBox();
-    await defPage.mouse.move(bb.x + bb.width / 2, bb.y + bb.height / 2); await defPage.mouse.down(); await defPage.mouse.move(bb.x + bb.width / 2 + 10, bb.y + 5, { steps: 3 });
-    ok(await defPage.evaluate(function () { return document.body.classList.contains('spdrag') && getComputedStyle(document.body).cursor === 'ew-resize'; }), 'the two-arrow cursor stays while dragging');
+    await defPage.mouse.move(bb.x + bb.width / 2, bb.y + bb.height / 2); await defPage.mouse.down(); await defPage.mouse.move(bb.x + bb.width / 2 + 3, bb.y + bb.height / 2 + 10, { steps: 3 });
+    ok(await defPage.evaluate(function () { return document.body.classList.contains('spdrag') && getComputedStyle(document.body).cursor === 'ns-resize'; }), 'the up-down arrow cursor stays while dragging a top or bottom side');
     await defPage.mouse.up();
     ok(await defPage.evaluate(function () { return !document.body.classList.contains('spdrag'); }), 'the drag cursor is released');
-    ok(await defPage.evaluate(function () { return getComputedStyle(document.getElementById('f-padding-top')).cursor === 'ew-resize'; }), 'a number shows the left-right arrow cursor on hover');
+    ok(await defPage.evaluate(function () { return getComputedStyle(document.getElementById('f-padding-top')).cursor === 'ns-resize' && getComputedStyle(document.getElementById('f-margin-bottom')).cursor === 'ns-resize'; }), 'top and bottom sides show the up-down arrow cursor on hover');
+    ok(await defPage.evaluate(function () { return getComputedStyle(document.getElementById('f-padding-left')).cursor === 'ew-resize' && getComputedStyle(document.getElementById('f-margin-right')).cursor === 'ew-resize'; }), 'left and right sides show the left-right arrow cursor on hover');
+    const bgOf = function (id) { return defPage.evaluate(function (i) { return getComputedStyle(document.getElementById(i)).backgroundColor; }, id); };
+    await defPage.mouse.move(2, 2);
+    const mRest = await bgOf('f-margin-top'), pRest = await bgOf('f-padding-top');
+    await defPage.hover('#f-margin-top'); await defPage.waitForTimeout(250);
+    const mHov = await bgOf('f-margin-top');
+    await defPage.hover('#f-padding-top'); await defPage.waitForTimeout(250);
+    const pHov = await bgOf('f-padding-top');
+    ok(mHov !== mRest && pHov !== pRest && (await bgOf('f-margin-left')) === mRest, 'hovering a side turns only that side darker');
+    ok(await defPage.evaluate(function () { const x = document.querySelector('#propBody .spx'); const b = document.getElementById('f-padding-left'), c = document.querySelector('#propBody .spc'); const rb = b.getBoundingClientRect(), rc = c.getBoundingClientRect(), rx = x.getBoundingClientRect(); return document.querySelectorAll('#propBody .spr').length === 8 && rb.right <= rc.left + rb.width && rx.width > 100; }), 'the Space box has eight shaped sides and the centre rectangle');
   }
   await defPage.hover('#f-padding-left');
   ok((await defPage.evaluate(function () { const h = document.getElementById('spHi'); return !!h && !h.hidden && h.className === 'p' && parseFloat(h.style.width) > 0; })), 'hovering a number lights up the area on the canvas');
