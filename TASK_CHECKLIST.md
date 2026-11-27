@@ -698,3 +698,19 @@
 - [ ] User personally tries it (hover, drag, click, blue label)
 
 **Status:** Awaiting User Approval
+
+## Space box: "Learn more" link in the side info note
+
+**Request (2026-11-27):** add a Learn more link to the info note that opens the local Zeal documentation by default; if Zeal is not there, let the user choose MDN or W3Schools. Plan explained; the user approved it on 2026-11-27 on the condition that nothing already working or approved is disturbed.
+
+- [x] "Learn more" link at the bottom of the info note under the blue label, for all eight sides
+- [x] It opens the local Zeal first (`css:margin-top` and so on) when the desktop app can find Zeal
+- [x] If Zeal is not found, or outside the desktop app, the note offers MDN and W3Schools (the exact page for that property), plus Set up Zeal (path box and help)
+- [x] New safe request in the desktop app that only accepts the eight margin and padding names (main/main.js, main/preload.js)
+- [x] The info note slides up so it never runs off the bottom of the screen
+- [x] The existing element documentation box, the Space box shapes, hover, drag and click box are not changed
+- [x] Tests added (402 passed, 3 failed as before)
+- [x] Commit and push changes to feature branch
+- [ ] User personally tries it (best with and without Zeal installed)
+
+**Status:** Awaiting User Approval

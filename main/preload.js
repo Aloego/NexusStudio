@@ -24,6 +24,7 @@ contextBridge.exposeInMainWorld('nexus', {
   mcpSetEnabled: function (on) { return ipcRenderer.invoke('mcp:enable', !!on); },
   mcpInstallClaudeDesktop: function () { return ipcRenderer.invoke('mcp:installClaudeDesktop'); },
   docsOpenOnline: function (tag, site) { return ipcRenderer.invoke('docs:openOnline', tag, site); },
+  docsOpenCss: function (prop, site) { return ipcRenderer.invoke('docs:openCss', prop, site); },
   docsOpenZeal: function (tag) { return ipcRenderer.invoke('docs:openZeal', tag); },
   docsSetZealPath: function (p) { return ipcRenderer.invoke('docs:setZealPath', p); },
   onAiActivity: function (cb) { ipcRenderer.on('ai:activity', function (_e, msg) { cb(msg); }); }

@@ -388,6 +388,13 @@ page.on('console', function (m) {
   ok(!(await defPage.isVisible('#fpop-info')), 'no info note until the name is clicked');
   await defPage.click('#fpop-chip');
   ok((await defPage.isVisible('#fpop-info')) && /padding-bottom/.test(await defPage.textContent('#fpop-info code')) && /inside the element/i.test(await defPage.textContent('#fpop-info')), 'clicking the blue name shows a short info note about that side');
+  ok(await defPage.isVisible('#fpop-learn') && /Learn more/.test(await defPage.textContent('#fpop-learn')), 'the info note has a Learn more link');
+  await defPage.evaluate(function () { window.__opened = []; window.open = function (u) { window.__opened.push(u); return null; }; });
+  await defPage.click('#fpop-learn');
+  ok((await defPage.isVisible('#fpop-lchoice')) && (await defPage.isVisible('#fpop-mdn')) && (await defPage.isVisible('#fpop-w3')), 'with no offline documentation available, the choice between MDN and W3Schools is shown');
+  await defPage.click('#fpop-mdn'); await defPage.click('#fpop-w3');
+  ok(JSON.stringify(await defPage.evaluate(function () { return window.__opened; })) === '["https://developer.mozilla.org/en-US/docs/Web/CSS/padding-bottom","https://www.w3schools.com/cssref/pr_padding-bottom.php"]', 'MDN and W3Schools open the page for that exact property ' + JSON.stringify(await defPage.evaluate(function () { return window.__opened; })));
+  ok(await defPage.isVisible('#fpop-info'), 'the info note stays open after using a link');
   await defPage.click('#fpop-unit');
   ok(!(await defPage.isVisible('#fpop-info')) && (await defPage.locator('.spmenu').count()) === 1, 'opening the unit list closes the info note');
   await defPage.click('#fpop-unit');
@@ -1105,6 +1112,7 @@ page.on('console', function (m) {
       onAiRequest: function (cb) { window.__aiCb = cb; }, aiRespond: function (id, ok, p) { (window.__aiResp = window.__aiResp || []).push({ id: id, ok: ok, p: p }); },
       onAiActivity: function (cb) { window.__actCb = cb; },
       docsOpenOnline: async function (t, site) { (window.__docs = window.__docs || []).push(['online', t, site]); return { ok: true }; },
+      docsOpenCss: async function (p, site) { (window.__docs = window.__docs || []).push(['css', p, site]); if (site === 'zeal') return window.__zealMissing ? { needPath: true, error: 'Zeal was not found on this computer.' } : { ok: true }; return { ok: true, url: 'https://x/' + p }; },
       docsOpenZeal: async function (t) { (window.__docs = window.__docs || []).push(['zeal', t]); return window.__zealMissing ? { needPath: true, error: 'Zeal was not found on this computer.' } : { ok: true }; },
       docsSetZealPath: async function (p) { (window.__docs = window.__docs || []).push(['path', p]); if (!/zeal/i.test(p)) return { error: 'bad' }; window.__zealMissing = false; return { ok: true }; }
     };
@@ -1159,6 +1167,22 @@ page.on('console', function (m) {
   await dpage.fill('#docZealPath', 'C:\\Zeal\\zeal.exe'); await dpage.click('#docZealSave'); await dpage.waitForTimeout(150);
   const docCalls = await dpage.evaluate(function () { return window.__docs; });
   ok(JSON.stringify(docCalls.map(function (c) { return c[0]; })) === '["online","online","zeal","path","zeal"]' && docCalls[0][1] === docCalls[2][1] && docCalls[0][2] === 'mdn' && docCalls[1][2] === 'w3schools' && !(await dpage.isVisible('#docZealRow')), 'desktop: MDN button, Zeal button asks for the path, saving it opens Zeal ' + JSON.stringify(docCalls));
+  // Space box: Learn more opens the local Zeal first, and offers MDN / W3Schools only if Zeal is missing
+  await dpage.keyboard.press('Escape');
+  await dpage.evaluate(function () { window.__docs = []; window.__zealMissing = false; });
+  await dpage.waitForSelector('#f-margin-top');
+  await dpage.click('#f-margin-top'); await dpage.click('#fpop-chip'); await dpage.click('#fpop-learn'); await dpage.waitForTimeout(150);
+  ok(JSON.stringify(await dpage.evaluate(function () { return window.__docs; })) === '[["css","margin-top","zeal"]]' && !(await dpage.isVisible('#fpop-lchoice')) && /Zeal was started/.test(await dpage.textContent('#fpop-lmsg')), 'Learn more opens the local Zeal first (css:margin-top) and shows no choice when it works');
+  await dpage.evaluate(function () { window.__zealMissing = true; });
+  await dpage.click('#fpop-learn'); await dpage.waitForTimeout(150);
+  ok((await dpage.isVisible('#fpop-lchoice')) && /Zeal \(the offline documentation\) was not found/.test(await dpage.textContent('#fpop-lchoice')), 'if Zeal is not found, the choice between MDN and W3Schools appears');
+  await dpage.click('#fpop-w3'); await dpage.waitForTimeout(100);
+  ok(JSON.stringify(await dpage.evaluate(function () { return window.__docs.slice(-1)[0]; })) === '["css","margin-top","w3schools"]', 'the desktop app is asked to open W3Schools for margin-top');
+  await dpage.click('#fpop-zsetup');
+  ok(await dpage.isVisible('#fpop-zpath') && /CSS documentation set/.test(await dpage.textContent('#fpop-zhelp')), 'Set up Zeal shows a path box and help');
+  await dpage.fill('#fpop-zpath', 'C:\\Zeal\\zeal.exe'); await dpage.click('#fpop-zsave'); await dpage.waitForTimeout(200);
+  ok(JSON.stringify(await dpage.evaluate(function () { return window.__docs.slice(-2); })) === '[["path","C:\\\\Zeal\\\\zeal.exe"],["css","margin-top","zeal"]]' && !(await dpage.isVisible('#fpop-lchoice')), 'saving the Zeal path tries Zeal again');
+  await dpage.keyboard.press('Escape'); await dpage.keyboard.press('Escape');
   await dpage.evaluate(function () { document.querySelector('#pgAdd').click(); });
   await dpage.evaluate(function () { document.querySelector('#pagebar [data-pg="0"] .pn').click(); });
   await dpage.evaluate(function () { return window.NexusAPI.call('set_css', { css: '.x { color: red; }' }); });

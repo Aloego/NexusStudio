@@ -346,6 +346,21 @@ ipcMain.handle('docs:openZeal', async function (e, tag) {
   try { await shell.openExternal('dash://' + query); return { ok: true, method: 'dash:// address' }; } catch (err) { /* fall through */ }
   return { needPath: true, error: 'Zeal was not found on this computer.' };
 });
+// Learn more about one margin or padding side (from the info note in the Space box). Only these eight names are accepted.
+const CSS_SIDES = ['margin-top', 'margin-right', 'margin-bottom', 'margin-left', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left'];
+ipcMain.handle('docs:openCss', async function (e, prop, site) {
+  if (!fromEditor(e) || typeof prop !== 'string' || CSS_SIDES.indexOf(prop) < 0) return { error: 'No documentation for that property.' };
+  if (site === 'zeal') {
+    const query = 'css:' + prop;
+    for (const exe of findZeal()) { if (await spawnQuiet(exe, [query])) return { ok: true, method: exe }; }
+    if (process.platform === 'linux' && !inWsl() && await spawnQuiet('zeal', [query])) return { ok: true, method: 'zeal' };
+    try { await shell.openExternal('dash://' + query); return { ok: true, method: 'dash:// address' }; } catch (err) { /* fall through */ }
+    return { needPath: true, error: 'Zeal was not found on this computer.' };
+  }
+  const url = site === 'w3schools' ? 'https://www.w3schools.com/cssref/pr_' + prop + '.php' : 'https://developer.mozilla.org/en-US/docs/Web/CSS/' + prop;
+  try { const method = await openUrl(url); return { ok: true, url: url, method: method }; }
+  catch (err) { return { error: 'Could not open your browser: ' + err.message, url: url }; }
+});
 ipcMain.handle('docs:setZealPath', function (e, p) {
   if (!fromEditor(e) || typeof p !== 'string') return { error: 'That path is not valid.' };
   p = p.trim().replace(/^"(.*)"$/, '$1');

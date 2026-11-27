@@ -1134,7 +1134,42 @@ function spPop(prop,i,n,btn,setSide,pt){
     var t=SPINFO[pp]||['',''];
     info=document.createElement('div');info.className='spinfo';info.id='fpop-info';info.setAttribute('role','note');
     info.innerHTML='<code>'+esc(pp)+'</code><p>'+esc(t[0])+'</p><p class="spgood">'+esc(t[1])+'</p>';
-    pop.appendChild(info);chip.classList.add('on');chip.setAttribute('aria-expanded','true');
+    var lm=document.createElement('div');lm.className='splearn';
+    var lb=document.createElement('button');lb.type='button';lb.id='fpop-learn';lb.className='splink';lb.textContent='Learn more \u2197';
+    var ls=document.createElement('p');ls.id='fpop-lmsg';ls.className='splmsg';ls.setAttribute('role','status');
+    var ch=document.createElement('div');ch.id='fpop-lchoice';ch.className='splchoice';ch.hidden=true;
+    ch.innerHTML='<p>Zeal (the offline documentation) was not found. Open the explanation online instead:</p><div class="splrow"><button type="button" id="fpop-mdn" class="spbtn">MDN</button><button type="button" id="fpop-w3" class="spbtn">W3Schools</button><button type="button" id="fpop-zsetup" class="spbtn ghost">Set up Zeal</button></div><div class="splrow" id="fpop-zrow" hidden><input type="text" id="fpop-zpath" aria-label="Zeal folder or zeal.exe path" placeholder="C:\\Program Files\\Zeal"><button type="button" id="fpop-zsave" class="spbtn">Save</button></div><p class="splhelp" id="fpop-zhelp" hidden>Paste the folder where Zeal is installed (or the full path of zeal.exe). In Zeal, also install the CSS documentation set (Tools, Docsets), then press Learn more again.</p>';
+    function fit(){if(!info)return;var r=info.getBoundingClientRect(),over=r.bottom-(window.innerHeight-8);if(over>0){var pr=pop.getBoundingClientRect();pop.style.top=Math.max(8,pr.top-over)+'px';}}
+    function say(t){ls.textContent=t||'';fit();}
+    function openOnline(site){
+      var url=site==='w3schools'?'https://www.w3schools.com/cssref/pr_'+pp+'.php':'https://developer.mozilla.org/en-US/docs/Web/CSS/'+pp;
+      if(window.nexus&&window.nexus.docsOpenCss){
+        say('Asking your computer to open the page\u2026');
+        window.nexus.docsOpenCss(pp,site).then(function(r){say(r&&r.error?r.error+' Link: '+((r&&r.url)||url):'Sent to your default browser. If no window appears, copy this link: '+url);});
+      }else{window.open(url,'_blank','noopener');say('Opened in a new tab.');}
+    }
+    function showChoice(msg){ch.hidden=false;say(msg||'');fit();}
+    lb.addEventListener('click',function(){
+      if(!(window.nexus&&window.nexus.docsOpenCss)){showChoice('Offline documentation is only available in the NexusStudio desktop app.');return;}
+      say('Opening Zeal\u2026');
+      window.nexus.docsOpenCss(pp,'zeal').then(function(r){
+        if(r&&r.needPath){showChoice('');return;}
+        ch.hidden=true;say(r&&r.error?r.error:'Zeal was started on '+pp+'. If it does not show the page, check that Zeal has the CSS documentation set installed.');
+      });
+    });
+    ch.addEventListener('click',function(ev){
+      var t=ev.target&&ev.target.id;
+      if(t==='fpop-mdn')openOnline('mdn');
+      else if(t==='fpop-w3')openOnline('w3schools');
+      else if(t==='fpop-zsetup'){var zr=ch.querySelector('#fpop-zrow'),zh=ch.querySelector('#fpop-zhelp');zr.hidden=!zr.hidden;zh.hidden=zr.hidden;fit();if(!zr.hidden)ch.querySelector('#fpop-zpath').focus();}
+      else if(t==='fpop-zsave'){
+        if(!(window.nexus&&window.nexus.docsSetZealPath)){say('Setting a Zeal path needs the desktop app.');return;}
+        window.nexus.docsSetZealPath(ch.querySelector('#fpop-zpath').value).then(function(r){if(r&&r.error){say(r.error);return;}ch.hidden=true;lb.click();});
+      }
+    });
+    ch.addEventListener('keydown',function(ev){if(ev.key==='Enter'&&ev.target.id==='fpop-zpath'){ev.preventDefault();ch.querySelector('#fpop-zsave').click();}});
+    lm.appendChild(lb);lm.appendChild(ls);lm.appendChild(ch);info.appendChild(lm);
+    pop.appendChild(info);chip.classList.add('on');chip.setAttribute('aria-expanded','true');fit();
   });
   inp.addEventListener('input',function(){
     var v=inp.value.trim(),mm=SPNUM.exec(v);

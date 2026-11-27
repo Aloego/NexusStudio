@@ -1084,3 +1084,8 @@ Approved on 2026-11-20 (user said "Approve").
 
 - `node test/e2e.js`: 393 passed, 3 failed (same 3 as before: get_window_state, get_app_state, get_process_info). New or changed checks: eight shaped sides, hover darkens only that side, up-down and left-right cursors, drag direction per side, popup opens on the clicked side, blue label, info note (open, Escape, closes when a list opens).
 - Also looked at screenshots of the real panel (hover and the open info note). Manual testing by the user is still needed.
+
+## 2026-11-27 — Learn more link in the Space info note
+
+- `node test/e2e.js`: 402 passed, 3 failed (same 3 as before: get_window_state, get_app_state, get_process_info). New checks: link exists, MDN and W3Schools open the exact property page, choice appears when Zeal is missing, Zeal is tried first with `css:<property>`, Set up Zeal saves the path and tries again, the note stays on screen.
+- Not tested: a real Zeal install (needs the user's computer). In Zeal the CSS documentation set must be installed for the page to show.
