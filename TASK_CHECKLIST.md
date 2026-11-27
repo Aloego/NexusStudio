@@ -695,9 +695,9 @@
 - [x] Nothing is added to the user's pages; only the app panel changed (renderer/app.js, renderer/styles.css)
 - [x] Tests updated and added (393 passed, 3 failed as before)
 - [x] Commit and push changes to feature branch
-- [ ] User personally tries it (hover, drag, click, blue label)
+- [x] User personally tries it (hover, drag, click, blue label)
 
-**Status:** Awaiting User Approval
+**Status:** Approved by user (2026-11-27)
 
 ## Space box: "Learn more" link in the side info note
 
@@ -711,6 +711,6 @@
 - [x] The existing element documentation box, the Space box shapes, hover, drag and click box are not changed
 - [x] Tests added (402 passed, 3 failed as before)
 - [x] Commit and push changes to feature branch
-- [ ] User personally tries it (best with and without Zeal installed)
+- [x] User personally tries it (best with and without Zeal installed)
 
-**Status:** Awaiting User Approval
+**Status:** Approved by user (2026-11-27)
